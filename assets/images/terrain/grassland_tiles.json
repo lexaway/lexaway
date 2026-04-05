@@ -1,0 +1,27 @@
+{
+  "source": "grassland.png",
+  "tileSize": 16,
+  "tiles": {
+    "top_left":              { "row": 1, "col": 3, "src": [48, 16] },
+    "top_surface":           { "row": 1, "col": 4, "src": [64, 16] },
+    "top_right":             { "row": 1, "col": 5, "src": [80, 16] },
+    "left_edge":             { "row": 2, "col": 3, "src": [48, 32] },
+    "dirt_fill":             { "row": 2, "col": 4, "src": [64, 32] },
+    "right_edge":            { "row": 2, "col": 5, "src": [80, 32] },
+    "inner_corner_tl":       { "row": 3, "col": 3, "src": [48, 48] },
+    "dirt_fill_alt":         { "row": 3, "col": 4, "src": [64, 48] },
+    "inner_corner_tr":       { "row": 3, "col": 5, "src": [80, 48] },
+    "bottom_left":           { "row": 4, "col": 1, "src": [16, 64] },
+    "bottom_edge":           { "row": 4, "col": 2, "src": [32, 64] },
+    "bottom_right":          { "row": 4, "col": 7, "src": [112, 64] },
+    "thin_top_left":         { "row": 3, "col": 9, "src": [144, 48] },
+    "thin_top":              { "row": 3, "col": 10, "src": [160, 48] },
+    "thin_top_alt":          { "row": 3, "col": 12, "src": [192, 48] },
+    "thin_top_right":        { "row": 3, "col": 13, "src": [208, 48] },
+    "thin_endcap_left":      { "row": 3, "col": 15, "src": [240, 48] },
+    "column_top":            { "row": 1, "col": 11, "src": [176, 16] },
+    "column_middle":         { "row": 2, "col": 11, "src": [176, 32] },
+    "column_bottom":         { "row": 5, "col": 11, "src": [176, 80] },
+    "rock_detail":           { "row": 8, "col": 4, "src": [64, 128] }
+  }
+}
