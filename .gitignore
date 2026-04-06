@@ -39,6 +39,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Language packs (hosted separately)
+assets/packs/
+
 # Raw/source asset packs (only processed images in assets/images/ are needed)
 assets/Seasonal Tilesets/
 assets/dinoCharactersVersion1.1/

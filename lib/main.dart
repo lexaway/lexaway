@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'data/pack_database.dart';
 import 'game/lexaway_game.dart';
 import 'models/question.dart';
 
@@ -15,35 +16,66 @@ void main() {
   runApp(const LexawayApp());
 }
 
-class LexawayApp extends StatelessWidget {
+class LexawayApp extends StatefulWidget {
   const LexawayApp({super.key});
 
   @override
+  State<LexawayApp> createState() => _LexawayAppState();
+}
+
+class _LexawayAppState extends State<LexawayApp> {
+  final _game = LexawayGame();
+  final _db = PackDatabase();
+  List<Question>? _questions;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPack();
+  }
+
+  Future<void> _loadPack() async {
+    await _db.open('fra');
+    final qs = await _db.loadQuestions(limit: 200);
+    setState(() => _questions = qs);
+  }
+
+  @override
+  void dispose() {
+    _db.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final game = LexawayGame();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         textTheme: GoogleFonts.pixelifySansTextTheme(),
       ),
       home: Scaffold(
-        body: Stack(
-          children: [
-            GameWidget(game: game),
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              child: _StreakBar(),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: QuestionPanel(game: game),
-            ),
-          ],
-        ),
+        body: _questions == null
+            ? const Center(child: CircularProgressIndicator())
+            : Stack(
+                children: [
+                  GameWidget(game: _game),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    child: _StreakBar(),
+                  ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: QuestionPanel(
+                      game: _game,
+                      questions: _questions!,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -92,7 +124,12 @@ enum _AnswerState { unanswered, correct, wrong }
 
 class QuestionPanel extends StatefulWidget {
   final LexawayGame game;
-  const QuestionPanel({super.key, required this.game});
+  final List<Question> questions;
+  const QuestionPanel({
+    super.key,
+    required this.game,
+    required this.questions,
+  });
 
   @override
   State<QuestionPanel> createState() => _QuestionPanelState();
@@ -113,7 +150,7 @@ class _QuestionPanelState extends State<QuestionPanel>
   @override
   void initState() {
     super.initState();
-    _questions = List.of(mockQuestions)..shuffle(_rng);
+    _questions = List.of(widget.questions)..shuffle(_rng);
     _shuffledOptions = _shuffleOptions(_questions[0]);
 
     _shakeController = AnimationController(
@@ -270,8 +307,7 @@ class _QuestionPanelState extends State<QuestionPanel>
   }
 
   Widget _buildPhrase() {
-    final parts = _current.phrase.split(_current.answer);
-    final blankText = _answerState == _AnswerState.unanswered
+    final revealText = _answerState == _AnswerState.unanswered
         ? '____'
         : _current.answer;
     final blankColor = _answerState == _AnswerState.correct
@@ -284,22 +320,21 @@ class _QuestionPanelState extends State<QuestionPanel>
       TextSpan(
         children: [
           TextSpan(
-            text: parts[0],
+            text: _current.before,
             style: const TextStyle(color: Colors.white, fontSize: 20),
           ),
           TextSpan(
-            text: blankText,
+            text: revealText,
             style: TextStyle(
               color: blankColor,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
-          if (parts.length > 1)
-            TextSpan(
-              text: parts[1],
-              style: const TextStyle(color: Colors.white, fontSize: 20),
-            ),
+          TextSpan(
+            text: _current.after,
+            style: const TextStyle(color: Colors.white, fontSize: 20),
+          ),
         ],
       ),
       textAlign: TextAlign.center,
