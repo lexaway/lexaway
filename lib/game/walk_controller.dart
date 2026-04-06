@@ -68,11 +68,23 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
     }
   }
 
+  /// Finish any in-progress walk immediately (no animation).
+  void finishWalk() {
+    if (!_isWalking) return;
+    // Advance ground to where the walk would have ended
+    final remaining = LexawayGame.walkTarget - _walkProgress;
+    if (remaining > 0) {
+      game.ground.scrollOffset += remaining;
+    }
+    _stop();
+  }
+
   void _stop() {
     _isWalking = false;
     _stepTimer = 0;
     game.player.idle();
     game.parallaxComponent.parallax!.baseVelocity = Vector2.zero();
     game.ground.stopScrolling();
+    game.saveWorldState();
   }
 }

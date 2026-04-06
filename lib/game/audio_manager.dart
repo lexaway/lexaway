@@ -10,7 +10,6 @@ class AudioManager {
   AudioManager._();
 
   final _rng = Random();
-  Terrain terrain = Terrain.grass;
 
   Future<void> preload() async {
     await FlameAudio.audioCache.loadAll([
@@ -30,7 +29,7 @@ class AudioManager {
 
   void playFootstep() {
     final n = _rng.nextInt(3) + 1;
-    FlameAudio.play('step_${terrain.name}_$n.wav');
+    FlameAudio.play('step_${Terrain.grass.name}_$n.wav');
   }
 
   void playStreak() => FlameAudio.play('streak.wav');

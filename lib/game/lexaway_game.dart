@@ -3,12 +3,14 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/parallax.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 import 'audio_manager.dart';
 import 'components/coin_manager.dart';
 import 'components/ground.dart';
 import 'components/player.dart';
 import 'components/speech_bubble.dart';
+import 'persistable.dart';
 import 'walk_controller.dart';
 
 class LexawayGame extends FlameGame {
@@ -19,12 +21,19 @@ class LexawayGame extends FlameGame {
   static const double walkSpeed = 80;
   static const double walkTarget = 16 * pixelScale;
 
+  final Box? hiveBox;
+
+  LexawayGame({this.hiveBox});
+
   late Player player;
   late Ground ground;
   late ParallaxComponent parallaxComponent;
   late SpeechBubble speechBubble;
   late CoinManager coinManager;
   late WalkController walkController;
+
+  /// Components with persistent state, restored/saved in order.
+  final List<Persistable> _persistables = [];
 
   Function(int value)? onCoinCollected;
 
@@ -51,11 +60,16 @@ class LexawayGame extends FlameGame {
     add(parallaxComponent);
 
     ground = Ground()..priority = 1;
-    add(ground);
-
     coinManager = CoinManager()
       ..priority = 1
       ..onCoinCollected = (value) => onCoinCollected?.call(value);
+
+    // Register persistable components in restore order
+    // (ground first so coinManager sees the correct scrollOffset).
+    _persistables.addAll([ground, coinManager]);
+    _restoreWorldState();
+
+    add(ground);
     add(coinManager);
 
     player = Player()..priority = 2;
@@ -78,15 +92,25 @@ class LexawayGame extends FlameGame {
     walkController.wrongAnswer();
   }
 
-  @override
-  void update(double dt) {
-    super.update(dt);
+  void _restoreWorldState() {
+    final saved = hiveBox?.get('world') as Map?;
+    if (saved == null) return;
+    for (final p in _persistables) {
+      final data = saved[p.saveKey];
+      if (data != null) {
+        p.restoreState(Map<String, dynamic>.from(data as Map));
+      }
+    }
+  }
 
-    // Position bubble above the player, nudged right so the tail
-    // sits under the dino's head.
-    speechBubble.position = Vector2(
-      player.position.x + player.size.x * 0.3,
-      player.position.y - speechBubble.size.y - 4,
-    );
+  /// Save current world state to Hive. Called after walk completion,
+  /// coin collection, and on app lifecycle events.
+  void saveWorldState() {
+    if (hiveBox == null) return;
+    final state = <String, dynamic>{};
+    for (final p in _persistables) {
+      state[p.saveKey] = p.saveState();
+    }
+    hiveBox!.put('world', state);
   }
 }

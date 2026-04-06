@@ -3,9 +3,11 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import '../audio_manager.dart';
 import '../lexaway_game.dart';
+import '../persistable.dart';
 import 'coin.dart';
 
-class CoinManager extends Component with HasGameReference<LexawayGame> {
+class CoinManager extends Component
+    with HasGameReference<LexawayGame>, Persistable {
   // Spawn roll thresholds (0..1)
   static const double diamondChance = 0.15;
   static const double clusterChance = 0.40; // cumulative: 15% diamond, 25% cluster, 60% single
@@ -19,15 +21,42 @@ class CoinManager extends Component with HasGameReference<LexawayGame> {
 
   double _nextSpawnAt = 0;
   double _lastOffset = 0;
+  bool _restored = false;
 
   Function(int value)? onCoinCollected;
 
   @override
+  String get saveKey => 'coin_manager';
+
+  @override
+  Map<String, dynamic> saveState() => {
+        'next_spawn_at': _nextSpawnAt,
+        'coins': children
+            .query<Coin>()
+            .where((c) => !c.collected)
+            .map((c) => c.toJson())
+            .toList(),
+      };
+
+  @override
+  void restoreState(Map<String, dynamic> state) {
+    _nextSpawnAt = (state['next_spawn_at'] as num).toDouble();
+    _restored = true;
+    final coins = state['coins'] as List?;
+    if (coins != null) {
+      for (final e in coins) {
+        add(Coin.fromJson(Map<String, dynamic>.from(e as Map)));
+      }
+    }
+  }
+
+  @override
   void onMount() {
     super.onMount();
-    // Pre-spawn first coin half a screen ahead
-    _nextSpawnAt = game.ground.scrollOffset + game.size.x * 0.5;
     _lastOffset = game.ground.scrollOffset;
+    if (!_restored) {
+      _nextSpawnAt = game.ground.scrollOffset + game.size.x + 64;
+    }
   }
 
   @override
@@ -65,6 +94,7 @@ class CoinManager extends Component with HasGameReference<LexawayGame> {
           AudioManager.instance.playCoin();
         }
         coin.removeFromParent();
+        game.saveWorldState();
         continue;
       }
 

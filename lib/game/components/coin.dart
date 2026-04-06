@@ -14,6 +14,13 @@ class Coin extends SpriteAnimationComponent
 
   Coin({required this.type, required this.worldX});
 
+  factory Coin.fromJson(Map<String, dynamic> json) => Coin(
+        type: CoinType.values[json['t'] as int],
+        worldX: (json['x'] as num).toDouble(),
+      );
+
+  Map<String, dynamic> toJson() => {'x': worldX, 't': type.index};
+
   @override
   Future<void> onLoad() async {
     final String path;

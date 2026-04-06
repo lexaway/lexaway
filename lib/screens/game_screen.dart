@@ -14,15 +14,41 @@ class GameScreen extends ConsumerStatefulWidget {
   ConsumerState<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends ConsumerState<GameScreen> {
-  final _game = LexawayGame();
+class _GameScreenState extends ConsumerState<GameScreen>
+    with WidgetsBindingObserver {
+  late final LexawayGame _game;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _game = LexawayGame(hiveBox: ref.read(hiveBoxProvider));
     _game.onCoinCollected = (value) {
       ref.read(coinProvider.notifier).add(value);
     };
+  }
+
+  @override
+  void dispose() {
+    // Lifecycle observer already saves on pause/inactive before dispose,
+    // but save again in case of direct navigation without backgrounding.
+    try {
+      _game.walkController.finishWalk();
+      _game.saveWorldState();
+    } catch (_) {
+      // Game components may already be detached during teardown.
+    }
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _game.walkController.finishWalk();
+      _game.saveWorldState();
+    }
   }
 
   @override

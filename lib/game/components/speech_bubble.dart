@@ -95,6 +95,14 @@ class SpeechBubble extends PositionComponent
   @override
   void update(double dt) {
     super.update(dt);
+
+    // Track the player — nudged right so the tail sits under the dino's head.
+    final player = game.player;
+    position = Vector2(
+      player.position.x + player.size.x * 0.3,
+      player.position.y - size.y - 4,
+    );
+
     if (!_visible) return;
     _timer -= dt;
     if (_timer <= 0) {

@@ -2,11 +2,23 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 import '../lexaway_game.dart';
+import '../persistable.dart';
 
-class Ground extends Component with HasGameReference<LexawayGame> {
-  double _scrollOffset = 0;
-  double get scrollOffset => _scrollOffset;
+class Ground extends Component
+    with HasGameReference<LexawayGame>, Persistable {
+  double scrollOffset = 0;
   double _scrollSpeed = 0;
+
+  @override
+  String get saveKey => 'ground';
+
+  @override
+  Map<String, dynamic> saveState() => {'offset': scrollOffset};
+
+  @override
+  void restoreState(Map<String, dynamic> state) {
+    scrollOffset = (state['offset'] as num).toDouble();
+  }
 
   late Sprite _grassSprite;
   late Sprite _dirtSprite;
@@ -38,7 +50,7 @@ class Ground extends Component with HasGameReference<LexawayGame> {
 
   @override
   void update(double dt) {
-    _scrollOffset += _scrollSpeed * dt;
+    scrollOffset += _scrollSpeed * dt;
   }
 
   @override
@@ -46,7 +58,7 @@ class Ground extends Component with HasGameReference<LexawayGame> {
     final tileSize = 16.0 * LexawayGame.pixelScale;
     final groundTop = game.size.y * LexawayGame.groundLevel;
     final tilesAcross = (game.size.x / tileSize).ceil() + 2;
-    final pixelOffset = _scrollOffset % tileSize;
+    final pixelOffset = scrollOffset % tileSize;
 
     for (int i = 0; i < tilesAcross; i++) {
       final x = i * tileSize - pixelOffset;
