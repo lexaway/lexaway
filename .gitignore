@@ -45,6 +45,7 @@ assets/packs/
 # Raw/source asset packs (only processed images in assets/images/ are needed)
 assets/Seasonal Tilesets/
 assets/dinoCharactersVersion1.1/
+assets/kenney_ui-pack-pixel-adventure 2
 
 # Simulator screenshots
 simulator_screenshot_*.png

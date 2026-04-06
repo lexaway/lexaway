@@ -96,6 +96,15 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     if (locale != 'en') await SpeechMessages.load(locale);
   }
 
+  @override
+  void update(double dt) {
+    super.update(dt);
+    // Gentle cloud drift independent of player movement
+    final layers = parallaxComponent.parallax!.layers;
+    layers[1].update(Vector2(cloudDrift * dt, 0), dt);
+    layers[2].update(Vector2(cloudDrift * 1.8 * dt, 0), dt);
+  }
+
   void correctAnswer({required int streak, required String answer}) {
     walkController.correctAnswer(streak: streak, answer: answer);
   }
