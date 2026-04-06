@@ -9,7 +9,8 @@ class CoinManager extends Component
     with HasGameReference<LexawayGame>, Persistable {
   // Spawn roll thresholds (0..1)
   static const double diamondChance = 0.15;
-  static const double clusterChance = 0.40; // cumulative: 15% diamond, 25% cluster, 60% single
+  static const double clusterChance =
+      0.40; // cumulative: 15% diamond, 25% cluster, 60% single
   // Gap between spawn points: random 2–5 tiles
   static const int minGapTiles = 2;
   static const int maxGapTiles = 5; // inclusive upper bound
@@ -29,13 +30,13 @@ class CoinManager extends Component
 
   @override
   Map<String, dynamic> saveState() => {
-        'next_spawn_at': _nextSpawnAt,
-        'coins': children
-            .query<Coin>()
-            .where((c) => !c.collected)
-            .map((c) => c.toJson())
-            .toList(),
-      };
+    'next_spawn_at': _nextSpawnAt,
+    'coins': children
+        .query<Coin>()
+        .where((c) => !c.collected)
+        .map((c) => c.toJson())
+        .toList(),
+  };
 
   @override
   void restoreState(Map<String, dynamic> state) {

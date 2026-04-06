@@ -38,5 +38,6 @@ flutter:
     - assets/images/terrain/
     - assets/images/dino/
     - assets/images/coins/
+    - assets/images/ui/
     - assets/audio/
     - assets/dino/

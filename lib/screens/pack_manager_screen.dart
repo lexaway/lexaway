@@ -17,10 +17,7 @@ class PackManagerScreen extends ConsumerStatefulWidget {
 class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
   /// Endonyms — language names in their own language. Always display these
   /// regardless of the current UI locale.
-  static const _endonyms = {
-    'en': 'English',
-    'es': 'Español',
-  };
+  static const _endonyms = {'en': 'English', 'es': 'Español'};
 
   void _showLocalePicker(BuildContext context) {
     // Resolve what "System default" would actually give the user.
@@ -36,47 +33,53 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
       ),
       builder: (_) {
         // Consumer so the checkmark stays reactive (#1 fix).
-        return Consumer(builder: (ctx, ref, _) {
-          final current = ref.watch(localeProvider);
-          final l10n = AppLocalizations.of(context)!;
-          return SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Globe icon instead of localized text — universally
-                // recognizable even if the user is stuck in the wrong
-                // language (#5 fix).
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
-                  child: Icon(Icons.language, color: Colors.white70, size: 32),
-                ),
-                // System default — show resolved endonym as subtitle so
-                // it's understandable regardless of current UI language.
-                _LocaleOption(
-                  label: l10n.systemDefault,
-                  subtitle: systemEndonym,
-                  selected: current == null,
-                  onTap: () {
-                    ref.read(localeProvider.notifier).setLocale(null);
-                    Navigator.pop(ctx);
-                  },
-                ),
-                // Each supported locale
-                for (final locale in AppLocalizations.supportedLocales)
+        return Consumer(
+          builder: (ctx, ref, _) {
+            final current = ref.watch(localeProvider);
+            final l10n = AppLocalizations.of(context)!;
+            return SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Globe icon instead of localized text — universally
+                  // recognizable even if the user is stuck in the wrong
+                  // language (#5 fix).
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                    child: Icon(
+                      Icons.language,
+                      color: Colors.white70,
+                      size: 32,
+                    ),
+                  ),
+                  // System default — show resolved endonym as subtitle so
+                  // it's understandable regardless of current UI language.
                   _LocaleOption(
-                    label:
-                        _endonyms[locale.languageCode] ?? locale.languageCode,
-                    selected: current?.languageCode == locale.languageCode,
+                    label: l10n.systemDefault,
+                    subtitle: systemEndonym,
+                    selected: current == null,
                     onTap: () {
-                      ref.read(localeProvider.notifier).setLocale(locale);
+                      ref.read(localeProvider.notifier).setLocale(null);
                       Navigator.pop(ctx);
                     },
                   ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          );
-        });
+                  // Each supported locale
+                  for (final locale in AppLocalizations.supportedLocales)
+                    _LocaleOption(
+                      label:
+                          _endonyms[locale.languageCode] ?? locale.languageCode,
+                      selected: current?.languageCode == locale.languageCode,
+                      onTap: () {
+                        ref.read(localeProvider.notifier).setLocale(locale);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          },
+        );
       },
     );
   }
@@ -167,15 +170,17 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
           Expanded(
             child: manifest.when(
               loading: () => const Center(
-                  child: CircularProgressIndicator(color: Colors.white54)),
+                child: CircularProgressIndicator(color: Colors.white54),
+              ),
               error: (_, __) => const SizedBox.shrink(),
               data: (m) => ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: m.packs.length,
                 itemBuilder: (context, i) {
                   final pack = m.packs[i];
-                  final progress =
-                      ref.watch(downloadProgressProvider(pack.lang));
+                  final progress = ref.watch(
+                    downloadProgressProvider(pack.lang),
+                  );
                   return _PackTile(
                     pack: pack,
                     local: local[pack.lang],
@@ -276,7 +281,9 @@ class _PackTile extends StatelessWidget {
                                     .toStringAsFixed(1),
                               ),
                               style: const TextStyle(
-                                  color: Colors.white38, fontSize: 12),
+                                color: Colors.white38,
+                                fontSize: 12,
+                              ),
                             ),
                         ],
                       ),
@@ -309,8 +316,7 @@ class _PackTile extends StatelessWidget {
       return const SizedBox(
         width: 24,
         height: 24,
-        child: CircularProgressIndicator(
-            strokeWidth: 2, color: Colors.white54),
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
       );
     }
     if (_isDownloaded) {
@@ -320,16 +326,18 @@ class _PackTile extends StatelessWidget {
           const Icon(Icons.check_circle, color: Colors.green, size: 22),
           const SizedBox(width: 8),
           IconButton(
-            icon: Icon(Icons.delete_outline,
-                color: Colors.white.withValues(alpha: 0.4), size: 20),
+            icon: Icon(
+              Icons.delete_outline,
+              color: Colors.white.withValues(alpha: 0.4),
+              size: 20,
+            ),
             onPressed: onDelete,
           ),
         ],
       );
     }
     return IconButton(
-      icon: const Icon(Icons.download_rounded,
-          color: Colors.white70, size: 28),
+      icon: const Icon(Icons.download_rounded, color: Colors.white70, size: 28),
       onPressed: onDownload,
     );
   }

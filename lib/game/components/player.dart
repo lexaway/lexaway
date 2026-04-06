@@ -46,10 +46,12 @@ class Player extends SpriteAnimationGroupComponent<PlayerState>
     // Hitbox — trimmed to the dino's body, skipping transparent padding.
     // Sprite is 24×24 at _scale; body is roughly 14×18 centered horizontally,
     // offset 3px from top (head starts there), 3px transparent at bottom.
-    add(RectangleHitbox(
-      position: Vector2(5 * _scale, 3 * _scale),
-      size: Vector2(14 * _scale, 18 * _scale),
-    ));
+    add(
+      RectangleHitbox(
+        position: Vector2(5 * _scale, 3 * _scale),
+        size: Vector2(14 * _scale, 18 * _scale),
+      ),
+    );
   }
 
   void walk() => current = PlayerState.walking;

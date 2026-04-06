@@ -16,12 +16,12 @@ class CoinFlyEffect extends SpriteAnimationComponent {
     required Vector2 target,
     required SpriteAnimation animation,
     required Vector2 spriteSize,
-  })  : _target = target,
-        super(
-          animation: animation,
-          size: spriteSize.clone(),
-          position: start.clone(),
-        );
+  }) : _target = target,
+       super(
+         animation: animation,
+         size: spriteSize.clone(),
+         position: start.clone(),
+       );
 
   @override
   Future<void> onLoad() async {
@@ -34,10 +34,12 @@ class CoinFlyEffect extends SpriteAnimationComponent {
     );
 
     add(MoveEffect.to(_target, controller));
-    add(ScaleEffect.to(
-      Vector2.all(0.4),
-      EffectController(duration: _duration, curve: Curves.easeIn),
-    ));
+    add(
+      ScaleEffect.to(
+        Vector2.all(0.4),
+        EffectController(duration: _duration, curve: Curves.easeIn),
+      ),
+    );
     add(RemoveEffect(delay: _duration));
   }
 }

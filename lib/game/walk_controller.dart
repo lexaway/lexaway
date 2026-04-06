@@ -25,8 +25,10 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
     _stepTimer = _stepInterval; // first step fires immediately
 
     game.player.walk();
-    game.parallaxComponent.parallax!.baseVelocity =
-        Vector2(LexawayGame.walkSpeed * 0.1, 0);
+    game.parallaxComponent.parallax!.baseVelocity = Vector2(
+      LexawayGame.walkSpeed * 0.1,
+      0,
+    );
     game.ground.startScrolling(LexawayGame.walkSpeed);
 
     if (streak == 5 || streak == 10 || streak == 25) {
@@ -35,8 +37,11 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
       AudioManager.instance.playCorrect();
     }
 
-    final msg =
-        SpeechMessages.pickCorrectMessage(streak, answer, locale: game.locale);
+    final msg = SpeechMessages.pickCorrectMessage(
+      streak,
+      answer,
+      locale: game.locale,
+    );
     if (msg != null) game.speechBubble.show(msg);
   }
 
@@ -66,7 +71,8 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
     if (_idleTimer >= _idleTimeout) {
       _idleTimer = 0;
       game.speechBubble.show(
-          SpeechMessages.pickIdleMessage(locale: game.locale));
+        SpeechMessages.pickIdleMessage(locale: game.locale),
+      );
     }
   }
 

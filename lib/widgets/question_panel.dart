@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../game/lexaway_game.dart';
@@ -14,11 +13,7 @@ enum _AnswerState { unanswered, correct, wrong }
 class QuestionPanel extends ConsumerStatefulWidget {
   final LexawayGame game;
   final List<Question> questions;
-  const QuestionPanel({
-    super.key,
-    required this.game,
-    required this.questions,
-  });
+  const QuestionPanel({super.key, required this.game, required this.questions});
 
   @override
   ConsumerState<QuestionPanel> createState() => _QuestionPanelState();
@@ -63,8 +58,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
 
   Question get _current => _questions[_questionIndex % _questions.length];
 
-  List<String> _shuffleOptions(Question q) =>
-      List.of(q.options)..shuffle(_rng);
+  List<String> _shuffleOptions(Question q) => List.of(q.options)..shuffle(_rng);
 
   void _onOptionTap(String option) {
     if (_answerState != _AnswerState.unanswered) return;
@@ -122,73 +116,132 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
         );
       },
       child: Container(
-        padding: EdgeInsets.fromLTRB(16, 20, 16, 16 + bottomPadding),
-        decoration: BoxDecoration(
-          color: Colors.brown.shade800.withValues(alpha: 0.85),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border(
-            top: BorderSide(color: Colors.brown.shade400, width: 3),
+        padding: EdgeInsets.fromLTRB(24, 15, 24, 16 + bottomPadding),
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/ui/panel_brown_bg.png'),
+            centerSlice: Rect.fromLTRB(24, 24, 72, 72),
+            filterQuality: FilterQuality.none,
           ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            Text(
-              _current.translation,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.brown.shade900.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: _buildPhrase(),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: _shuffledOptions.map((option) {
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: ElevatedButton(
-                      onPressed: () => _onOptionTap(option),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _buttonColor(option),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+            SingleChildScrollView(
+              padding: _answerState == _AnswerState.wrong
+                  ? const EdgeInsets.only(bottom: 64)
+                  : EdgeInsets.zero,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 30),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage(
+                          'assets/images/ui/panel_inset_bg.png',
                         ),
-                      ),
-                      child: Text(
-                        option,
-                        style: const TextStyle(fontSize: 16),
+                        centerSlice: Rect.fromLTRB(12, 12, 84, 84),
+                        filterQuality: FilterQuality.none,
                       ),
                     ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _current.translation,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildPhrase(),
+                      ],
+                    ),
                   ),
-                );
-              }).toList(),
+                  const SizedBox(height: 16),
+                  Column(
+                    children: _shuffledOptions.map((option) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => _onOptionTap(option),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _buttonColor(option),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Text(
+                              option,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             ),
-            if (_answerState == _AnswerState.wrong) ...[
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: _advance,
+            Positioned(
+              top: -30,
+              left: 24,
+              right: 24,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 10,
+                ),
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/ui/banner_red.png'),
+                    centerSlice: Rect.fromLTRB(96, 0, 192, 96),
+                    filterQuality: FilterQuality.none,
+                  ),
+                ),
                 child: Text(
-                  AppLocalizations.of(context)!.next,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 16,
+                  _buildProgressBar(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    letterSpacing: 2,
                   ),
                 ),
               ),
-            ],
+            ),
+            if (_answerState == _AnswerState.wrong)
+              Positioned(
+                bottom: bottomPadding + 8,
+                right: 0,
+                child: GestureDetector(
+                  onTap: _advance,
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/ui/fab_circle_bg.png'),
+                        filterQuality: FilterQuality.none,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -202,15 +255,19 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
     final blankColor = _answerState == _AnswerState.correct
         ? Colors.greenAccent
         : _answerState == _AnswerState.wrong
-            ? Colors.orangeAccent
-            : Colors.white;
+        ? Colors.orangeAccent
+        : Colors.white;
 
     return Text.rich(
       TextSpan(
         children: [
           TextSpan(
             text: _current.before,
-            style: const TextStyle(color: Colors.white, fontSize: 20),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              height: 1.1,
+            ),
           ),
           TextSpan(
             text: revealText,
@@ -218,15 +275,29 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
               color: blankColor,
               fontSize: 20,
               fontWeight: FontWeight.bold,
+              height: 1.1,
             ),
           ),
           TextSpan(
             text: _current.after,
-            style: const TextStyle(color: Colors.white, fontSize: 20),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              height: 1.1,
+            ),
           ),
         ],
       ),
       textAlign: TextAlign.center,
     );
+  }
+
+  String _buildProgressBar() {
+    final total = _questions.length;
+    final current = _questionIndex % total;
+    final pos = (current * 4 / total).floor();
+    final before = '-' * pos;
+    final after = '-' * (4 - pos);
+    return '$before*$after';
   }
 }

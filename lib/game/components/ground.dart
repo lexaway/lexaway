@@ -4,8 +4,7 @@ import 'package:flame/components.dart';
 import '../lexaway_game.dart';
 import '../persistable.dart';
 
-class Ground extends Component
-    with HasGameReference<LexawayGame>, Persistable {
+class Ground extends Component with HasGameReference<LexawayGame>, Persistable {
   double scrollOffset = 0;
   double _scrollSpeed = 0;
 

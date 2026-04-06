@@ -22,8 +22,9 @@ class DinoVoice {
   factory DinoVoice.fromJson(Map<String, dynamic> json) {
     return DinoVoice(
       correct: List<String>.from(json['correct']),
-      streak: (json['streak'] as Map<String, dynamic>)
-          .map((k, v) => MapEntry(int.parse(k), v as String)),
+      streak: (json['streak'] as Map<String, dynamic>).map(
+        (k, v) => MapEntry(int.parse(k), v as String),
+      ),
       wrong: List<String>.from(json['wrong']),
       idle: List<String>.from(json['idle']),
     );
@@ -56,8 +57,11 @@ class SpeechMessages {
     idle: ['...'],
   );
 
-  static String? pickCorrectMessage(int streak, String answer,
-      {String locale = 'en'}) {
+  static String? pickCorrectMessage(
+    int streak,
+    String answer, {
+    String locale = 'en',
+  }) {
     final voice = _voice(locale);
     if (voice.streak.containsKey(streak)) return voice.streak[streak];
 

@@ -16,10 +16,10 @@ class PackInfo {
   const PackInfo({required this.lang, required this.name, required this.flag});
 
   factory PackInfo.fromJson(Map<String, dynamic> json) => PackInfo(
-        lang: json['lang'] as String,
-        name: json['name'] as String,
-        flag: json['flag'] as String,
-      );
+    lang: json['lang'] as String,
+    name: json['name'] as String,
+    flag: json['flag'] as String,
+  );
 }
 
 class LocalPack {
@@ -44,10 +44,10 @@ class LocalPack {
       );
 
   Map<String, dynamic> toJson() => {
-        'schema_version': schemaVersion,
-        'built_at': builtAt,
-        'size_bytes': sizeBytes,
-      };
+    'schema_version': schemaVersion,
+    'built_at': builtAt,
+    'size_bytes': sizeBytes,
+  };
 }
 
 class Manifest {
@@ -57,11 +57,11 @@ class Manifest {
   const Manifest({required this.schemaVersion, required this.packs});
 
   factory Manifest.fromJson(Map<String, dynamic> json) => Manifest(
-        schemaVersion: json['schema_version'] as int,
-        packs: (json['packs'] as List)
-            .map((p) => PackInfo.fromJson(p as Map<String, dynamic>))
-            .toList(),
-      );
+    schemaVersion: json['schema_version'] as int,
+    packs: (json['packs'] as List)
+        .map((p) => PackInfo.fromJson(p as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 class PackManager {
@@ -82,7 +82,8 @@ class PackManager {
       if (response.statusCode == 200) {
         _box.put('manifest_cache', response.body);
         return Manifest.fromJson(
-            jsonDecode(response.body) as Map<String, dynamic>);
+          jsonDecode(response.body) as Map<String, dynamic>,
+        );
       }
     } catch (_) {
       // Fall through to cached version
@@ -165,8 +166,12 @@ class PackManager {
 
   Map<String, LocalPack> getLocalPacks() {
     final packs = _getPacks();
-    return packs.map((lang, data) => MapEntry(
-        lang, LocalPack.fromJson(lang, Map<String, dynamic>.from(data as Map))));
+    return packs.map(
+      (lang, data) => MapEntry(
+        lang,
+        LocalPack.fromJson(lang, Map<String, dynamic>.from(data as Map)),
+      ),
+    );
   }
 
   String? get lastUsed => _box.get('last_used') as String?;

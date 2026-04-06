@@ -29,14 +29,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/loading',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
-      GoRoute(
-        path: '/game',
-        builder: (context, state) => const GameScreen(),
-      ),
+      GoRoute(path: '/game', builder: (context, state) => const GameScreen()),
       GoRoute(
         path: '/packs',
         builder: (context, state) => const PackManagerScreen(),

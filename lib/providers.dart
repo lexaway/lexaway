@@ -16,8 +16,9 @@ final hiveBoxProvider = Provider<Box>((ref) {
 
 // Locale
 
-final localeProvider =
-    NotifierProvider<LocaleNotifier, Locale?>(LocaleNotifier.new);
+final localeProvider = NotifierProvider<LocaleNotifier, Locale?>(
+  LocaleNotifier.new,
+);
 
 class LocaleNotifier extends Notifier<Locale?> {
   @override
@@ -29,10 +30,10 @@ class LocaleNotifier extends Notifier<Locale?> {
       1 => Locale(parts[0]),
       2 => Locale(parts[0], parts[1]),
       _ => Locale.fromSubtags(
-          languageCode: parts[0],
-          scriptCode: parts.length > 2 ? parts[1] : null,
-          countryCode: parts.last,
-        ),
+        languageCode: parts[0],
+        scriptCode: parts.length > 2 ? parts[1] : null,
+        countryCode: parts.last,
+      ),
     };
   }
 
@@ -57,7 +58,8 @@ final packManagerProvider = Provider<PackManager>((ref) {
 /// Local packs on disk. Invalidate after download/delete.
 final localPacksProvider =
     AsyncNotifierProvider<LocalPacksNotifier, Map<String, LocalPack>>(
-        LocalPacksNotifier.new);
+      LocalPacksNotifier.new,
+    );
 
 class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
   @override
@@ -68,9 +70,12 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
   Future<void> download(String lang) async {
     final pm = ref.read(packManagerProvider);
     try {
-      await pm.downloadPack(lang, onProgress: (p) {
-        ref.read(downloadProgressProvider(lang).notifier).state = p;
-      });
+      await pm.downloadPack(
+        lang,
+        onProgress: (p) {
+          ref.read(downloadProgressProvider(lang).notifier).state = p;
+        },
+      );
     } finally {
       ref.read(downloadProgressProvider(lang).notifier).state = null;
     }
@@ -96,8 +101,9 @@ final manifestProvider = FutureProvider<Manifest>((ref) {
 });
 
 /// Ephemeral download progress, keyed by lang code.
-final downloadProgressProvider =
-    StateProvider.family<double?, String>((ref, lang) => null);
+final downloadProgressProvider = StateProvider.family<double?, String>(
+  (ref, lang) => null,
+);
 
 // App KV state (Hive-backed)
 
@@ -114,8 +120,9 @@ abstract class HiveIntNotifier extends Notifier<int> {
   void _save() => _box.put(key, state);
 }
 
-final streakProvider =
-    NotifierProvider<StreakNotifier, int>(StreakNotifier.new);
+final streakProvider = NotifierProvider<StreakNotifier, int>(
+  StreakNotifier.new,
+);
 
 class StreakNotifier extends HiveIntNotifier {
   @override
@@ -137,8 +144,9 @@ class StreakNotifier extends HiveIntNotifier {
   }
 }
 
-final bestStreakProvider =
-    NotifierProvider<BestStreakNotifier, int>(BestStreakNotifier.new);
+final bestStreakProvider = NotifierProvider<BestStreakNotifier, int>(
+  BestStreakNotifier.new,
+);
 
 class BestStreakNotifier extends HiveIntNotifier {
   @override
@@ -163,7 +171,8 @@ class CoinNotifier extends HiveIntNotifier {
 
 final activePackProvider =
     AsyncNotifierProvider<ActivePackNotifier, List<Question>>(
-        ActivePackNotifier.new);
+      ActivePackNotifier.new,
+    );
 
 class ActivePackNotifier extends AsyncNotifier<List<Question>> {
   final _db = PackDatabase();

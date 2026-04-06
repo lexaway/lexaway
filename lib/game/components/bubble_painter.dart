@@ -75,13 +75,7 @@ class BubblePainter {
     return image;
   }
 
-  static void _drawTail(
-    Canvas canvas,
-    Paint fill,
-    Paint border,
-    int x,
-    int y,
-  ) {
+  static void _drawTail(Canvas canvas, Paint fill, Paint border, int x, int y) {
     // Draw a small triangular tail pointing down.
     // Row by row, narrowing as it goes:
     //
@@ -113,10 +107,7 @@ class BubblePainter {
   }
 
   static void _pixel(Canvas canvas, Paint paint, int x, int y) {
-    canvas.drawRect(
-      Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1),
-      paint,
-    );
+    canvas.drawRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1), paint);
   }
 
   static void _hLine(Canvas canvas, Paint paint, int x1, int y, int x2) {

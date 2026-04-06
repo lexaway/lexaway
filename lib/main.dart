@@ -37,9 +37,7 @@ class LexawayApp extends ConsumerWidget {
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        textTheme: GoogleFonts.pixelifySansTextTheme(),
-      ),
+      theme: ThemeData(textTheme: GoogleFonts.pixelifySansTextTheme()),
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

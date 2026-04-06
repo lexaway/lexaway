@@ -16,11 +16,12 @@ import 'walk_controller.dart';
 
 class LexawayGame extends FlameGame with HasCollisionDetection {
   static const double pixelScale = 4.0;
-  static const double groundLevel = 0.45;
+  static const double groundLevel = 0.35;
 
   // One tile at 4x scale = 64px. Walk it in ~0.8s.
   static const double walkSpeed = 80;
   static const double walkTarget = 16 * pixelScale;
+  static const double cloudDrift = 1.5;
 
   final Box? hiveBox;
   String _locale;

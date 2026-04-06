@@ -64,14 +64,12 @@ class SpeechBubble extends PositionComponent
   }
 
   void _buildParagraph(String text) {
-    final builder = ui.ParagraphBuilder(
-      ui.ParagraphStyle(
-        fontSize: 5,
-        fontFamily: _fontFamily,
-      ),
-    )
-      ..pushStyle(ui.TextStyle(color: const ui.Color(0xFF3B2010)))
-      ..addText(text);
+    final builder =
+        ui.ParagraphBuilder(
+            ui.ParagraphStyle(fontSize: 5, fontFamily: _fontFamily),
+          )
+          ..pushStyle(ui.TextStyle(color: const ui.Color(0xFF3B2010)))
+          ..addText(text);
     _paragraph = builder.build();
     _paragraph.layout(ui.ParagraphConstraints(width: _maxTextWidth));
   }
@@ -122,11 +120,7 @@ class SpeechBubble extends PositionComponent
     final nativeH = size.y / _scale;
 
     // Nine-tile-box bubble
-    _box.drawRect(
-      canvas,
-      ui.Rect.fromLTWH(0, 0, nativeW, nativeH),
-      _paint,
-    );
+    _box.drawRect(canvas, ui.Rect.fromLTWH(0, 0, nativeW, nativeH), _paint);
 
     // Text inside the bubble
     canvas.drawParagraph(

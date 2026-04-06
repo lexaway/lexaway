@@ -30,19 +30,23 @@ class PackDatabase {
 
       if (!colNames.contains('easiness')) {
         await tx.execute(
-            'ALTER TABLE phrases ADD COLUMN easiness REAL NOT NULL DEFAULT 2.5');
+          'ALTER TABLE phrases ADD COLUMN easiness REAL NOT NULL DEFAULT 2.5',
+        );
       }
       if (!colNames.contains('interval_days')) {
         await tx.execute(
-            'ALTER TABLE phrases ADD COLUMN interval_days INTEGER NOT NULL DEFAULT 0');
+          'ALTER TABLE phrases ADD COLUMN interval_days INTEGER NOT NULL DEFAULT 0',
+        );
       }
       if (!colNames.contains('repetitions')) {
         await tx.execute(
-            'ALTER TABLE phrases ADD COLUMN repetitions INTEGER NOT NULL DEFAULT 0');
+          'ALTER TABLE phrases ADD COLUMN repetitions INTEGER NOT NULL DEFAULT 0',
+        );
       }
       if (!colNames.contains('next_review')) {
         await tx.execute(
-            "ALTER TABLE phrases ADD COLUMN next_review TEXT NOT NULL DEFAULT ''");
+          "ALTER TABLE phrases ADD COLUMN next_review TEXT NOT NULL DEFAULT ''",
+        );
       }
     });
   }

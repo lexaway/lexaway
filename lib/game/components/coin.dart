@@ -19,9 +19,9 @@ class Coin extends SpriteAnimationComponent
   Coin({required this.type, required this.worldX});
 
   factory Coin.fromJson(Map<String, dynamic> json) => Coin(
-        type: CoinType.values[json['t'] as int],
-        worldX: (json['x'] as num).toDouble(),
-      );
+    type: CoinType.values[json['t'] as int],
+    worldX: (json['x'] as num).toDouble(),
+  );
 
   Map<String, dynamic> toJson() => {'x': worldX, 't': type.index};
 
@@ -62,7 +62,9 @@ class Coin extends SpriteAnimationComponent
 
   @override
   void onCollisionStart(
-      Set<Vector2> intersectionPoints, PositionComponent other) {
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
     super.onCollisionStart(intersectionPoints, other);
     if (collected || other is! Player) return;
     collected = true;
@@ -78,12 +80,14 @@ class Coin extends SpriteAnimationComponent
 
     // Spawn fly-to-counter effect
     final target = Vector2(game.size.x - 60, 50);
-    game.add(CoinFlyEffect(
-      start: position.clone(),
-      target: target,
-      animation: animation!.clone(),
-      spriteSize: size.clone(),
-    ));
+    game.add(
+      CoinFlyEffect(
+        start: position.clone(),
+        target: target,
+        animation: animation!.clone(),
+        spriteSize: size.clone(),
+      ),
+    );
 
     removeFromParent();
     game.saveWorldState();

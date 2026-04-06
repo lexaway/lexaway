@@ -29,10 +29,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
     super.didChangeDependencies();
     final locale = Localizations.localeOf(context).languageCode;
     if (_game == null) {
-      _game = LexawayGame(
-        hiveBox: ref.read(hiveBoxProvider),
-        locale: locale,
-      );
+      _game = LexawayGame(hiveBox: ref.read(hiveBoxProvider), locale: locale);
       _game!.onCoinCollected = (value) {
         ref.read(coinProvider.notifier).add(value);
       };
@@ -73,15 +70,13 @@ class _GameScreenState extends ConsumerState<GameScreen>
       body: Stack(
         children: [
           GameWidget(game: game),
+          Positioned(left: 0, right: 0, top: 0, child: const StreakBar()),
           Positioned(
             left: 0,
             right: 0,
-            top: 0,
-            child: const StreakBar(),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
+            top:
+                MediaQuery.of(context).size.height * LexawayGame.groundLevel +
+                64,
             bottom: 0,
             child: QuestionPanel(
               key: ValueKey(questions),

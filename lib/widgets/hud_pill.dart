@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Rounded dark pill used for HUD elements in the streak bar.
+/// Pixel-art styled pill used for HUD elements in the streak bar.
 class HudPill extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -11,10 +11,15 @@ class HudPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pill = Container(
-      padding: padding ?? const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.black54,
-        borderRadius: BorderRadius.circular(20),
+      constraints: const BoxConstraints(minHeight: 50),
+      padding:
+          padding ?? const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/ui/hud_pill_bg.png'),
+          centerSlice: Rect.fromLTRB(12, 12, 84, 84),
+          filterQuality: FilterQuality.none,
+        ),
       ),
       child: child,
     );
