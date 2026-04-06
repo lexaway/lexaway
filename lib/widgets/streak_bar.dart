@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../providers.dart';
 
 class StreakBar extends ConsumerWidget {
-  final VoidCallback onLanguageTap;
-  const StreakBar({super.key, required this.onLanguageTap});
+  const StreakBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,7 +17,7 @@ class StreakBar extends ConsumerWidget {
       child: Row(
         children: [
           GestureDetector(
-            onTap: onLanguageTap,
+            onTap: () => context.push('/packs'),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(

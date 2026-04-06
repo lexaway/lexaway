@@ -6,8 +6,7 @@ import 'package:hive_ce/hive_ce.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'providers.dart';
-import 'screens/game_screen.dart';
-import 'screens/pack_manager_screen.dart';
+import 'router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,22 +30,14 @@ class LexawayApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activePack = ref.watch(activePackProvider);
+    final router = ref.watch(routerProvider);
 
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         textTheme: GoogleFonts.pixelifySansTextTheme(),
       ),
-      home: activePack.when(
-        loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-        error: (_, __) => const PackManagerScreen(),
-        data: (questions) => questions.isEmpty
-            ? const PackManagerScreen()
-            : GameScreen(questions: questions),
-      ),
+      routerConfig: router,
     );
   }
 }

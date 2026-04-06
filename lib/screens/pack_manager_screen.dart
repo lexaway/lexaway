@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../data/pack_manager.dart';
@@ -29,9 +30,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
 
   Future<void> _select(String lang) async {
     await ref.read(activePackProvider.notifier).switchPack(lang);
-    if (mounted && Navigator.canPop(context)) {
-      Navigator.pop(context);
-    }
+    if (mounted) context.go('/game');
   }
 
   @override
@@ -54,10 +53,10 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  if (Navigator.canPop(context))
+                  if (context.canPop())
                     IconButton(
                       icon: const Icon(Icons.arrow_back, color: Colors.white70),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => context.pop(),
                     ),
                   Text(
                     'Language Packs',
