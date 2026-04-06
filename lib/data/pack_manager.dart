@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:hive_ce/hive_ce.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
@@ -64,19 +65,13 @@ class Manifest {
 }
 
 class PackManager {
+  final Box _box;
+
+  PackManager(this._box);
+
   Future<String> get _packsDir async {
     final dir = await getApplicationDocumentsDirectory();
     return '${dir.path}/packs';
-  }
-
-  Future<File> get _metaFile async {
-    final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/packs_meta.json');
-  }
-
-  Future<File> get _cachedManifestFile async {
-    final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/manifest_cache.json');
   }
 
   // -- Manifest --
@@ -85,9 +80,7 @@ class PackManager {
     try {
       final response = await http.get(Uri.parse('$_baseUrl/manifest.json'));
       if (response.statusCode == 200) {
-        // Cache for offline use
-        final cacheFile = await _cachedManifestFile;
-        await cacheFile.writeAsString(response.body);
+        _box.put('manifest_cache', response.body);
         return Manifest.fromJson(
             jsonDecode(response.body) as Map<String, dynamic>);
       }
@@ -95,11 +88,9 @@ class PackManager {
       // Fall through to cached version
     }
 
-    // Try cached manifest
-    final cacheFile = await _cachedManifestFile;
-    if (await cacheFile.exists()) {
-      final body = await cacheFile.readAsString();
-      return Manifest.fromJson(jsonDecode(body) as Map<String, dynamic>);
+    final cached = _box.get('manifest_cache') as String?;
+    if (cached != null) {
+      return Manifest.fromJson(jsonDecode(cached) as Map<String, dynamic>);
     }
 
     throw Exception('No manifest available (network failed, no cache)');
@@ -146,11 +137,8 @@ class PackManager {
         rethrow;
       }
 
-      // Atomic rename
       await outFile.rename('$dir/$lang.db');
-
-      // Update local registry
-      await _updateMeta(lang, received);
+      _updateMeta(lang, received);
     } finally {
       client.close();
     }
@@ -163,55 +151,40 @@ class PackManager {
     final file = File('$dir/$lang.db');
     if (await file.exists()) await file.delete();
 
-    final meta = await _readMeta();
-    (meta['packs'] as Map<String, dynamic>).remove(lang);
-    if (meta['last_used'] == lang) meta.remove('last_used');
-    await _writeMeta(meta);
+    final packs = _getPacks();
+    packs.remove(lang);
+    _box.put('packs', packs);
+    if (_box.get('last_used') == lang) _box.delete('last_used');
   }
 
   // -- Local state --
 
-  Future<Map<String, LocalPack>> getLocalPacks() async {
-    final meta = await _readMeta();
-    final packs = meta['packs'] as Map<String, dynamic>? ?? {};
-    return packs.map((lang, data) =>
-        MapEntry(lang, LocalPack.fromJson(lang, data as Map<String, dynamic>)));
+  Map<String, LocalPack> getLocalPacks() {
+    final packs = _getPacks();
+    return packs.map((lang, data) => MapEntry(
+        lang, LocalPack.fromJson(lang, Map<String, dynamic>.from(data as Map))));
   }
 
-  Future<String?> get lastUsed async {
-    final meta = await _readMeta();
-    return meta['last_used'] as String?;
-  }
+  String? get lastUsed => _box.get('last_used') as String?;
 
-  Future<void> setLastUsed(String lang) async {
-    final meta = await _readMeta();
-    meta['last_used'] = lang;
-    await _writeMeta(meta);
-  }
+  void setLastUsed(String lang) => _box.put('last_used', lang);
 
   // -- Internals --
 
-  Future<Map<String, dynamic>> _readMeta() async {
-    final file = await _metaFile;
-    if (!await file.exists()) return {'packs': <String, dynamic>{}};
-    return jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+  Map<String, dynamic> _getPacks() {
+    final raw = _box.get('packs');
+    if (raw == null) return {};
+    return Map<String, dynamic>.from(raw as Map);
   }
 
-  Future<void> _writeMeta(Map<String, dynamic> meta) async {
-    final file = await _metaFile;
-    await file.writeAsString(jsonEncode(meta));
-  }
-
-  Future<void> _updateMeta(String lang, int sizeBytes) async {
-    final meta = await _readMeta();
-    final packs = meta['packs'] as Map<String, dynamic>? ?? {};
+  void _updateMeta(String lang, int sizeBytes) {
+    final packs = _getPacks();
     packs[lang] = {
       'schema_version': 1,
       'built_at': DateTime.now().toUtc().toIso8601String(),
       'size_bytes': sizeBytes,
     };
-    meta['packs'] = packs;
-    meta['last_used'] = lang;
-    await _writeMeta(meta);
+    _box.put('packs', packs);
+    _box.put('last_used', lang);
   }
 }

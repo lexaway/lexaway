@@ -1,409 +1,52 @@
-import 'dart:math';
-
-import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive_ce/hive_ce.dart';
+import 'package:path_provider/path_provider.dart';
 
-import 'data/pack_database.dart';
-import 'data/pack_manager.dart';
-import 'game/lexaway_game.dart';
-import 'models/question.dart';
+import 'providers.dart';
+import 'screens/game_screen.dart';
 import 'screens/pack_manager_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  runApp(const LexawayApp());
+
+  final dir = await getApplicationDocumentsDirectory();
+  Hive.init(dir.path);
+  final box = await Hive.openBox('app');
+
+  runApp(
+    ProviderScope(
+      overrides: [hiveBoxProvider.overrideWithValue(box)],
+      child: const LexawayApp(),
+    ),
+  );
 }
 
-class LexawayApp extends StatefulWidget {
+class LexawayApp extends ConsumerWidget {
   const LexawayApp({super.key});
 
   @override
-  State<LexawayApp> createState() => _LexawayAppState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activePack = ref.watch(activePackProvider);
 
-class _LexawayAppState extends State<LexawayApp> {
-  final _game = LexawayGame();
-  final _db = PackDatabase();
-  final _pm = PackManager();
-  List<Question>? _questions;
-  bool _needsPack = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _init();
-  }
-
-  Future<void> _init() async {
-    final local = await _pm.getLocalPacks();
-    if (!mounted) return;
-    if (local.isEmpty) {
-      setState(() => _needsPack = true);
-      return;
-    }
-    final lang = await _pm.lastUsed ?? local.keys.first;
-    await _loadPack(lang);
-  }
-
-  Future<void> _loadPack(String lang) async {
-    setState(() {
-      _questions = null;
-      _needsPack = false;
-    });
-    try {
-      await _db.open(lang);
-      final qs = await _db.loadQuestions(limit: 200);
-      if (qs.isEmpty) throw StateError('Pack "$lang" has no questions');
-      await _pm.setLastUsed(lang);
-      setState(() => _questions = qs);
-    } catch (_) {
-      // Pack is corrupt or empty — close DB, delete it, go back to pack manager
-      await _db.close();
-      await _pm.deletePack(lang);
-      if (!mounted) return;
-      setState(() => _needsPack = true);
-    }
-  }
-
-  Future<void> _openPackManager() async {
-    final lang = await Navigator.push<String>(
-      _navKey.currentContext!,
-      MaterialPageRoute(builder: (_) => const PackManagerScreen()),
-    );
-    if (lang != null) {
-      await _loadPack(lang);
-    } else {
-      // User popped back without selecting — check if packs still exist
-      final local = await _pm.getLocalPacks();
-      if (local.isEmpty) {
-        setState(() => _needsPack = true);
-      }
-    }
-  }
-
-  final _navKey = GlobalKey<NavigatorState>();
-
-  @override
-  void dispose() {
-    _db.close();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return MaterialApp(
-      navigatorKey: _navKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         textTheme: GoogleFonts.pixelifySansTextTheme(),
       ),
-      home: _needsPack
-          ? PackManagerScreen(onPackSelected: _loadPack)
-          : Scaffold(
-              body: _questions == null
-                  ? const Center(child: CircularProgressIndicator())
-                  : Stack(
-                      children: [
-                        GameWidget(game: _game),
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          top: 0,
-                          child: _StreakBar(onLanguageTap: _openPackManager),
-                        ),
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: QuestionPanel(
-                            key: ValueKey(_questions),
-                            game: _game,
-                            questions: _questions!,
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-    );
-  }
-}
-
-class _StreakBar extends StatelessWidget {
-  final VoidCallback onLanguageTap;
-  const _StreakBar({required this.onLanguageTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-    return Padding(
-      padding: EdgeInsets.only(top: topPadding + 8, left: 12, right: 16),
-      child: Row(
-        children: [
-          // Language switch button
-          GestureDetector(
-            onTap: onLanguageTap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(Icons.language, color: Colors.white70, size: 20),
-            ),
-          ),
-          const Spacer(),
-          ValueListenableBuilder<int>(
-            valueListenable: _streakNotifier,
-            builder: (_, streak, __) {
-              if (streak == 0) return const SizedBox.shrink();
-              return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '\u{1F525} $streak',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-final _streakNotifier = ValueNotifier<int>(0);
-
-enum _AnswerState { unanswered, correct, wrong }
-
-class QuestionPanel extends StatefulWidget {
-  final LexawayGame game;
-  final List<Question> questions;
-  const QuestionPanel({
-    super.key,
-    required this.game,
-    required this.questions,
-  });
-
-  @override
-  State<QuestionPanel> createState() => _QuestionPanelState();
-}
-
-class _QuestionPanelState extends State<QuestionPanel>
-    with SingleTickerProviderStateMixin {
-  final _rng = Random();
-  late List<Question> _questions;
-  int _questionIndex = 0;
-  _AnswerState _answerState = _AnswerState.unanswered;
-  String? _selectedOption;
-  late List<String> _shuffledOptions;
-
-  late AnimationController _shakeController;
-  late Animation<double> _shakeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _questions = List.of(widget.questions)..shuffle(_rng);
-    _shuffledOptions = _shuffleOptions(_questions[0]);
-
-    _shakeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-    _shakeAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0, end: -8), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: -8, end: 8), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 8, end: -6), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: -6, end: 4), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 4, end: 0), weight: 1),
-    ]).animate(_shakeController);
-  }
-
-  @override
-  void dispose() {
-    _shakeController.dispose();
-    super.dispose();
-  }
-
-  Question get _current => _questions[_questionIndex % _questions.length];
-
-  List<String> _shuffleOptions(Question q) => List.of(q.options)..shuffle(_rng);
-
-  void _onOptionTap(String option) {
-    if (_answerState != _AnswerState.unanswered) return;
-
-    setState(() {
-      _selectedOption = option;
-      if (option == _current.answer) {
-        _answerState = _AnswerState.correct;
-        _streakNotifier.value++;
-        widget.game.correctAnswer();
-        Future.delayed(const Duration(milliseconds: 900), _advance);
-      } else {
-        _answerState = _AnswerState.wrong;
-        _streakNotifier.value = 0;
-        _shakeController.forward(from: 0);
-        HapticFeedback.mediumImpact();
-      }
-    });
-  }
-
-  void _advance() {
-    if (!mounted) return;
-    setState(() {
-      _questionIndex++;
-      if (_questionIndex % _questions.length == 0) {
-        _questions.shuffle(_rng);
-      }
-      _answerState = _AnswerState.unanswered;
-      _selectedOption = null;
-      _shuffledOptions = _shuffleOptions(_current);
-    });
-  }
-
-  Color _buttonColor(String option) {
-    if (_answerState == _AnswerState.unanswered) {
-      return Colors.green.shade700;
-    }
-    if (option == _current.answer) return Colors.green.shade400;
-    if (option == _selectedOption) return Colors.red.shade400;
-    return Colors.green.shade700.withValues(alpha: 0.4);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
-    return AnimatedBuilder(
-      animation: _shakeAnimation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(_shakeAnimation.value, 0),
-          child: child,
-        );
-      },
-      child: Container(
-        padding: EdgeInsets.fromLTRB(16, 20, 16, 16 + bottomPadding),
-        decoration: BoxDecoration(
-          color: Colors.brown.shade800.withValues(alpha: 0.85),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border(
-            top: BorderSide(color: Colors.brown.shade400, width: 3),
-          ),
+      home: activePack.when(
+        loading: () => const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Translation (muted, small)
-            Text(
-              _current.translation,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 10),
-            // Phrase with blank
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.brown.shade900.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: _buildPhrase(),
-            ),
-            const SizedBox(height: 16),
-            // Answer buttons — 3 across
-            Row(
-              children: _shuffledOptions.map((option) {
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: ElevatedButton(
-                      onPressed: () => _onOptionTap(option),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _buttonColor(option),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        option,
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            // "Next" button on wrong answer
-            if (_answerState == _AnswerState.wrong) ...[
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: _advance,
-                child: Text(
-                  'next \u{2192}',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
+        error: (_, __) => const PackManagerScreen(),
+        data: (questions) => questions.isEmpty
+            ? const PackManagerScreen()
+            : GameScreen(questions: questions),
       ),
-    );
-  }
-
-  Widget _buildPhrase() {
-    final revealText = _answerState == _AnswerState.unanswered
-        ? '____'
-        : _current.answer;
-    final blankColor = _answerState == _AnswerState.correct
-        ? Colors.greenAccent
-        : _answerState == _AnswerState.wrong
-            ? Colors.orangeAccent
-            : Colors.white;
-
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: _current.before,
-            style: const TextStyle(color: Colors.white, fontSize: 20),
-          ),
-          TextSpan(
-            text: revealText,
-            style: TextStyle(
-              color: blankColor,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          TextSpan(
-            text: _current.after,
-            style: const TextStyle(color: Colors.white, fontSize: 20),
-          ),
-        ],
-      ),
-      textAlign: TextAlign.center,
     );
   }
 }

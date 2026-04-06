@@ -1,73 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../data/pack_manager.dart';
+import '../providers.dart';
 
-class PackManagerScreen extends StatefulWidget {
-  /// When used as the root screen (first launch), this callback is invoked
-  /// instead of Navigator.pop so the parent can load the selected pack.
-  final void Function(String lang)? onPackSelected;
-
-  const PackManagerScreen({super.key, this.onPackSelected});
+class PackManagerScreen extends ConsumerStatefulWidget {
+  const PackManagerScreen({super.key});
 
   @override
-  State<PackManagerScreen> createState() => _PackManagerScreenState();
+  ConsumerState<PackManagerScreen> createState() => _PackManagerScreenState();
 }
 
-class _PackManagerScreenState extends State<PackManagerScreen> {
-  final _pm = PackManager();
-  Manifest? _manifest;
-  Map<String, LocalPack> _local = {};
+class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
   String? _error;
-  final Map<String, double> _downloading = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    _local = await _pm.getLocalPacks();
-    try {
-      _manifest = await _pm.fetchManifest();
-      _error = null;
-    } catch (e) {
-      _error = e.toString();
-    }
-    if (mounted) setState(() {});
-  }
 
   Future<void> _download(String lang) async {
-    if (_downloading.containsKey(lang)) return;
-    setState(() => _downloading[lang] = 0);
     try {
-      await _pm.downloadPack(lang, onProgress: (p) {
-        if (mounted) setState(() => _downloading[lang] = p);
-      });
-      _local = await _pm.getLocalPacks();
-      if (mounted) setState(() => _downloading.remove(lang));
+      await ref.read(localPacksProvider.notifier).download(lang);
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _downloading.remove(lang);
-          _error = 'Download failed: $e';
-        });
-      }
+      if (mounted) setState(() => _error = 'Download failed: $e');
     }
   }
 
   Future<void> _delete(String lang) async {
-    await _pm.deletePack(lang);
-    _local = await _pm.getLocalPacks();
-    if (mounted) setState(() {});
+    await ref.read(localPacksProvider.notifier).delete(lang);
   }
 
-  void _select(String lang) {
-    if (widget.onPackSelected != null) {
-      widget.onPackSelected!(lang);
-    } else {
-      Navigator.pop(context, lang);
+  Future<void> _select(String lang) async {
+    await ref.read(activePackProvider.notifier).switchPack(lang);
+    if (mounted && Navigator.canPop(context)) {
+      Navigator.pop(context);
     }
   }
 
@@ -75,6 +38,9 @@ class _PackManagerScreenState extends State<PackManagerScreen> {
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final manifest = ref.watch(manifestProvider);
+    final localPacks = ref.watch(localPacksProvider);
+    final local = localPacks.valueOrNull ?? {};
 
     return Scaffold(
       backgroundColor: Colors.brown.shade900,
@@ -135,8 +101,33 @@ class _PackManagerScreenState extends State<PackManagerScreen> {
                       icon: const Icon(Icons.refresh, color: Colors.white70),
                       onPressed: () {
                         setState(() => _error = null);
-                        _load();
+                        ref.invalidate(manifestProvider);
                       },
+                    ),
+                  ],
+                ),
+              ),
+
+            // Manifest error
+            if (manifest.hasError && _error == null)
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade900.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning_amber, color: Colors.orangeAccent),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text('${manifest.error}',
+                          style: const TextStyle(color: Colors.white70)),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh, color: Colors.white70),
+                      onPressed: () => ref.invalidate(manifestProvider),
                     ),
                   ],
                 ),
@@ -144,27 +135,28 @@ class _PackManagerScreenState extends State<PackManagerScreen> {
 
             // Pack list
             Expanded(
-              child: _manifest == null && _error == null
-                  ? const Center(
-                      child:
-                          CircularProgressIndicator(color: Colors.white54))
-                  : _manifest == null
-                      ? const SizedBox.shrink()
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: _manifest!.packs.length,
-                          itemBuilder: (context, i) {
-                            final pack = _manifest!.packs[i];
-                            return _PackTile(
-                              pack: pack,
-                              local: _local[pack.lang],
-                              progress: _downloading[pack.lang],
-                              onDownload: () => _download(pack.lang),
-                              onDelete: () => _delete(pack.lang),
-                              onSelect: () => _select(pack.lang),
-                            );
-                          },
-                        ),
+              child: manifest.when(
+                loading: () => const Center(
+                    child: CircularProgressIndicator(color: Colors.white54)),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (m) => ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: m.packs.length,
+                  itemBuilder: (context, i) {
+                    final pack = m.packs[i];
+                    final progress =
+                        ref.watch(downloadProgressProvider(pack.lang));
+                    return _PackTile(
+                      pack: pack,
+                      local: local[pack.lang],
+                      progress: progress,
+                      onDownload: () => _download(pack.lang),
+                      onDelete: () => _delete(pack.lang),
+                      onSelect: () => _select(pack.lang),
+                    );
+                  },
+                ),
+              ),
             ),
           ],
         ),
