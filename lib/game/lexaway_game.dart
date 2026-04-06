@@ -10,6 +10,7 @@ import 'components/coin_manager.dart';
 import 'components/ground.dart';
 import 'components/player.dart';
 import 'components/speech_bubble.dart';
+import 'components/speech_messages.dart';
 import 'persistable.dart';
 import 'walk_controller.dart';
 
@@ -22,8 +23,16 @@ class LexawayGame extends FlameGame {
   static const double walkTarget = 16 * pixelScale;
 
   final Box? hiveBox;
+  String _locale;
 
-  LexawayGame({this.hiveBox});
+  LexawayGame({this.hiveBox, String locale = 'en'}) : _locale = locale;
+
+  String get locale => _locale;
+  set locale(String value) {
+    if (value == _locale) return;
+    _locale = value;
+    SpeechMessages.load(value);
+  }
 
   late Player player;
   late Ground ground;
@@ -82,6 +91,8 @@ class LexawayGame extends FlameGame {
     add(walkController);
 
     await AudioManager.instance.preload();
+    await SpeechMessages.load('en');
+    if (locale != 'en') await SpeechMessages.load(locale);
   }
 
   void correctAnswer({required int streak, required String answer}) {

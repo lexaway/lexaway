@@ -1,0 +1,9 @@
+{
+  "@@locale": "es",
+  "packManagerTitle": "Paquetes de idiomas",
+  "packManagerSubtitle": "Descarga un paquete para empezar a aprender",
+  "retry": "Reintentar",
+  "downloadFailed": "Descarga fallida: {error}",
+  "sizeMB": "{size} MB",
+  "next": "siguiente \u2192"
+}

@@ -1,0 +1,19 @@
+{
+  "@@locale": "en",
+  "packManagerTitle": "Language Packs",
+  "packManagerSubtitle": "Download a pack to start learning",
+  "retry": "Retry",
+  "downloadFailed": "Download failed: {error}",
+  "@downloadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "sizeMB": "{size} MB",
+  "@sizeMB": {
+    "placeholders": {
+      "size": { "type": "String" }
+    }
+  },
+  "next": "next \u2192"
+}

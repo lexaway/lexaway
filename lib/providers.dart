@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce/hive_ce.dart';
 
@@ -11,6 +13,39 @@ import 'models/question.dart';
 final hiveBoxProvider = Provider<Box>((ref) {
   throw UnimplementedError('hiveBoxProvider must be overridden');
 });
+
+// Locale
+
+final localeProvider =
+    NotifierProvider<LocaleNotifier, Locale?>(LocaleNotifier.new);
+
+class LocaleNotifier extends Notifier<Locale?> {
+  @override
+  Locale? build() {
+    final tag = ref.read(hiveBoxProvider).get('ui_locale') as String?;
+    if (tag == null) return null;
+    final parts = tag.split('-');
+    return switch (parts.length) {
+      1 => Locale(parts[0]),
+      2 => Locale(parts[0], parts[1]),
+      _ => Locale.fromSubtags(
+          languageCode: parts[0],
+          scriptCode: parts.length > 2 ? parts[1] : null,
+          countryCode: parts.last,
+        ),
+    };
+  }
+
+  void setLocale(Locale? locale) {
+    state = locale;
+    final box = ref.read(hiveBoxProvider);
+    if (locale != null) {
+      box.put('ui_locale', locale.toLanguageTag());
+    } else {
+      box.delete('ui_locale');
+    }
+  }
+}
 
 // Pack management
 

@@ -1,0 +1,10 @@
+{
+  "correct": ["Bien!", "Sí!", "Genial!", "Vamos!", "Fácil!", "Bravo!", "Olé!", "Eso es!", "Magnífico!", "Suave!"],
+  "streak": {
+    "5": "En llamas!",
+    "10": "Imparable!",
+    "25": "LEGENDARIO"
+  },
+  "wrong": ["Auch", "Hmm...", "No!", "Casi", "Uf", "Tan cerca!", "Ay", "Otra vez!"],
+  "idle": ["...hola?", "zzz", "...", "Sigues ahí?", "*bostezo*", "Toc toc?"]
+}

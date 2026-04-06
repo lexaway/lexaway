@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,7 +21,10 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
         content: Text(message),
         duration: const Duration(seconds: 10),
         action: onRetry != null
-            ? SnackBarAction(label: 'Retry', onPressed: onRetry)
+            ? SnackBarAction(
+                label: AppLocalizations.of(context)!.retry,
+                onPressed: onRetry,
+              )
             : null,
       ),
     );
@@ -31,7 +35,10 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
       await ref.read(localPacksProvider.notifier).download(lang);
     } catch (e) {
       if (mounted) {
-        _showError('Download failed: $e', onRetry: () => _download(lang));
+        _showError(
+          AppLocalizations.of(context)!.downloadFailed(e.toString()),
+          onRetry: () => _download(lang),
+        );
       }
     }
   }
@@ -69,7 +76,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
       appBar: AppBar(
         backgroundColor: Colors.brown.shade900,
         foregroundColor: Colors.white70,
-        title: const Text('Language Packs'),
+        title: Text(AppLocalizations.of(context)!.packManagerTitle),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,7 +84,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              'Download a pack to start learning',
+              AppLocalizations.of(context)!.packManagerSubtitle,
               style: TextStyle(color: Colors.white54, fontSize: 14),
             ),
           ),
@@ -191,7 +198,10 @@ class _PackTile extends StatelessWidget {
                           ),
                           if (_isDownloaded)
                             Text(
-                              '${(local!.sizeBytes / 1024 / 1024).toStringAsFixed(1)} MB',
+                              AppLocalizations.of(context)!.sizeMB(
+                                (local!.sizeBytes / 1024 / 1024)
+                                    .toStringAsFixed(1),
+                              ),
                               style: const TextStyle(
                                   color: Colors.white38, fontSize: 12),
                             ),

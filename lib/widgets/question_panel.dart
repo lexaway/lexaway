@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../game/lexaway_game.dart';
@@ -180,7 +181,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
               TextButton(
                 onPressed: _advance,
                 child: Text(
-                  'next \u{2192}',
+                  AppLocalizations.of(context)!.next,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 16,

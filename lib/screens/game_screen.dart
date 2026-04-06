@@ -16,16 +16,29 @@ class GameScreen extends ConsumerStatefulWidget {
 
 class _GameScreenState extends ConsumerState<GameScreen>
     with WidgetsBindingObserver {
-  late final LexawayGame _game;
+  LexawayGame? _game;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _game = LexawayGame(hiveBox: ref.read(hiveBoxProvider));
-    _game.onCoinCollected = (value) {
-      ref.read(coinProvider.notifier).add(value);
-    };
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final locale = Localizations.localeOf(context).languageCode;
+    if (_game == null) {
+      _game = LexawayGame(
+        hiveBox: ref.read(hiveBoxProvider),
+        locale: locale,
+      );
+      _game!.onCoinCollected = (value) {
+        ref.read(coinProvider.notifier).add(value);
+      };
+    } else {
+      _game!.locale = locale;
+    }
   }
 
   @override
@@ -33,8 +46,8 @@ class _GameScreenState extends ConsumerState<GameScreen>
     // Lifecycle observer already saves on pause/inactive before dispose,
     // but save again in case of direct navigation without backgrounding.
     try {
-      _game.walkController.finishWalk();
-      _game.saveWorldState();
+      _game?.walkController.finishWalk();
+      _game?.saveWorldState();
     } catch (_) {
       // Game components may already be detached during teardown.
     }
@@ -46,19 +59,20 @@ class _GameScreenState extends ConsumerState<GameScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      _game.walkController.finishWalk();
-      _game.saveWorldState();
+      _game?.walkController.finishWalk();
+      _game?.saveWorldState();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final game = _game!;
     final questions = ref.watch(activePackProvider).valueOrNull ?? [];
 
     return Scaffold(
       body: Stack(
         children: [
-          GameWidget(game: _game),
+          GameWidget(game: game),
           Positioned(
             left: 0,
             right: 0,
@@ -71,7 +85,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
             bottom: 0,
             child: QuestionPanel(
               key: ValueKey(questions),
-              game: _game,
+              game: game,
               questions: questions,
             ),
           ),

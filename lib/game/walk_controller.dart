@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 
 import 'audio_manager.dart';
-import 'components/speech_messages.dart';
+import 'components/speech_messages.dart' show SpeechMessages;
 import 'lexaway_game.dart';
 
 /// Manages the walk-one-tile state machine: animation, scrolling,
@@ -35,14 +35,15 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
       AudioManager.instance.playCorrect();
     }
 
-    final msg = pickCorrectMessage(streak, answer);
+    final msg =
+        SpeechMessages.pickCorrectMessage(streak, answer, locale: game.locale);
     if (msg != null) game.speechBubble.show(msg);
   }
 
   void wrongAnswer() {
     _idleTimer = 0;
     AudioManager.instance.playWrong();
-    final msg = pickWrongMessage();
+    final msg = SpeechMessages.pickWrongMessage(locale: game.locale);
     if (msg != null) game.speechBubble.show(msg);
   }
 
@@ -64,7 +65,8 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
     _idleTimer += dt.clamp(0, 1);
     if (_idleTimer >= _idleTimeout) {
       _idleTimer = 0;
-      game.speechBubble.show(pickIdleMessage());
+      game.speechBubble.show(
+          SpeechMessages.pickIdleMessage(locale: game.locale));
     }
   }
 
