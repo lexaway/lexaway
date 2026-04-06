@@ -43,6 +43,12 @@ class LexawayApp extends ConsumerWidget {
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      localeResolutionCallback: (deviceLocale, supported) {
+        for (final s in supported) {
+          if (s.languageCode == deviceLocale?.languageCode) return s;
+        }
+        return const Locale('en');
+      },
       routerConfig: router,
     );
   }

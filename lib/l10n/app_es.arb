@@ -5,5 +5,7 @@
   "retry": "Reintentar",
   "downloadFailed": "Descarga fallida: {error}",
   "sizeMB": "{size} MB",
-  "next": "siguiente \u2192"
+  "next": "siguiente \u2192",
+  "appLanguage": "Idioma de la app",
+  "systemDefault": "Predeterminado del sistema"
 }

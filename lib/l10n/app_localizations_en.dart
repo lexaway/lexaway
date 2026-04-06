@@ -29,4 +29,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get next => 'next →';
+
+  @override
+  String get appLanguage => 'App Language';
+
+  @override
+  String get systemDefault => 'System default';
 }

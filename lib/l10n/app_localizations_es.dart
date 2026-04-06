@@ -30,4 +30,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get next => 'siguiente →';
+
+  @override
+  String get appLanguage => 'Idioma de la app';
+
+  @override
+  String get systemDefault => 'Predeterminado del sistema';
 }

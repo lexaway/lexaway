@@ -15,6 +15,72 @@ class PackManagerScreen extends ConsumerStatefulWidget {
 }
 
 class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
+  /// Endonyms — language names in their own language. Always display these
+  /// regardless of the current UI locale.
+  static const _endonyms = {
+    'en': 'English',
+    'es': 'Español',
+  };
+
+  void _showLocalePicker(BuildContext context) {
+    // Resolve what "System default" would actually give the user.
+    final systemLang =
+        WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    final systemEndonym = _endonyms[systemLang] ?? _endonyms['en']!;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.brown.shade800,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        // Consumer so the checkmark stays reactive (#1 fix).
+        return Consumer(builder: (ctx, ref, _) {
+          final current = ref.watch(localeProvider);
+          final l10n = AppLocalizations.of(context)!;
+          return SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Globe icon instead of localized text — universally
+                // recognizable even if the user is stuck in the wrong
+                // language (#5 fix).
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                  child: Icon(Icons.language, color: Colors.white70, size: 32),
+                ),
+                // System default — show resolved endonym as subtitle so
+                // it's understandable regardless of current UI language.
+                _LocaleOption(
+                  label: l10n.systemDefault,
+                  subtitle: systemEndonym,
+                  selected: current == null,
+                  onTap: () {
+                    ref.read(localeProvider.notifier).setLocale(null);
+                    Navigator.pop(ctx);
+                  },
+                ),
+                // Each supported locale
+                for (final locale in AppLocalizations.supportedLocales)
+                  _LocaleOption(
+                    label:
+                        _endonyms[locale.languageCode] ?? locale.languageCode,
+                    selected: current?.languageCode == locale.languageCode,
+                    onTap: () {
+                      ref.read(localeProvider.notifier).setLocale(locale);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          );
+        });
+      },
+    );
+  }
+
   void _showError(String message, {VoidCallback? onRetry}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -77,6 +143,13 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
         backgroundColor: Colors.brown.shade900,
         foregroundColor: Colors.white70,
         title: Text(AppLocalizations.of(context)!.packManagerTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.language),
+            tooltip: AppLocalizations.of(context)!.appLanguage,
+            onPressed: () => _showLocalePicker(context),
+          ),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,6 +331,40 @@ class _PackTile extends StatelessWidget {
       icon: const Icon(Icons.download_rounded,
           color: Colors.white70, size: 28),
       onPressed: onDownload,
+    );
+  }
+}
+
+class _LocaleOption extends StatelessWidget {
+  final String label;
+  final String? subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _LocaleOption({
+    required this.label,
+    this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(
+        label,
+        style: TextStyle(
+          color: selected ? Colors.white : Colors.white70,
+          fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      subtitle: subtitle != null
+          ? Text(subtitle!, style: const TextStyle(color: Colors.white38))
+          : null,
+      trailing: selected
+          ? const Icon(Icons.check, color: Colors.green, size: 20)
+          : null,
+      onTap: onTap,
     );
   }
 }

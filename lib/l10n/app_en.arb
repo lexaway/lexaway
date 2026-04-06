@@ -15,5 +15,7 @@
       "size": { "type": "String" }
     }
   },
-  "next": "next \u2192"
+  "next": "next \u2192",
+  "appLanguage": "App Language",
+  "systemDefault": "System default"
 }
