@@ -1,4 +1,4 @@
-package com.lexaway.lexaway
+package com.lexaway.app
 
 import io.flutter.embedding.android.FlutterActivity
 
