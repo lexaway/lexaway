@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 import 'download_helper.dart';
+import 'hive_keys.dart';
 
 const _baseUrl =
     'https://github.com/lexaway/lexaway-packs/releases/latest/download';
@@ -82,7 +83,7 @@ class PackManager {
     try {
       final response = await http.get(Uri.parse('$_baseUrl/manifest.json'));
       if (response.statusCode == 200) {
-        _box.put('manifest_cache', response.body);
+        _box.put(HiveKeys.manifestCache, response.body);
         return Manifest.fromJson(
           jsonDecode(response.body) as Map<String, dynamic>,
         );
@@ -91,12 +92,12 @@ class PackManager {
       // Fall through to cached version
     }
 
-    final cached = _box.get('manifest_cache') as String?;
+    final cached = _box.get(HiveKeys.manifestCache) as String?;
     if (cached != null) {
       try {
         return Manifest.fromJson(jsonDecode(cached) as Map<String, dynamic>);
       } catch (_) {
-        _box.delete('manifest_cache');
+        _box.delete(HiveKeys.manifestCache);
       }
     }
 
@@ -133,8 +134,8 @@ class PackManager {
 
     final packs = _getPacks();
     packs.remove(lang);
-    _box.put('packs', packs);
-    if (_box.get('last_used') == lang) _box.delete('last_used');
+    _box.put(HiveKeys.packs, packs);
+    if (_box.get(HiveKeys.lastUsed) == lang) _box.delete(HiveKeys.lastUsed);
   }
 
   // -- Local state --
@@ -149,14 +150,14 @@ class PackManager {
     );
   }
 
-  String? get lastUsed => _box.get('last_used') as String?;
+  String? get lastUsed => _box.get(HiveKeys.lastUsed) as String?;
 
-  void setLastUsed(String lang) => _box.put('last_used', lang);
+  void setLastUsed(String lang) => _box.put(HiveKeys.lastUsed, lang);
 
   // -- Internals --
 
   Map<String, dynamic> _getPacks() {
-    final raw = _box.get('packs');
+    final raw = _box.get(HiveKeys.packs);
     if (raw == null) return {};
     return Map<String, dynamic>.from(raw as Map);
   }
@@ -168,7 +169,7 @@ class PackManager {
       'built_at': DateTime.now().toUtc().toIso8601String(),
       'size_bytes': sizeBytes,
     };
-    _box.put('packs', packs);
-    _box.put('last_used', lang);
+    _box.put(HiveKeys.packs, packs);
+    _box.put(HiveKeys.lastUsed, lang);
   }
 }

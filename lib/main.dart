@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'data/hive_keys.dart';
 import 'providers.dart';
 import 'router.dart';
 
@@ -14,13 +15,13 @@ import 'router.dart';
 const hiveSchemaVersion = 1;
 
 void _migrateHive(Box box) {
-  final old = box.get('hive_schema_version', defaultValue: 0) as int;
+  final old = box.get(HiveKeys.hiveSchemaVersion, defaultValue: 0) as int;
   if (old >= hiveSchemaVersion) return;
 
   // --- future migrations go here ---
   // if (old < 2) { ... }
 
-  box.put('hive_schema_version', hiveSchemaVersion);
+  box.put(HiveKeys.hiveSchemaVersion, hiveSchemaVersion);
 }
 
 void main() async {

@@ -7,6 +7,7 @@ import 'package:hive_ce/hive_ce.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'download_helper.dart';
+import 'hive_keys.dart';
 
 const _modelsBaseUrl =
     'https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models';
@@ -87,7 +88,7 @@ class TtsManager {
   }
 
   bool get isEspeakDataDownloaded {
-    return _box.get('tts_espeak_ng_data', defaultValue: false) as bool;
+    return _box.get(HiveKeys.ttsEspeakNgData, defaultValue: false) as bool;
   }
 
   Future<void> downloadEspeakData() async {
@@ -108,7 +109,7 @@ class TtsManager {
       await _extractInIsolate(tmpPath, dir);
       await File(tmpPath).delete();
 
-      _box.put('tts_espeak_ng_data', true);
+      _box.put(HiveKeys.ttsEspeakNgData, true);
       _espeakDownload!.complete();
     } catch (e) {
       _espeakDownload!.completeError(e);
@@ -187,7 +188,7 @@ class TtsManager {
       'archive_name': info.archiveName,
       'downloaded_at': DateTime.now().toUtc().toIso8601String(),
     };
-    _box.put('tts_models', models);
+    _box.put(HiveKeys.ttsModels, models);
   }
 
   Future<void> deleteModel(String lang) async {
@@ -202,7 +203,7 @@ class TtsManager {
 
     final models = _getModels();
     models.remove(lang);
-    _box.put('tts_models', models);
+    _box.put(HiveKeys.ttsModels, models);
   }
 
   /// Whether TTS is supported at all for this language.
@@ -211,7 +212,7 @@ class TtsManager {
   // -- Internals --
 
   Map<String, dynamic> _getModels() {
-    final raw = _box.get('tts_models');
+    final raw = _box.get(HiveKeys.ttsModels);
     if (raw == null) return {};
     return Map<String, dynamic>.from(raw as Map);
   }

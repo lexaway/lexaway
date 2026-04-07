@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce/hive_ce.dart';
 
+import 'data/hive_keys.dart';
 import 'data/pack_database.dart';
 import 'data/pack_manager.dart';
 import 'data/tts_manager.dart';
@@ -25,7 +26,7 @@ final localeProvider = NotifierProvider<LocaleNotifier, Locale?>(
 class LocaleNotifier extends Notifier<Locale?> {
   @override
   Locale? build() {
-    final tag = ref.read(hiveBoxProvider).get('ui_locale') as String?;
+    final tag = ref.read(hiveBoxProvider).get(HiveKeys.uiLocale) as String?;
     if (tag == null) return null;
     final parts = tag.split('-');
     return switch (parts.length) {
@@ -43,9 +44,9 @@ class LocaleNotifier extends Notifier<Locale?> {
     state = locale;
     final box = ref.read(hiveBoxProvider);
     if (locale != null) {
-      box.put('ui_locale', locale.toLanguageTag());
+      box.put(HiveKeys.uiLocale, locale.toLanguageTag());
     } else {
-      box.delete('ui_locale');
+      box.delete(HiveKeys.uiLocale);
     }
   }
 }
@@ -59,7 +60,7 @@ final masterVolumeProvider = NotifierProvider<MasterVolumeNotifier, double>(
 class MasterVolumeNotifier extends Notifier<double> {
   @override
   double build() {
-    return (ref.read(hiveBoxProvider).get('vol_master', defaultValue: 1.0)
+    return (ref.read(hiveBoxProvider).get(HiveKeys.volMaster, defaultValue: 1.0)
         as num).toDouble();
   }
 
@@ -67,7 +68,7 @@ class MasterVolumeNotifier extends Notifier<double> {
   void set(double v) => state = v.clamp(0.0, 1.0);
 
   /// Persist to Hive (call on drag end).
-  void save() => ref.read(hiveBoxProvider).put('vol_master', state);
+  void save() => ref.read(hiveBoxProvider).put(HiveKeys.volMaster, state);
 }
 
 final sfxVolumeProvider = NotifierProvider<SfxVolumeNotifier, double>(
@@ -77,13 +78,13 @@ final sfxVolumeProvider = NotifierProvider<SfxVolumeNotifier, double>(
 class SfxVolumeNotifier extends Notifier<double> {
   @override
   double build() {
-    return (ref.read(hiveBoxProvider).get('vol_sfx', defaultValue: 1.0)
+    return (ref.read(hiveBoxProvider).get(HiveKeys.volSfx, defaultValue: 1.0)
         as num).toDouble();
   }
 
   void set(double v) => state = v.clamp(0.0, 1.0);
 
-  void save() => ref.read(hiveBoxProvider).put('vol_sfx', state);
+  void save() => ref.read(hiveBoxProvider).put(HiveKeys.volSfx, state);
 }
 
 final ttsVolumeProvider = NotifierProvider<TtsVolumeNotifier, double>(
@@ -93,13 +94,13 @@ final ttsVolumeProvider = NotifierProvider<TtsVolumeNotifier, double>(
 class TtsVolumeNotifier extends Notifier<double> {
   @override
   double build() {
-    return (ref.read(hiveBoxProvider).get('vol_tts', defaultValue: 1.0)
+    return (ref.read(hiveBoxProvider).get(HiveKeys.volTts, defaultValue: 1.0)
         as num).toDouble();
   }
 
   void set(double v) => state = v.clamp(0.0, 1.0);
 
-  void save() => ref.read(hiveBoxProvider).put('vol_tts', state);
+  void save() => ref.read(hiveBoxProvider).put(HiveKeys.volTts, state);
 }
 
 final hapticsEnabledProvider =
@@ -110,13 +111,13 @@ final hapticsEnabledProvider =
 class HapticsEnabledNotifier extends Notifier<bool> {
   @override
   bool build() {
-    return ref.read(hiveBoxProvider).get('haptics', defaultValue: true)
+    return ref.read(hiveBoxProvider).get(HiveKeys.haptics, defaultValue: true)
         as bool;
   }
 
   void set(bool v) {
     state = v;
-    ref.read(hiveBoxProvider).put('haptics', v);
+    ref.read(hiveBoxProvider).put(HiveKeys.haptics, v);
   }
 }
 
@@ -129,13 +130,13 @@ final genderProvider = NotifierProvider<GenderNotifier, String>(
 class GenderNotifier extends Notifier<String> {
   @override
   String build() {
-    return ref.read(hiveBoxProvider).get('gender', defaultValue: 'female')
+    return ref.read(hiveBoxProvider).get(HiveKeys.gender, defaultValue: 'female')
         as String;
   }
 
   void set(String gender) {
     state = gender;
-    ref.read(hiveBoxProvider).put('gender', gender);
+    ref.read(hiveBoxProvider).put(HiveKeys.gender, gender);
   }
 }
 
@@ -289,14 +290,14 @@ final streakProvider = NotifierProvider<StreakNotifier, int>(
 
 class StreakNotifier extends HiveIntNotifier {
   @override
-  String get key => 'streak';
+  String get key => HiveKeys.streak;
 
   void increment() {
     state++;
     _save();
-    final best = _box.get('best_streak', defaultValue: 0) as int;
+    final best = _box.get(HiveKeys.bestStreak, defaultValue: 0) as int;
     if (state > best) {
-      _box.put('best_streak', state);
+      _box.put(HiveKeys.bestStreak, state);
       ref.read(bestStreakProvider.notifier)._sync();
     }
   }
@@ -313,7 +314,7 @@ final bestStreakProvider = NotifierProvider<BestStreakNotifier, int>(
 
 class BestStreakNotifier extends HiveIntNotifier {
   @override
-  String get key => 'best_streak';
+  String get key => HiveKeys.bestStreak;
 
   void _sync() => state = _box.get(key, defaultValue: defaultValue) as int;
 }
@@ -322,7 +323,7 @@ final coinProvider = NotifierProvider<CoinNotifier, int>(CoinNotifier.new);
 
 class CoinNotifier extends HiveIntNotifier {
   @override
-  String get key => 'coins';
+  String get key => HiveKeys.coins;
 
   void add(int amount) {
     state += amount;
@@ -334,7 +335,7 @@ final stepsProvider = NotifierProvider<StepsNotifier, int>(StepsNotifier.new);
 
 class StepsNotifier extends HiveIntNotifier {
   @override
-  String get key => 'steps';
+  String get key => HiveKeys.steps;
 
   void add(int count) {
     state += count;

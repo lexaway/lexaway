@@ -5,6 +5,7 @@ import 'package:flame/game.dart';
 import 'package:flame/parallax.dart';
 import 'package:hive_ce/hive_ce.dart';
 
+import '../data/hive_keys.dart';
 import 'audio_manager.dart';
 import 'components/coin_manager.dart';
 import 'components/entity_manager.dart';
@@ -140,7 +141,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
   void _restoreWorldState() {
     try {
-      final saved = hiveBox?.get('world') as Map?;
+      final saved = hiveBox?.get(HiveKeys.world) as Map?;
       if (saved == null) return;
 
       final version = saved['_version'] as int? ?? 1;
@@ -171,6 +172,6 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     for (final p in _persistables) {
       state[p.saveKey] = p.saveState();
     }
-    hiveBox!.put('world', state);
+    hiveBox!.put(HiveKeys.world, state);
   }
 }
