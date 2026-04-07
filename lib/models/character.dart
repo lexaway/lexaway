@@ -6,8 +6,8 @@ class CharacterInfo {
 
   const CharacterInfo({required this.name, required this.gender});
 
-  String get basePath => 'download/$gender/$name/base';
-  String get eggPath => 'download/$gender/$name/egg';
+  String get basePath => 'characters/$gender/$name/base';
+  String get eggPath => 'characters/$gender/$name/egg';
 
   String get idleAsset => '$basePath/idle.png';
   String get moveAsset => '$basePath/move.png';
