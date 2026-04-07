@@ -5,6 +5,8 @@ import 'package:hive_ce/hive_ce.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
+import 'download_helper.dart';
+
 const _baseUrl =
     'https://github.com/lexaway/lexaway-packs/releases/latest/download';
 
@@ -110,43 +112,16 @@ class PackManager {
     final dir = await _packsDir;
     await Directory(dir).create(recursive: true);
 
-    final request = http.Request('GET', Uri.parse('$_baseUrl/$lang.db'))
-      ..followRedirects = true
-      ..maxRedirects = 5;
-    final client = http.Client();
-    try {
-      final streamed = await client.send(request);
+    final tmpPath = '$dir/$lang.db.tmp';
+    await downloadToFile(
+      '$_baseUrl/$lang.db',
+      tmpPath,
+      onProgress: onProgress,
+    );
 
-      if (streamed.statusCode != 200) {
-        throw Exception('Download failed: HTTP ${streamed.statusCode}');
-      }
-
-      final totalBytes = streamed.contentLength ?? 0;
-      final tmpPath = '$dir/$lang.db.tmp';
-      final outFile = File(tmpPath);
-      final sink = outFile.openWrite();
-
-      int received = 0;
-      try {
-        await for (final chunk in streamed.stream) {
-          sink.add(chunk);
-          received += chunk.length;
-          if (totalBytes > 0 && onProgress != null) {
-            onProgress(received / totalBytes);
-          }
-        }
-        await sink.close();
-      } catch (_) {
-        await sink.close();
-        if (await outFile.exists()) await outFile.delete();
-        rethrow;
-      }
-
-      await outFile.rename('$dir/$lang.db');
-      _updateMeta(lang, received);
-    } finally {
-      client.close();
-    }
+    final sizeBytes = await File(tmpPath).length();
+    await File(tmpPath).rename('$dir/$lang.db');
+    _updateMeta(lang, sizeBytes);
   }
 
   // -- Delete --

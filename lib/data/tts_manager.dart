@@ -4,8 +4,9 @@ import 'dart:isolate';
 
 import 'package:archive/archive.dart';
 import 'package:hive_ce/hive_ce.dart';
-import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+
+import 'download_helper.dart';
 
 const _modelsBaseUrl =
     'https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models';
@@ -103,7 +104,7 @@ class TtsManager {
       await Directory(dir).create(recursive: true);
 
       final tmpPath = '$dir/espeak-ng-data.tar.bz2.tmp';
-      await _downloadToFile('$_modelsBaseUrl/espeak-ng-data.tar.bz2', tmpPath);
+      await downloadToFile('$_modelsBaseUrl/espeak-ng-data.tar.bz2', tmpPath);
       await _extractInIsolate(tmpPath, dir);
       await File(tmpPath).delete();
 
@@ -169,7 +170,7 @@ class TtsManager {
 
     final tmpPath = '$dir/${info.archiveName}.tar.bz2.tmp';
     try {
-      await _downloadToFile(info.downloadUrl, tmpPath, onProgress: onProgress);
+      await downloadToFile(info.downloadUrl, tmpPath, onProgress: onProgress);
       await _extractInIsolate(tmpPath, dir);
       await File(tmpPath).delete();
     } catch (_) {
@@ -213,47 +214,6 @@ class TtsManager {
     final raw = _box.get('tts_models');
     if (raw == null) return {};
     return Map<String, dynamic>.from(raw as Map);
-  }
-
-  /// Stream HTTP response directly to a file on disk.
-  Future<void> _downloadToFile(
-    String url,
-    String destPath, {
-    void Function(double)? onProgress,
-  }) async {
-    final request = http.Request('GET', Uri.parse(url))
-      ..followRedirects = true
-      ..maxRedirects = 5;
-    final client = http.Client();
-    try {
-      final response = await client.send(request);
-
-      if (response.statusCode != 200) {
-        throw Exception('Download failed: HTTP ${response.statusCode}');
-      }
-
-      final totalBytes = response.contentLength ?? 0;
-      final outFile = File(destPath);
-      final sink = outFile.openWrite();
-
-      int received = 0;
-      try {
-        await for (final chunk in response.stream) {
-          sink.add(chunk);
-          received += chunk.length;
-          if (totalBytes > 0 && onProgress != null) {
-            onProgress(received / totalBytes);
-          }
-        }
-        await sink.close();
-      } catch (_) {
-        await sink.close();
-        if (await outFile.exists()) await outFile.delete();
-        rethrow;
-      }
-    } finally {
-      client.close();
-    }
   }
 
   /// Decompress + extract tar.bz2 in a background isolate to avoid
