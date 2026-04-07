@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:flame/components.dart';
 
 import 'audio_manager.dart';
+import 'components/player.dart' show DinoAnim;
 import 'components/speech_messages.dart' show SpeechMessages;
 import 'lexaway_game.dart';
 
@@ -14,9 +17,18 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
   bool _isWalking = false;
   double _stepTimer = 0;
   double _idleTimer = 0;
+  double _fidgetTimer = 0;
+  double _nextFidgetAt = _rollFidgetDelay();
 
   static const double _stepInterval = 0.3;
   static const double _idleTimeout = 60.0;
+  // Random fidget every 8–20 seconds while idle
+  static const double _fidgetMin = 8.0;
+  static const double _fidgetMax = 20.0;
+  static final _rng = Random();
+
+  static double _rollFidgetDelay() =>
+      _fidgetMin + _rng.nextDouble() * (_fidgetMax - _fidgetMin);
 
   bool get isWalking => _isWalking;
 
@@ -25,6 +37,7 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
   void correctAnswer({required int streak, required String answer}) {
     _walkRemaining += LexawayGame.walkTarget;
     _idleTimer = 0;
+    _fidgetTimer = 0;
 
     if (!_isWalking) {
       _isWalking = true;
@@ -51,6 +64,7 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
 
   void wrongAnswer() {
     _idleTimer = 0;
+    _fidgetTimer = 0;
     AudioManager.instance.playWrong();
     final msg = SpeechMessages.pickWrongMessage(locale: game.locale);
     if (msg != null) game.speechBubble.show(msg);
@@ -80,6 +94,16 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
         SpeechMessages.pickIdleMessage(locale: game.locale),
       );
     }
+
+    // Random fidgets while standing still
+    if (!_isWalking && !game.player.isBusy) {
+      _fidgetTimer += dt.clamp(0, 1);
+      if (_fidgetTimer >= _nextFidgetAt) {
+        _fidgetTimer = 0;
+        _nextFidgetAt = _rollFidgetDelay();
+        game.player.play(DinoAnim.jump);
+      }
+    }
   }
 
   /// Finish any in-progress walk immediately (no animation).
@@ -97,6 +121,8 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
   void _stop() {
     _isWalking = false;
     _stepTimer = 0;
+    _fidgetTimer = 0;
+    _nextFidgetAt = _rollFidgetDelay();
     game.player.idle();
     game.parallaxComponent.parallax!.baseVelocity = Vector2.zero();
     game.ground.stopScrolling();

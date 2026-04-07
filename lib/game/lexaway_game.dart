@@ -89,7 +89,10 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     add(coinManager);
 
     player = Player(spritePath: characterPath)..priority = 2;
-    add(player);
+    await add(player);
+
+    // Little dino scans the horizon when first dropped into the world
+    player.play(DinoAnim.scan);
 
     speechBubble = SpeechBubble()..priority = 3;
     add(speechBubble);
