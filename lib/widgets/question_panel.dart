@@ -150,8 +150,10 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                     ),
                     child: Stack(
                       children: [
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
+                        SizedBox(
+                          width: double.infinity,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               _current.translation,
@@ -164,6 +166,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                             const SizedBox(height: 8),
                             _buildPhrase(),
                           ],
+                          ),
                         ),
                         Positioned(
                           top: -4,
