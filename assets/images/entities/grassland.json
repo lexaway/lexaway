@@ -1,0 +1,51 @@
+{
+  "source": "grassland.png",
+  "tileSize": 16,
+  "entities": {
+    "round_tree": {
+      "col": 1, "row": 1,
+      "widthTiles": 3, "heightTiles": 3,
+      "src": [16, 16], "size": [48, 48]
+    },
+    "pine_tree": {
+      "col": 5, "row": 1,
+      "widthTiles": 3, "heightTiles": 3,
+      "src": [80, 16], "size": [48, 48]
+    },
+    "flower_tree": {
+      "col": 9, "row": 1,
+      "widthTiles": 3, "heightTiles": 3,
+      "src": [144, 16], "size": [48, 48]
+    },
+    "bridge_rail": {
+      "col": 15, "row": 2,
+      "widthTiles": 3, "heightTiles": 1,
+      "src": [240, 32], "size": [48, 16]
+    },
+    "bridge_deck": {
+      "col": 14, "row": 4,
+      "widthTiles": 5, "heightTiles": 2,
+      "src": [224, 64], "size": [80, 32]
+    },
+    "bush": {
+      "col": 1, "row": 5,
+      "widthTiles": 1, "heightTiles": 1,
+      "src": [16, 80], "size": [16, 16]
+    },
+    "mushroom": {
+      "col": 3, "row": 5,
+      "widthTiles": 1, "heightTiles": 1,
+      "src": [48, 80], "size": [16, 16]
+    },
+    "fence": {
+      "col": 5, "row": 5,
+      "widthTiles": 3, "heightTiles": 1,
+      "src": [80, 80], "size": [48, 16]
+    },
+    "flower_fence": {
+      "col": 9, "row": 5,
+      "widthTiles": 4, "heightTiles": 1,
+      "src": [144, 80], "size": [64, 16]
+    }
+  }
+}

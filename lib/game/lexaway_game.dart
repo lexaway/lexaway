@@ -7,6 +7,7 @@ import 'package:hive_ce/hive_ce.dart';
 
 import 'audio_manager.dart';
 import 'components/coin_manager.dart';
+import 'components/entity_manager.dart';
 import 'components/ground.dart';
 import 'components/player.dart';
 import 'components/speech_bubble.dart';
@@ -46,6 +47,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   late ParallaxComponent parallaxComponent;
   late SpeechBubble speechBubble;
   late CoinManager coinManager;
+  late EntityManager entityManager;
   late WindLines windLines;
   late MovementController movementController;
 
@@ -87,7 +89,10 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     _persistables.addAll([ground, coinManager]);
     _restoreWorldState();
 
+    entityManager = EntityManager()..priority = 1;
+
     add(ground);
+    add(entityManager);
     add(coinManager);
 
     player = Player(spritePath: characterPath)..priority = 2;
