@@ -21,6 +21,11 @@ class StreakBar extends ConsumerWidget {
             onTap: () => context.push('/packs'),
             child: const Icon(Icons.language, color: Colors.white70, size: 20),
           ),
+          const SizedBox(width: 8),
+          HudPill(
+            onTap: () => context.push('/settings'),
+            child: const Icon(Icons.settings, color: Colors.white70, size: 20),
+          ),
           const Spacer(),
           HudPill(
             child: Row(

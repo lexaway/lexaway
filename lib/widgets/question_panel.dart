@@ -71,14 +71,14 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
         ref.read(streakProvider.notifier).increment();
         final streak = ref.read(streakProvider);
         widget.game.correctAnswer(streak: streak, answer: _current.answer);
-        HapticFeedback.lightImpact();
+        if (ref.read(hapticsEnabledProvider)) HapticFeedback.lightImpact();
         Future.delayed(const Duration(milliseconds: 900), _advance);
       } else {
         _answerState = _AnswerState.wrong;
         ref.read(streakProvider.notifier).reset();
         widget.game.wrongAnswer();
         _shakeController.forward(from: 0);
-        HapticFeedback.mediumImpact();
+        if (ref.read(hapticsEnabledProvider)) HapticFeedback.mediumImpact();
       }
     });
   }
@@ -266,7 +266,14 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
     final ttsManager = ref.read(ttsManagerProvider);
     final lang = ref.read(activePackProvider.notifier).activeLang;
     if (lang != null && ttsManager.isModelDownloaded(lang)) {
-      ttsService.speak(_current.phrase, lang: lang, ttsManager: ttsManager);
+      final masterVol = ref.read(masterVolumeProvider);
+      final ttsVol = ref.read(ttsVolumeProvider);
+      ttsService.speak(
+        _current.phrase,
+        lang: lang,
+        ttsManager: ttsManager,
+        volume: masterVol * ttsVol,
+      );
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../game/audio_manager.dart';
 import '../game/lexaway_game.dart';
 import '../models/character.dart';
 import '../providers.dart';
@@ -78,6 +79,11 @@ class _GameScreenState extends ConsumerState<GameScreen>
   Widget build(BuildContext context) {
     final game = _game!;
     final questions = ref.watch(activePackProvider).valueOrNull ?? [];
+
+    // Sync volume settings to the audio singleton
+    final audio = AudioManager.instance;
+    audio.masterVolume = ref.watch(masterVolumeProvider);
+    audio.sfxVolume = ref.watch(sfxVolumeProvider);
 
     return Scaffold(
       body: Stack(

@@ -6,6 +6,7 @@ import 'providers.dart';
 import 'screens/egg_selection_screen.dart';
 import 'screens/game_screen.dart';
 import 'screens/pack_manager_screen.dart';
+import 'screens/settings_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _RefreshNotifier();
@@ -21,6 +22,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       final hasQuestions = activePack.valueOrNull?.isNotEmpty ?? false;
       final loc = state.matchedLocation;
       final box = ref.read(hiveBoxProvider);
+
+      // Settings and packs are always reachable, even while loading
+      if (loc == '/settings' || loc == '/packs') return null;
 
       if (isLoading) return loc == '/loading' ? null : '/loading';
 
@@ -55,6 +59,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/packs',
         builder: (context, state) => const PackManagerScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );

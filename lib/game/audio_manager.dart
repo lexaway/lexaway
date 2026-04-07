@@ -11,6 +11,11 @@ class AudioManager {
 
   final _rng = Random();
 
+  double masterVolume = 1.0;
+  double sfxVolume = 1.0;
+
+  double get _vol => (masterVolume * sfxVolume).clamp(0.0, 1.0);
+
   Future<void> preload() async {
     await FlameAudio.audioCache.loadAll([
       'correct.wav',
@@ -23,18 +28,18 @@ class AudioManager {
     ]);
   }
 
-  void playCorrect() => FlameAudio.play('correct.wav');
+  void playCorrect() => FlameAudio.play('correct.wav', volume: _vol);
 
-  void playWrong() => FlameAudio.play('wrong.wav');
+  void playWrong() => FlameAudio.play('wrong.wav', volume: _vol);
 
   void playFootstep() {
     final n = _rng.nextInt(3) + 1;
-    FlameAudio.play('step_${Terrain.grass.name}_$n.wav');
+    FlameAudio.play('step_${Terrain.grass.name}_$n.wav', volume: _vol);
   }
 
-  void playStreak() => FlameAudio.play('streak.wav');
+  void playStreak() => FlameAudio.play('streak.wav', volume: _vol);
 
-  void playCoin() => FlameAudio.play('coin.wav');
+  void playCoin() => FlameAudio.play('coin.wav', volume: _vol);
 
-  void playGem() => FlameAudio.play('gem.wav');
+  void playGem() => FlameAudio.play('gem.wav', volume: _vol);
 }

@@ -16,7 +16,7 @@ class HudPill extends StatelessWidget {
           padding ?? const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/images/ui/hud_pill_bg.png'),
+          image: AssetImage('assets/images/ui/panel_metal_bg.png'),
           centerSlice: Rect.fromLTRB(12, 12, 84, 84),
           filterQuality: FilterQuality.none,
         ),

@@ -28,6 +28,7 @@ class TtsService {
     String text, {
     required String lang,
     required TtsManager ttsManager,
+    double volume = 1.0,
   }) async {
     // Bump generation ID — any in-flight work for older IDs will be discarded
     final myId = ++_generationId;
@@ -69,7 +70,8 @@ class TtsService {
       });
 
       try {
-        await _player.play(DeviceFileSource(wavPath));
+        await _player.setVolume(volume.clamp(0.0, 1.0));
+      await _player.play(DeviceFileSource(wavPath));
         // Wait for playback, but also complete if stop() is called
         await completer.future;
       } finally {

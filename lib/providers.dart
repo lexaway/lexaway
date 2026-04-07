@@ -50,6 +50,76 @@ class LocaleNotifier extends Notifier<Locale?> {
   }
 }
 
+// Settings
+
+final masterVolumeProvider = NotifierProvider<MasterVolumeNotifier, double>(
+  MasterVolumeNotifier.new,
+);
+
+class MasterVolumeNotifier extends Notifier<double> {
+  @override
+  double build() {
+    return (ref.read(hiveBoxProvider).get('vol_master', defaultValue: 1.0)
+        as num).toDouble();
+  }
+
+  /// Update in-memory state (call on every drag tick for responsive UI).
+  void set(double v) => state = v.clamp(0.0, 1.0);
+
+  /// Persist to Hive (call on drag end).
+  void save() => ref.read(hiveBoxProvider).put('vol_master', state);
+}
+
+final sfxVolumeProvider = NotifierProvider<SfxVolumeNotifier, double>(
+  SfxVolumeNotifier.new,
+);
+
+class SfxVolumeNotifier extends Notifier<double> {
+  @override
+  double build() {
+    return (ref.read(hiveBoxProvider).get('vol_sfx', defaultValue: 1.0)
+        as num).toDouble();
+  }
+
+  void set(double v) => state = v.clamp(0.0, 1.0);
+
+  void save() => ref.read(hiveBoxProvider).put('vol_sfx', state);
+}
+
+final ttsVolumeProvider = NotifierProvider<TtsVolumeNotifier, double>(
+  TtsVolumeNotifier.new,
+);
+
+class TtsVolumeNotifier extends Notifier<double> {
+  @override
+  double build() {
+    return (ref.read(hiveBoxProvider).get('vol_tts', defaultValue: 1.0)
+        as num).toDouble();
+  }
+
+  void set(double v) => state = v.clamp(0.0, 1.0);
+
+  void save() => ref.read(hiveBoxProvider).put('vol_tts', state);
+}
+
+final hapticsEnabledProvider =
+    NotifierProvider<HapticsEnabledNotifier, bool>(
+      HapticsEnabledNotifier.new,
+    );
+
+class HapticsEnabledNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    return ref.read(hiveBoxProvider).get('haptics', defaultValue: true)
+        as bool;
+  }
+
+  void set(bool v) {
+    state = v;
+    ref.read(hiveBoxProvider).put('haptics', v);
+  }
+}
+
 // Gender preference
 
 final genderProvider = NotifierProvider<GenderNotifier, String>(
