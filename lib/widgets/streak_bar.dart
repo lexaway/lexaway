@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers.dart';
+import '../theme/app_colors.dart';
 import 'hud_pill.dart';
 
 class StreakBar extends ConsumerWidget {
@@ -19,12 +20,12 @@ class StreakBar extends ConsumerWidget {
         children: [
           HudPill(
             onTap: () => context.push('/packs'),
-            child: const Icon(Icons.language, color: Colors.white70, size: 20),
+            child: const Icon(Icons.language, color: AppColors.textSecondary, size: 20),
           ),
           const SizedBox(width: 8),
           HudPill(
             onTap: () => context.push('/settings'),
-            child: const Icon(Icons.settings, color: Colors.white70, size: 20),
+            child: const Icon(Icons.settings, color: AppColors.textSecondary, size: 20),
           ),
           const Spacer(),
           HudPill(
@@ -41,7 +42,7 @@ class StreakBar extends ConsumerWidget {
                 Text(
                   '$coins',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),

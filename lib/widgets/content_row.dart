@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
+
 /// A single content-type row within a pack card.
 class ContentRow extends StatelessWidget {
   final IconData icon;
@@ -44,7 +46,7 @@ class ContentRow extends StatelessWidget {
                   ] else
                     // Indent to align with rows that have a leading badge
                     const SizedBox(width: 58),
-                  Icon(icon, color: Colors.white38, size: 16),
+                  Icon(icon, color: AppColors.textFaint, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -56,7 +58,7 @@ class ContentRow extends StatelessWidget {
                             child: Text(
                               title!,
                               style: GoogleFonts.pixelifySans(
-                                color: Colors.white,
+                                color: AppColors.textPrimary,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -67,7 +69,7 @@ class ContentRow extends StatelessWidget {
                             Text(
                               label,
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.5),
+                                color: AppColors.textPrimary.withValues(alpha: 0.5),
                                 fontSize: 13,
                               ),
                             ),
@@ -76,7 +78,7 @@ class ContentRow extends StatelessWidget {
                               Text(
                                 sizeText!,
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.25),
+                                  color: AppColors.textPrimary.withValues(alpha: 0.25),
                                   fontSize: 12,
                                 ),
                               ),
@@ -96,8 +98,8 @@ class ContentRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(3),
                   child: LinearProgressIndicator(
                     value: progress,
-                    backgroundColor: Colors.brown.shade700,
-                    valueColor: AlwaysStoppedAnimation(Colors.amber.shade600),
+                    backgroundColor: AppColors.surfaceBright,
+                    valueColor: AlwaysStoppedAnimation(AppColors.accent),
                     minHeight: 4,
                   ),
                 ),

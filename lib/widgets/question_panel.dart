@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/tts_manager.dart';
 import '../game/lexaway_game.dart';
+import '../theme/app_colors.dart';
 import '../models/question.dart';
 import '../providers.dart';
 
@@ -98,11 +99,11 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
 
   Color _buttonColor(String option) {
     if (_answerState == _AnswerState.unanswered) {
-      return Colors.green.shade700;
+      return AppColors.successDark;
     }
-    if (option == _current.answer) return Colors.green.shade400;
-    if (option == _selectedOption) return Colors.red.shade400;
-    return Colors.green.shade700.withValues(alpha: 0.4);
+    if (option == _current.answer) return AppColors.successLight;
+    if (option == _selectedOption) return AppColors.error;
+    return AppColors.successDark.withValues(alpha: 0.4);
   }
 
   @override
@@ -159,7 +160,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                               _current.translation,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.6),
+                                color: AppColors.textPrimary.withValues(alpha: 0.6),
                                 fontSize: 14,
                               ),
                             ),
@@ -187,7 +188,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                             onPressed: () => _onOptionTap(option),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _buttonColor(option),
-                              foregroundColor: Colors.white,
+                              foregroundColor: AppColors.textPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -225,7 +226,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                   _buildProgressBar(),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 14,
                     letterSpacing: 2,
                   ),
@@ -249,7 +250,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                     ),
                     child: const Icon(
                       Icons.arrow_forward,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       size: 24,
                     ),
                   ),
@@ -295,7 +296,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
         padding: const EdgeInsets.all(4),
         child: Icon(
           Icons.volume_up_rounded,
-          color: Colors.white.withValues(alpha: 0.5),
+          color: AppColors.textPrimary.withValues(alpha: 0.5),
           size: 22,
         ),
       ),
@@ -310,7 +311,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
         ? Colors.greenAccent
         : _answerState == _AnswerState.wrong
         ? Colors.orangeAccent
-        : Colors.white;
+        : AppColors.textPrimary;
 
     return Text.rich(
       TextSpan(
@@ -318,7 +319,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
           TextSpan(
             text: _current.before,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 20,
               height: 1.1,
             ),
@@ -335,7 +336,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
           TextSpan(
             text: _current.after,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 20,
               height: 1.1,
             ),

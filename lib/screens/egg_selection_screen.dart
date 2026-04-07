@@ -11,6 +11,7 @@ import '../game/egg_preview_game.dart';
 import '../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../providers.dart';
+import '../theme/app_colors.dart';
 import '../widgets/tiled_background.dart';
 
 class EggSelectionScreen extends ConsumerStatefulWidget {
@@ -153,14 +154,14 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Colors.brown.shade900,
+      backgroundColor: AppColors.scaffold,
       body: Stack(
         children: [
           Opacity(
             opacity: 0.15,
             child: TiledBackground(
               texture: BackgroundTexture.chevron,
-              color: Colors.brown.shade700,
+              color: AppColors.surfaceBright,
               scale: 8,
               scrollDirection: const Offset(-1, 1),
               scrollSpeed: 12,
@@ -175,7 +176,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                 Text(
                   l10n.chooseYourEgg,
                   style: GoogleFonts.pixelifySans(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
                   ),
@@ -184,7 +185,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                 Text(
                   l10n.whoWillHatch,
                   style: GoogleFonts.pixelifySans(
-                    color: Colors.white54,
+                    color: AppColors.textTertiary,
                     fontSize: 20,
                   ),
                 ),
@@ -326,7 +327,7 @@ class _GenderButton extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 24,
-              color: selected ? Colors.white : Colors.white70,
+              color: selected ? AppColors.textPrimary : AppColors.textSecondary,
             ),
           ),
         ),

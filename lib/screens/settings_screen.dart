@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../providers.dart';
+import '../theme/app_colors.dart';
 import '../widgets/tiled_background.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -17,14 +18,14 @@ class SettingsScreen extends ConsumerWidget {
     final haptics = ref.watch(hapticsEnabledProvider);
 
     return Scaffold(
-      backgroundColor: Colors.brown.shade900,
+      backgroundColor: AppColors.scaffold,
       body: Stack(
         children: [
           Opacity(
             opacity: 0.15,
             child: TiledBackground(
               texture: BackgroundTexture.chevron,
-              color: Colors.brown.shade700,
+              color: AppColors.surfaceBright,
               scale: 8,
               scrollDirection: const Offset(-1, 1),
               scrollSpeed: 12,
@@ -41,7 +42,7 @@ class SettingsScreen extends ConsumerWidget {
                       IconButton(
                         icon: const Icon(
                           Icons.arrow_back,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                         onPressed: () => context.pop(),
                       ),
@@ -49,7 +50,7 @@ class SettingsScreen extends ConsumerWidget {
                       Text(
                         'Settings',
                         style: GoogleFonts.pixelifySans(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),
@@ -134,7 +135,7 @@ class _SectionHeader extends StatelessWidget {
     return Text(
       label,
       style: GoogleFonts.pixelifySans(
-        color: Colors.white70,
+        color: AppColors.textSecondary,
         fontSize: 18,
       ),
     );
@@ -165,7 +166,7 @@ class _VolumeSlider extends StatelessWidget {
             child: Text(
               label,
               style: GoogleFonts.pixelifySans(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 16,
               ),
             ),
@@ -173,10 +174,10 @@ class _VolumeSlider extends StatelessWidget {
           Expanded(
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                activeTrackColor: Colors.amber.shade600,
-                inactiveTrackColor: Colors.blueGrey.shade700,
-                thumbColor: Colors.amber.shade400,
-                overlayColor: Colors.amber.withValues(alpha: 0.2),
+                activeTrackColor: AppColors.accent,
+                inactiveTrackColor: AppColors.controlInactive,
+                thumbColor: AppColors.accentLight,
+                overlayColor: AppColors.accent.withValues(alpha: 0.2),
                 trackHeight: 4,
               ),
               child: Slider(
@@ -213,7 +214,7 @@ class _ToggleRow extends StatelessWidget {
             child: Text(
               label,
               style: GoogleFonts.pixelifySans(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 16,
               ),
             ),
@@ -221,10 +222,10 @@ class _ToggleRow extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: Colors.amber.shade400,
-            activeTrackColor: Colors.amber.shade800,
-            inactiveThumbColor: Colors.blueGrey.shade300,
-            inactiveTrackColor: Colors.blueGrey.shade700,
+            activeThumbColor: AppColors.accentLight,
+            activeTrackColor: AppColors.accentDark,
+            inactiveThumbColor: AppColors.controlInactiveThumb,
+            inactiveTrackColor: AppColors.controlInactive,
           ),
         ],
       ),

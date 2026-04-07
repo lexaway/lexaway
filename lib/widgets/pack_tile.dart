@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../data/pack_manager.dart';
 import '../data/tts_manager.dart';
+import '../theme/app_colors.dart';
 import 'content_row.dart';
 
 class PackTile extends StatelessWidget {
@@ -43,12 +44,12 @@ class PackTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.brown.shade800.withValues(alpha: 0.7),
+        color: AppColors.surface.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: _isDownloaded
-              ? Colors.green.shade700.withValues(alpha: 0.5)
-              : Colors.brown.shade600.withValues(alpha: 0.4),
+              ? AppColors.successDark.withValues(alpha: 0.5)
+              : AppColors.surfaceBorder.withValues(alpha: 0.4),
           width: 2,
         ),
       ),
@@ -68,14 +69,14 @@ class PackTile extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Colors.brown.shade700,
+                color: AppColors.surfaceBright,
                 borderRadius: BorderRadius.circular(10),
               ),
               alignment: Alignment.center,
               child: Text(
                 pack.lang.toUpperCase(),
                 style: GoogleFonts.pixelifySans(
-                  color: Colors.white70,
+                  color: AppColors.textSecondary,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
@@ -88,7 +89,7 @@ class PackTile extends StatelessWidget {
             Divider(
               height: 1,
               thickness: 1,
-              color: Colors.brown.shade700.withValues(alpha: 0.6),
+              color: AppColors.surfaceBright.withValues(alpha: 0.6),
             ),
             ContentRow(
               icon: Icons.volume_up_rounded,
@@ -113,19 +114,19 @@ class PackTile extends StatelessWidget {
       return const SizedBox(
         width: 22,
         height: 22,
-        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
+        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textTertiary),
       );
     }
     if (_isDownloaded) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.check_circle, color: Colors.green, size: 20),
+          const Icon(Icons.check_circle, color: AppColors.success, size: 20),
           const SizedBox(width: 4),
           IconButton(
             icon: Icon(
               Icons.delete_outline,
-              color: Colors.white.withValues(alpha: 0.4),
+              color: AppColors.textPrimary.withValues(alpha: 0.4),
               size: 18,
             ),
             visualDensity: VisualDensity.compact,
@@ -135,7 +136,7 @@ class PackTile extends StatelessWidget {
       );
     }
     return IconButton(
-      icon: const Icon(Icons.download_rounded, color: Colors.white70, size: 24),
+      icon: const Icon(Icons.download_rounded, color: AppColors.textSecondary, size: 24),
       visualDensity: VisualDensity.compact,
       onPressed: onDownload,
     );
@@ -151,8 +152,8 @@ class PackTile extends StatelessWidget {
           child: CircularProgressIndicator(
             strokeWidth: 2,
             value: voiceProgress,
-            color: Colors.white54,
-            backgroundColor: Colors.brown.shade700,
+            color: AppColors.textTertiary,
+            backgroundColor: AppColors.surfaceBright,
           ),
         ),
       );
@@ -160,7 +161,7 @@ class PackTile extends StatelessWidget {
     if (voiceDownloaded) {
       return const Padding(
         padding: EdgeInsets.all(8),
-        child: Icon(Icons.check_circle, color: Colors.green, size: 20),
+        child: Icon(Icons.check_circle, color: AppColors.success, size: 20),
       );
     }
     // Sentences installed but voice isn't — show download button
@@ -168,7 +169,7 @@ class PackTile extends StatelessWidget {
       return IconButton(
         icon: Icon(
           Icons.download_rounded,
-          color: Colors.white.withValues(alpha: 0.5),
+          color: AppColors.textPrimary.withValues(alpha: 0.5),
           size: 22,
         ),
         visualDensity: VisualDensity.compact,
@@ -187,14 +188,14 @@ class PackTile extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(
               color: includeVoice
-                  ? Colors.amber.shade600
-                  : Colors.white.withValues(alpha: 0.25),
+                  ? AppColors.accent
+                  : AppColors.textPrimary.withValues(alpha: 0.25),
               width: 2,
             ),
-            color: includeVoice ? Colors.amber.shade600 : Colors.transparent,
+            color: includeVoice ? AppColors.accent : Colors.transparent,
           ),
           child: includeVoice
-              ? const Icon(Icons.check, size: 14, color: Colors.white)
+              ? const Icon(Icons.check, size: 14, color: AppColors.textPrimary)
               : null,
         ),
       ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers.dart';
+import '../theme/app_colors.dart';
 import '../widgets/locale_option.dart';
 import '../widgets/pack_tile.dart';
 
@@ -27,7 +28,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.brown.shade800,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -48,7 +49,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                     padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
                     child: Icon(
                       Icons.language,
-                      color: Colors.white70,
+                      color: AppColors.textSecondary,
                       size: 32,
                     ),
                   ),
@@ -157,10 +158,10 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     final local = localPacks.valueOrNull ?? {};
 
     return Scaffold(
-      backgroundColor: Colors.brown.shade900,
+      backgroundColor: AppColors.scaffold,
       appBar: AppBar(
-        backgroundColor: Colors.brown.shade900,
-        foregroundColor: Colors.white70,
+        backgroundColor: AppColors.scaffold,
+        foregroundColor: AppColors.textSecondary,
         title: Text(AppLocalizations.of(context)!.packManagerTitle),
         actions: [
           IconButton(
@@ -177,7 +178,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
               AppLocalizations.of(context)!.packManagerSubtitle,
-              style: TextStyle(color: Colors.white54, fontSize: 14),
+              style: TextStyle(color: AppColors.textTertiary, fontSize: 14),
             ),
           ),
           const SizedBox(height: 20),
@@ -186,7 +187,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
           Expanded(
             child: manifest.when(
               loading: () => const Center(
-                child: CircularProgressIndicator(color: Colors.white54),
+                child: CircularProgressIndicator(color: AppColors.textTertiary),
               ),
               error: (_, __) => const SizedBox.shrink(),
               data: (m) => ListView.builder(
