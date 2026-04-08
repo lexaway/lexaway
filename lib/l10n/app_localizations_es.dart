@@ -57,4 +57,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get start => 'Comenzar';
+
+  @override
+  String get settings => 'Ajustes';
 }

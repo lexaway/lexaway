@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../widgets/tiled_background.dart';
@@ -19,6 +19,12 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.scaffold,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppColors.textSecondary,
+        title: Text(AppLocalizations.of(context)!.settings),
+      ),
       body: Stack(
         children: [
           Opacity(
@@ -31,94 +37,70 @@ class SettingsScreen extends ConsumerWidget {
               scrollSpeed: 12,
             ),
           ),
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          color: AppColors.textPrimary,
-                        ),
-                        onPressed: () => context.pop(),
+          Column(
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).padding.top + kToolbarHeight,
+              ),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 16,
+                  ),
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(
+                        'assets/images/ui/panel_metal_bg.png',
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Settings',
-                        style: GoogleFonts.pixelifySans(
-                          color: AppColors.textPrimary,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      centerSlice: Rect.fromLTRB(12, 12, 84, 84),
+                      filterQuality: FilterQuality.none,
+                    ),
+                  ),
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      _SectionHeader(label: 'Sound'),
+                      const SizedBox(height: 8),
+                      _VolumeSlider(
+                        label: 'Master',
+                        value: masterVol,
+                        onChanged: (v) =>
+                            ref.read(masterVolumeProvider.notifier).set(v),
+                        onChangeEnd: (_) =>
+                            ref.read(masterVolumeProvider.notifier).save(),
+                      ),
+                      _VolumeSlider(
+                        label: 'SFX',
+                        value: sfxVol,
+                        onChanged: (v) =>
+                            ref.read(sfxVolumeProvider.notifier).set(v),
+                        onChangeEnd: (_) =>
+                            ref.read(sfxVolumeProvider.notifier).save(),
+                      ),
+                      _VolumeSlider(
+                        label: 'Voice',
+                        value: ttsVol,
+                        onChanged: (v) =>
+                            ref.read(ttsVolumeProvider.notifier).set(v),
+                        onChangeEnd: (_) =>
+                            ref.read(ttsVolumeProvider.notifier).save(),
+                      ),
+                      const SizedBox(height: 24),
+                      _SectionHeader(label: 'Gameplay'),
+                      const SizedBox(height: 8),
+                      _ToggleRow(
+                        label: 'Haptics',
+                        value: haptics,
+                        onChanged: (v) =>
+                            ref.read(hapticsEnabledProvider.notifier).set(v),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(
-                          'assets/images/ui/panel_metal_bg.png',
-                        ),
-                        centerSlice: Rect.fromLTRB(12, 12, 84, 84),
-                        filterQuality: FilterQuality.none,
-                      ),
-                    ),
-                    child: ListView(
-                      padding: EdgeInsets.zero,
-                      children: [
-                        _SectionHeader(label: 'Sound'),
-                        const SizedBox(height: 8),
-                        _VolumeSlider(
-                          label: 'Master',
-                          value: masterVol,
-                          onChanged: (v) =>
-                              ref.read(masterVolumeProvider.notifier).set(v),
-                          onChangeEnd: (_) =>
-                              ref.read(masterVolumeProvider.notifier).save(),
-                        ),
-                        _VolumeSlider(
-                          label: 'SFX',
-                          value: sfxVol,
-                          onChanged: (v) =>
-                              ref.read(sfxVolumeProvider.notifier).set(v),
-                          onChangeEnd: (_) =>
-                              ref.read(sfxVolumeProvider.notifier).save(),
-                        ),
-                        _VolumeSlider(
-                          label: 'Voice',
-                          value: ttsVol,
-                          onChanged: (v) =>
-                              ref.read(ttsVolumeProvider.notifier).set(v),
-                          onChangeEnd: (_) =>
-                              ref.read(ttsVolumeProvider.notifier).save(),
-                        ),
-                        const SizedBox(height: 24),
-                        _SectionHeader(label: 'Gameplay'),
-                        const SizedBox(height: 8),
-                        _ToggleRow(
-                          label: 'Haptics',
-                          value: haptics,
-                          onChanged: (v) =>
-                              ref.read(hapticsEnabledProvider.notifier).set(v),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),

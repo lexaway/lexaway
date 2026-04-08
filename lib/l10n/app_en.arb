@@ -24,5 +24,6 @@
   "voice": "Voice",
   "optional": "Optional",
   "continueLabel": "Continue",
-  "start": "Start"
+  "start": "Start",
+  "settings": "Settings"
 }

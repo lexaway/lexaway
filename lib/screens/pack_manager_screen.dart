@@ -8,6 +8,7 @@ import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../widgets/locale_option.dart';
 import '../widgets/pack_tile.dart';
+import '../widgets/tiled_background.dart';
 
 class PackManagerScreen extends ConsumerStatefulWidget {
   const PackManagerScreen({super.key});
@@ -171,8 +172,9 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.scaffold,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: AppColors.scaffold,
+        backgroundColor: Colors.transparent,
         foregroundColor: AppColors.textSecondary,
         automaticallyImplyLeading: canGoBack,
         title: Text(AppLocalizations.of(context)!.packManagerTitle),
@@ -184,52 +186,72 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
           ),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              AppLocalizations.of(context)!.packManagerSubtitle,
-              style: TextStyle(color: AppColors.textTertiary, fontSize: 14),
+          Opacity(
+            opacity: 0.15,
+            child: TiledBackground(
+              texture: BackgroundTexture.chevron,
+              color: AppColors.surfaceBright,
+              scale: 8,
+              scrollDirection: const Offset(-1, 1),
+              scrollSpeed: 12,
             ),
           ),
-          const SizedBox(height: 20),
-
-          // Pack list
-          Expanded(
-            child: manifest.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.textTertiary),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).padding.top + kToolbarHeight,
               ),
-              error: (_, __) => const SizedBox.shrink(),
-              data: (m) => ListView.builder(
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: m.packs.length,
-                itemBuilder: (context, i) {
-                  final pack = m.packs[i];
-                  final box = ref.read(hiveBoxProvider);
-                  return PackTile(
-                    pack: pack,
-                    local: local[pack.lang],
-                    packProgress: ref.watch(
-                      downloadProgressProvider(pack.lang),
-                    ),
-                    voiceProgress: ref.watch(
-                      voiceDownloadProgressProvider(pack.lang),
-                    ),
-                    voiceDownloaded: ref.watch(ttsManagerProvider)
-                        .isModelDownloaded(pack.lang),
-                    hasCharacter: box.get(HiveKeys.character(pack.lang)) != null,
-                    onDownload: () => _download(pack.lang),
-                    onDownloadVoice: () => _downloadVoice(pack.lang),
-                    onDelete: () => _delete(pack.lang),
-                    onDeleteVoice: () => _deleteVoice(pack.lang),
-                    onSelect: () => _select(pack.lang),
-                  );
-                },
+                child: Text(
+                  AppLocalizations.of(context)!.packManagerSubtitle,
+                  style:
+                      TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                ),
               ),
-            ),
+              const SizedBox(height: 20),
+
+              // Pack list
+              Expanded(
+                child: manifest.when(
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(
+                        color: AppColors.textTertiary),
+                  ),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (m) => ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: m.packs.length,
+                    itemBuilder: (context, i) {
+                      final pack = m.packs[i];
+                      final box = ref.read(hiveBoxProvider);
+                      return PackTile(
+                        pack: pack,
+                        local: local[pack.lang],
+                        packProgress: ref.watch(
+                          downloadProgressProvider(pack.lang),
+                        ),
+                        voiceProgress: ref.watch(
+                          voiceDownloadProgressProvider(pack.lang),
+                        ),
+                        voiceDownloaded: ref.watch(ttsManagerProvider)
+                            .isModelDownloaded(pack.lang),
+                        hasCharacter:
+                            box.get(HiveKeys.character(pack.lang)) != null,
+                        onDownload: () => _download(pack.lang),
+                        onDownloadVoice: () => _downloadVoice(pack.lang),
+                        onDelete: () => _delete(pack.lang),
+                        onDeleteVoice: () => _deleteVoice(pack.lang),
+                        onSelect: () => _select(pack.lang),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

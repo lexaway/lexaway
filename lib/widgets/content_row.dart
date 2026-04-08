@@ -77,8 +77,8 @@ class ContentRow extends StatelessWidget {
                       children: [
                         Text(
                           label,
-                          style: TextStyle(
-                            color: AppColors.textPrimary.withValues(alpha: 0.5),
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
                             fontSize: 13,
                           ),
                         ),
@@ -86,8 +86,8 @@ class ContentRow extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             sizeText!,
-                            style: TextStyle(
-                              color: AppColors.textPrimary.withValues(alpha: 0.25),
+                            style: const TextStyle(
+                              color: AppColors.textTertiary,
                               fontSize: 12,
                             ),
                           ),
@@ -97,8 +97,8 @@ class ContentRow extends StatelessWidget {
                     if (subtitle != null)
                       Text(
                         subtitle!,
-                        style: TextStyle(
-                          color: AppColors.textPrimary.withValues(alpha: 0.25),
+                        style: const TextStyle(
+                          color: AppColors.textTertiary,
                           fontSize: 11,
                         ),
                       ),
@@ -112,7 +112,7 @@ class ContentRow extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     Icons.delete_outline,
-                    color: AppColors.textPrimary.withValues(alpha: 0.4),
+                    color: AppColors.textTertiary,
                     size: 18,
                   ),
                   visualDensity: VisualDensity.compact,
@@ -124,7 +124,7 @@ class ContentRow extends StatelessWidget {
                     Icons.download_rounded,
                     color: onDownload != null
                         ? AppColors.textSecondary
-                        : AppColors.textPrimary.withValues(alpha: 0.15),
+                        : AppColors.textFaint,
                     size: 22,
                   ),
                   visualDensity: VisualDensity.compact,

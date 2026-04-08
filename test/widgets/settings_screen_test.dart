@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:lexaway/data/hive_keys.dart';
 import 'package:lexaway/providers.dart';
+import 'package:lexaway/l10n/app_localizations.dart';
 import 'package:lexaway/screens/settings_screen.dart';
 
 void main() {
@@ -33,12 +34,23 @@ void main() {
         hiveBoxProvider.overrideWithValue(hiveBox ?? box),
       ],
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
         home: Builder(
           builder: (context) {
             final inherited = MediaQuery.of(context);
             return MediaQuery(
               data: inherited.copyWith(disableAnimations: true),
-              child: const SettingsScreen(),
+              child: Navigator(
+                onGenerateRoute: (_) => MaterialPageRoute(
+                  builder: (_) => const Scaffold(),
+                ),
+                onGenerateInitialRoutes: (navigator, initialRoute) => [
+                  MaterialPageRoute(builder: (_) => const Scaffold()),
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                ],
+              ),
             );
           },
         ),
