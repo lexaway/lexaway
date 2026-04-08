@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/hive_keys.dart';
+import '../data/pack_manager.dart';
 import '../game/audio_manager.dart';
 import '../game/lexaway_game.dart';
 import '../models/character.dart';
@@ -30,16 +31,16 @@ class _GameScreenState extends ConsumerState<GameScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final locale = Localizations.localeOf(context).languageCode;
+    final lang = ref.read(activePackProvider.notifier).activeLang!;
+    final dinoLocale = iso3to2[lang] ?? 'en';
     if (_game == null) {
       final box = ref.read(hiveBoxProvider);
-      final lang = ref.read(activePackProvider.notifier).activeLang!;
       final charKey = box.get(HiveKeys.character(lang)) as String? ?? 'female/doux';
       final character = CharacterInfo.fromKey(charKey);
 
       _game = LexawayGame(
         hiveBox: box,
-        locale: locale,
+        locale: dinoLocale,
         characterPath: character.basePath,
       );
       _game!.onCoinCollected = (value) {
@@ -49,7 +50,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
         ref.read(stepsProvider.notifier).add(steps);
       };
     } else {
-      _game!.locale = locale;
+      _game!.locale = dinoLocale;
     }
   }
 
