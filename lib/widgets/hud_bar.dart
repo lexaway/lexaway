@@ -6,8 +6,8 @@ import '../providers.dart';
 import '../theme/app_colors.dart';
 import 'hud_pill.dart';
 
-class StreakBar extends ConsumerWidget {
-  const StreakBar({super.key});
+class HudBar extends ConsumerWidget {
+  const HudBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

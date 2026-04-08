@@ -8,7 +8,7 @@ import '../game/lexaway_game.dart';
 import '../models/character.dart';
 import '../providers.dart';
 import '../widgets/question_panel.dart';
-import '../widgets/streak_bar.dart';
+import '../widgets/hud_bar.dart';
 
 class GameScreen extends ConsumerStatefulWidget {
   const GameScreen({super.key});
@@ -90,7 +90,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
       body: Stack(
         children: [
           GameWidget(game: game),
-          Positioned(left: 0, right: 0, top: 0, child: const StreakBar()),
+          Positioned(left: 0, right: 0, top: 0, child: const HudBar()),
           if (questions.isNotEmpty)
             Positioned(
               left: 0,

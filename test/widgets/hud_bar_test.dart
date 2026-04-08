@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:lexaway/data/hive_keys.dart';
 import 'package:lexaway/providers.dart';
-import 'package:lexaway/widgets/streak_bar.dart';
+import 'package:lexaway/widgets/hud_bar.dart';
 
 void main() {
   late Box box;
@@ -26,7 +26,7 @@ void main() {
       routes: [
         GoRoute(
           path: '/home',
-          builder: (_, __) => const Scaffold(body: StreakBar()),
+          builder: (_, __) => const Scaffold(body: HudBar()),
         ),
         GoRoute(path: '/packs', builder: (_, __) => const Scaffold()),
         GoRoute(path: '/settings', builder: (_, __) => const Scaffold()),
@@ -41,7 +41,7 @@ void main() {
     );
   }
 
-  group('StreakBar', () {
+  group('HudBar', () {
     testWidgets('displays coin count from Hive', (tester) async {
       box.put(HiveKeys.coins, 42);
       await tester.pumpWidget(buildApp());
@@ -77,7 +77,7 @@ void main() {
         routes: [
           GoRoute(
             path: '/home',
-            builder: (_, __) => const Scaffold(body: StreakBar()),
+            builder: (_, __) => const Scaffold(body: HudBar()),
           ),
           GoRoute(
             path: '/packs',
@@ -105,7 +105,7 @@ void main() {
         routes: [
           GoRoute(
             path: '/home',
-            builder: (_, __) => const Scaffold(body: StreakBar()),
+            builder: (_, __) => const Scaffold(body: HudBar()),
           ),
           GoRoute(path: '/packs', builder: (_, __) => const Scaffold()),
           GoRoute(
@@ -134,7 +134,7 @@ void main() {
       expect(find.text('0'), findsOneWidget);
 
       final container = ProviderScope.containerOf(
-        tester.element(find.byType(StreakBar)),
+        tester.element(find.byType(HudBar)),
       );
       container.read(coinProvider.notifier).add(10);
       await tester.pumpAndSettle();
