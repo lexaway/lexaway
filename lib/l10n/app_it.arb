@@ -1,0 +1,20 @@
+{
+  "@@locale": "it",
+  "packManagerTitle": "Pacchetti lingua",
+  "packManagerSubtitle": "Scarica un pacchetto per iniziare a imparare",
+  "retry": "Riprova",
+  "downloadFailed": "Download fallito: {error}",
+  "sizeMB": "{size} MB",
+  "next": "avanti \u2192",
+  "appLanguage": "Lingua dell'app",
+  "systemDefault": "Predefinito di sistema",
+  "chooseYourEgg": "Scegli il tuo uovo!",
+  "whoWillHatch": "Chi ne uscirà?",
+  "sentences": "Frasi",
+  "voice": "Voce",
+  "optional": "Facoltativo",
+  "continueLabel": "Continua",
+  "start": "Inizia",
+  "settings": "Impostazioni",
+  "updateApp": "Aggiorna l'app"
+}

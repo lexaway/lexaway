@@ -21,7 +21,14 @@ class PackManagerScreen extends ConsumerStatefulWidget {
 class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
   /// Endonyms — language names in their own language. Always display these
   /// regardless of the current UI locale.
-  static const _endonyms = {'en': 'English', 'es': 'Español'};
+  static const _endonyms = {
+    'en': 'English',
+    'es': 'Español',
+    'fr': 'Français',
+    'de': 'Deutsch',
+    'it': 'Italiano',
+    'pt': 'Português',
+  };
 
   void _showLocalePicker(BuildContext context) {
     // Resolve what "System default" would actually give the user.

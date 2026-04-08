@@ -1,0 +1,20 @@
+{
+  "@@locale": "de",
+  "packManagerTitle": "Sprachpakete",
+  "packManagerSubtitle": "Lade ein Paket herunter, um loszulegen",
+  "retry": "Erneut versuchen",
+  "downloadFailed": "Download fehlgeschlagen: {error}",
+  "sizeMB": "{size} MB",
+  "next": "weiter \u2192",
+  "appLanguage": "App-Sprache",
+  "systemDefault": "Systemstandard",
+  "chooseYourEgg": "Wähle dein Ei!",
+  "whoWillHatch": "Wer wird schlüpfen?",
+  "sentences": "Sätze",
+  "voice": "Stimme",
+  "optional": "Optional",
+  "continueLabel": "Weiter",
+  "start": "Starten",
+  "settings": "Einstellungen",
+  "updateApp": "App aktualisieren"
+}

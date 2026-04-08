@@ -1,0 +1,20 @@
+{
+  "@@locale": "pt",
+  "packManagerTitle": "Pacotes de idiomas",
+  "packManagerSubtitle": "Baixe um pacote para começar a aprender",
+  "retry": "Tentar novamente",
+  "downloadFailed": "Falha no download: {error}",
+  "sizeMB": "{size} MB",
+  "next": "próximo \u2192",
+  "appLanguage": "Idioma do app",
+  "systemDefault": "Padrão do sistema",
+  "chooseYourEgg": "Escolha seu ovo!",
+  "whoWillHatch": "Quem vai chocar?",
+  "sentences": "Frases",
+  "voice": "Voz",
+  "optional": "Opcional",
+  "continueLabel": "Continuar",
+  "start": "Começar",
+  "settings": "Configurações",
+  "updateApp": "Atualizar o app"
+}
