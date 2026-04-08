@@ -108,7 +108,6 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
     return AnimatedBuilder(
       animation: _shakeAnimation,
       builder: (context, child) {
@@ -118,7 +117,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
         );
       },
       child: Container(
-        padding: EdgeInsets.fromLTRB(24, 15, 24, 40 + bottomPadding),
+        padding: const EdgeInsets.fromLTRB(24, 15, 24, 40),
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/ui/panel_brown_bg.png'),
@@ -130,9 +129,9 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
           clipBehavior: Clip.none,
           children: [
             SingleChildScrollView(
-              padding: _answerState == _AnswerState.wrong
-                  ? const EdgeInsets.only(bottom: 64)
-                  : EdgeInsets.zero,
+              padding: EdgeInsets.only(
+                bottom: _answerState == _AnswerState.wrong ? 64 + 64 : 64,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -235,7 +234,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
             ),
             if (_answerState == _AnswerState.wrong)
               Positioned(
-                bottom: bottomPadding + 8,
+                bottom: 8,
                 right: 0,
                 child: GestureDetector(
                   onTap: _advance,
