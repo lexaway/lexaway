@@ -45,7 +45,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     SpeechMessages.load(value);
   }
 
-  WorldMap? worldMap;
+  late WorldMap worldMap;
   late WorldRenderer worldRenderer;
   late Player player;
   late Ground ground;
@@ -102,7 +102,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     add(parallaxComponent);
 
     // --- Ground ---
-    ground = Ground(worldMap: worldMap!)..priority = 1;
+    ground = Ground(worldMap: worldMap)..priority = 1;
     if (saved != null) {
       ground.scrollOffset = (saved['scroll_offset'] as num?)?.toDouble() ?? 0;
     }
@@ -115,11 +115,11 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     }
 
     // --- World renderer (entities) ---
-    worldRenderer = WorldRenderer(worldMap!)..priority = 1;
+    worldRenderer = WorldRenderer(worldMap)..priority = 1;
     add(worldRenderer);
 
     // --- Coins ---
-    coinManager = CoinManager(worldMap: worldMap!, collectedCoins: collectedCoins)
+    coinManager = CoinManager(worldMap: worldMap, collectedCoins: collectedCoins)
       ..priority = 1
       ..onCoinCollected = (value) => onCoinCollected?.call(value);
     add(coinManager);
@@ -160,7 +160,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     // Lazy world extension: if player is within 200 tiles of the end,
     // generate another batch.
     final tilePx = 16.0 * pixelScale;
-    if (ground.scrollOffset + 200 * tilePx > worldMap!.totalLengthPx) {
+    if (ground.scrollOffset + 200 * tilePx > worldMap.totalLengthPx) {
       _worldExtensions++;
       _extendWorld();
       saveWorldState();
@@ -177,15 +177,15 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
   /// Append 1000 more tiles to the world using a derived seed.
   void _extendWorld() {
-    final extensionSeed = worldMap!.seed + _worldExtensions;
+    final extensionSeed = worldMap.seed + _worldExtensions;
     final extension = WorldGenerator().generate(
       extensionSeed,
       totalTiles: 1000,
-      startTile: worldMap!.totalTiles,
-      startIndex: worldMap!.nextItemIndex,
+      startTile: worldMap.totalTiles,
+      startIndex: worldMap.nextItemIndex,
     );
-    worldMap!.segments.addAll(extension.segments);
-    worldMap!.nextItemIndex = extension.nextItemIndex;
+    worldMap.segments.addAll(extension.segments);
+    worldMap.nextItemIndex = extension.nextItemIndex;
   }
 
   Map<String, dynamic>? _loadWorldState() {
@@ -203,7 +203,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   void saveWorldState() {
     if (hiveBox == null) return;
     hiveBox!.put(HiveKeys.world, {
-      'seed': worldMap!.seed,
+      'seed': worldMap.seed,
       'extensions': _worldExtensions,
       'scroll_offset': ground.scrollOffset,
       'collected_coins': collectedCoins.toList(),

@@ -222,9 +222,9 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                     filterQuality: FilterQuality.none,
                   ),
                 ),
-                child: widget.game.worldMap != null
+                child: widget.game.isLoaded
                     ? MiniMap(
-                        worldMap: widget.game.worldMap!,
+                        worldMap: widget.game.worldMap,
                         scrollOffset: widget.game.ground.scrollOffset,
                       )
                     : const SizedBox(height: 12),
