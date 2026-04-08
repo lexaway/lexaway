@@ -98,7 +98,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
               top:
                   MediaQuery.of(context).size.height * LexawayGame.groundLevel +
                   64,
-              bottom: 0,
+              bottom: -24,
               child: QuestionPanel(
                 key: ValueKey(questions),
                 game: game,

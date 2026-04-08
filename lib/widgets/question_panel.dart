@@ -118,7 +118,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
         );
       },
       child: Container(
-        padding: EdgeInsets.fromLTRB(24, 15, 24, 16 + bottomPadding),
+        padding: EdgeInsets.fromLTRB(24, 15, 24, 40 + bottomPadding),
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/ui/panel_brown_bg.png'),
