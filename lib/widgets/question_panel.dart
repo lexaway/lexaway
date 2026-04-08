@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/tts_manager.dart';
 import '../game/lexaway_game.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../models/question.dart';
 import '../providers.dart';
 import 'mini_map.dart';
@@ -126,7 +127,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
         );
       },
       child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 15, 24, 40),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xs, AppSpacing.lg, 40),
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/ui/panel_brown_bg.png'),
@@ -139,15 +140,16 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
           children: [
             SingleChildScrollView(
               padding: EdgeInsets.only(
-                bottom: _answerState == _AnswerState.wrong ? 64 + 64 : 64,
+                bottom: _answerState == _AnswerState.wrong ? AppSpacing.xxxl + AppSpacing.xxxl : AppSpacing.xxxl,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Hand-tuned: clears the overlapping banner.
                   const SizedBox(height: 30),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: const BoxDecoration(
                       image: DecorationImage(
                         image: AssetImage(
@@ -172,7 +174,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                                 fontSize: 14,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppSpacing.sm),
                             _buildPhrase(),
                           ],
                           ),
@@ -185,11 +187,11 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.md),
                   Column(
                     children: _shuffledOptions.map((option) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                         child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -197,7 +199,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _buttonColor(option),
                               foregroundColor: AppColors.textPrimary,
-                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -215,12 +217,12 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
               ),
             ),
             Positioned(
-              top: -30,
-              left: 24,
-              right: 24,
+              top: -AppSpacing.sm,
+              left: AppSpacing.lg,
+              right: AppSpacing.lg,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
+                  horizontal: AppSpacing.lg,
                   vertical: 10,
                 ),
                 decoration: const BoxDecoration(
@@ -235,12 +237,12 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                         worldMap: widget.game.worldMap,
                         scrollOffset: widget.game.ground.scrollOffset,
                       )
-                    : const SizedBox(height: 12),
+                    : const SizedBox(height: AppSpacing.md),
               ),
             ),
             if (_answerState == _AnswerState.wrong)
               Positioned(
-                bottom: 8,
+                bottom: AppSpacing.sm,
                 right: 0,
                 child: GestureDetector(
                   onTap: _advance,
@@ -298,7 +300,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
     return GestureDetector(
       onTap: _speak,
       child: Padding(
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.all(AppSpacing.xs),
         child: Icon(
           Icons.volume_up_rounded,
           color: AppColors.textPrimary.withValues(alpha: 0.5),

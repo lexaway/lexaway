@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../providers.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import 'hud_pill.dart';
 
 class HudBar extends ConsumerWidget {
@@ -15,14 +16,14 @@ class HudBar extends ConsumerWidget {
     final coins = ref.watch(coinProvider);
 
     return Padding(
-      padding: EdgeInsets.only(top: topPadding + 8, left: 12, right: 16),
+      padding: EdgeInsets.only(top: topPadding + AppSpacing.sm, left: AppSpacing.md, right: AppSpacing.md),
       child: Row(
         children: [
           HudPill(
             onTap: () => context.push('/packs'),
             child: const Icon(Icons.language, color: AppColors.textSecondary, size: 20),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           HudPill(
             onTap: () => context.push('/settings'),
             child: const Icon(Icons.settings, color: AppColors.textSecondary, size: 20),
@@ -38,7 +39,7 @@ class HudBar extends ConsumerWidget {
                   height: 20,
                   filterQuality: FilterQuality.none,
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: AppSpacing.xs),
                 Text(
                   '$coins',
                   style: const TextStyle(

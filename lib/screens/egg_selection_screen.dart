@@ -12,6 +12,7 @@ import '../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../widgets/tiled_background.dart';
 
 class EggSelectionScreen extends ConsumerStatefulWidget {
@@ -170,7 +171,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
           SafeArea(
             child: Column(
               children: [
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xl),
 
                 // Title
                 Text(
@@ -182,7 +183,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   l10n.whoWillHatch,
                   style: GoogleFonts.pixelifySans(
@@ -250,7 +251,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                 // Gender toggle at the bottom
                 if (!_hatching)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                     child: _GenderToggle(
                       selected: gender,
                       onChanged: _onGenderChanged,
@@ -282,7 +283,7 @@ class _GenderToggle extends StatelessWidget {
           selected: selected == 'female',
           onTap: () => onChanged('female'),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.md),
         _GenderButton(
           label: '\u2642',
           value: 'male',

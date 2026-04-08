@@ -7,6 +7,7 @@ import '../data/hive_keys.dart';
 import '../data/pack_manager.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../widgets/locale_option.dart';
 import '../widgets/pack_tile.dart';
 import '../widgets/tiled_background.dart';
@@ -56,7 +57,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                   // recognizable even if the user is stuck in the wrong
                   // language (#5 fix).
                   const Padding(
-                    padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                    padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xs),
                     child: Icon(
                       Icons.language,
                       color: AppColors.textSecondary,
@@ -85,7 +86,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                         Navigator.pop(ctx);
                       },
                     ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                 ],
               ),
             );
@@ -214,7 +215,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                 height: MediaQuery.of(context).padding.top + kToolbarHeight,
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Text(
                   AppLocalizations.of(context)!.packManagerSubtitle,
                   textAlign: TextAlign.center,
@@ -222,34 +223,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                       TextStyle(color: AppColors.textSecondary, fontSize: 14),
                 ),
               ),
-              const SizedBox(height: 12),
-              FractionallySizedBox(
-                widthFactor: 0.5,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(
-                        'assets/images/ui/panel_metal_bg.png',
-                      ),
-                      centerSlice: Rect.fromLTRB(12, 12, 84, 84),
-                      filterQuality: FilterQuality.none,
-                    ),
-                  ),
-                  child: Text(
-                    AppLocalizations.of(context)!.communityContent,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.textTertiary,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
 
               // Pack list
               Expanded(
@@ -262,10 +236,36 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                   data: (m) {
                     final packs = m.packsFor(nativeLang);
                     return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: packs.length,
+                      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.xxxl),
+                      itemCount: packs.length + 1,
                       itemBuilder: (context, i) {
-                        final pack = packs[i];
+                        if (i == 0) {
+                          return FractionallySizedBox(
+                            widthFactor: 0.5,
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                              padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.md, AppSpacing.sm, AppSpacing.md),
+                              decoration: const BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage(
+                                    'assets/images/ui/panel_metal_bg.png',
+                                  ),
+                                  centerSlice: Rect.fromLTRB(12, 12, 84, 84),
+                                  filterQuality: FilterQuality.none,
+                                ),
+                              ),
+                              child: Text(
+                                AppLocalizations.of(context)!.communityContent,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: AppColors.textTertiary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        final pack = packs[i - 1];
                         final box = ref.read(hiveBoxProvider);
                         final status = packUpdateStatus(pack, local[pack.packId]);
                         return PackTile(

@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../widgets/tiled_background.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -45,10 +46,10 @@ class SettingsScreen extends ConsumerWidget {
               ),
               Expanded(
                 child: Container(
-                  margin: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                  margin: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 16,
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.md,
                   ),
                   decoration: const BoxDecoration(
                     image: DecorationImage(
@@ -63,7 +64,7 @@ class SettingsScreen extends ConsumerWidget {
                     padding: EdgeInsets.zero,
                     children: [
                       _SectionHeader(label: 'Sound'),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       _VolumeSlider(
                         label: 'Master',
                         value: masterVol,
@@ -88,18 +89,18 @@ class SettingsScreen extends ConsumerWidget {
                         onChangeEnd: (_) =>
                             ref.read(ttsVolumeProvider.notifier).save(),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppSpacing.lg),
                       _SectionHeader(label: 'Gameplay'),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       _ToggleRow(
                         label: 'Haptics',
                         value: haptics,
                         onChanged: (v) =>
                             ref.read(hapticsEnabledProvider.notifier).set(v),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppSpacing.lg),
                       _SectionHeader(label: 'About'),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       _LinkRow(
                         label: AppLocalizations.of(context)!.privacyPolicy,
                         onTap: () {
@@ -159,7 +160,7 @@ class _VolumeSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         children: [
           SizedBox(
@@ -213,7 +214,7 @@ class _ToggleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         children: [
           Expanded(
@@ -248,7 +249,7 @@ class _LinkRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: GestureDetector(
         onTap: onTap,
         child: Row(

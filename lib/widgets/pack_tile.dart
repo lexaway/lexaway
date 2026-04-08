@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../data/pack_manager.dart';
 import '../data/tts_manager.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import 'content_row.dart';
 
 class PackTile extends StatelessWidget {
@@ -47,8 +48,8 @@ class PackTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.md, AppSpacing.sm, AppSpacing.md),
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage(
@@ -66,7 +67,7 @@ class PackTile extends StatelessWidget {
         children: [
           // -- Header row: badge + language name --
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
             child: Row(
               children: [
                 Container(
@@ -86,7 +87,7 @@ class PackTile extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
                     pack.name,
@@ -104,8 +105,8 @@ class PackTile extends StatelessWidget {
           Divider(
             height: 1,
             thickness: 1,
-            indent: 14,
-            endIndent: 14,
+            indent: AppSpacing.md,
+            endIndent: AppSpacing.md,
             color: AppColors.tileText.withValues(alpha: 0.08),
           ),
           ContentRow(
@@ -144,8 +145,8 @@ class PackTile extends StatelessWidget {
           Divider(
             height: 1,
             thickness: 1,
-            indent: 14,
-            endIndent: 14,
+            indent: AppSpacing.md,
+            endIndent: AppSpacing.md,
             color: AppColors.tileText.withValues(alpha: 0.08),
           ),
           Material(
@@ -156,7 +157,7 @@ class PackTile extends StatelessWidget {
                   : null,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 child: Text(
                   packStatus == PackUpdateStatus.appUpdateRequired
                       ? l10n.updateApp

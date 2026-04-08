@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 
 /// A single content-type row within a pack card.
 ///
@@ -37,7 +38,7 @@ class ContentRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       child: Column(
         children: [
           Row(
@@ -77,7 +78,7 @@ class ContentRow extends StatelessWidget {
                                 ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: AppSpacing.md),
               // -- Label + size --
               Expanded(
                 child: Column(
@@ -93,7 +94,7 @@ class ContentRow extends StatelessWidget {
                           ),
                         ),
                         if (sizeText != null) ...[
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.sm),
                           Text(
                             sizeText!,
                             style: const TextStyle(
@@ -117,7 +118,7 @@ class ContentRow extends StatelessWidget {
               ),
               // -- Right: action button --
               if (_isDownloading)
-                const SizedBox(width: 28)
+                const SizedBox(width: AppSpacing.xl)
               else if (downloaded && updateAvailable)
                 IconButton(
                   icon: Icon(
@@ -154,7 +155,7 @@ class ContentRow extends StatelessWidget {
           ),
           // Progress bar
           if (_isDownloading) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             ClipRRect(
               borderRadius: BorderRadius.circular(3),
               child: LinearProgressIndicator(
