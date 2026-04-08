@@ -109,12 +109,9 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
           ? LexawayGame.walkSpeed * _runSpeedMultiplier
           : LexawayGame.walkSpeed;
       _walkRemaining -= speed * dt;
-      final stepCadence = _isRunning
-          ? _stepInterval / _runSpeedMultiplier
-          : _stepInterval;
       _stepTimer += dt;
-      if (_stepTimer >= stepCadence) {
-        _stepTimer -= stepCadence;
+      if (_stepTimer >= _stepInterval) {
+        _stepTimer -= _stepInterval;
         AudioManager.instance.playFootstep();
         onStepTaken?.call(1);
       }

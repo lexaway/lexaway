@@ -32,9 +32,9 @@ class AudioManager {
 
   void playWrong() => FlameAudio.play('wrong.wav', volume: _vol);
 
-  void playFootstep() {
+  void playFootstep({Terrain terrain = Terrain.grass}) {
     final n = _rng.nextInt(3) + 1;
-    FlameAudio.play('step_${Terrain.grass.name}_$n.wav', volume: _vol);
+    FlameAudio.play('step_${terrain.name}_$n.wav', volume: _vol);
   }
 
   void playStreak() => FlameAudio.play('streak.wav', volume: _vol);
