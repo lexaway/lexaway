@@ -47,4 +47,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voice => 'Voice';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get continueLabel => 'Continue';
+
+  @override
+  String get start => 'Start';
 }

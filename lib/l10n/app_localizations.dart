@@ -169,6 +169,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Voice'**
   String get voice;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get optional;
+
+  /// No description provided for @continueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueLabel;
+
+  /// No description provided for @start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get start;
 }
 
 class _AppLocalizationsDelegate

@@ -34,12 +34,12 @@ void main() {
       double? packProgress,
       double? voiceProgress,
       bool voiceDownloaded = false,
-      bool includeVoice = true,
+      bool hasCharacter = false,
       VoidCallback? onDownload,
       VoidCallback? onDownloadVoice,
       VoidCallback? onDelete,
+      VoidCallback? onDeleteVoice,
       VoidCallback? onSelect,
-      ValueChanged<bool>? onToggleVoice,
     }) {
       return PackTile(
         pack: pack,
@@ -47,11 +47,11 @@ void main() {
         packProgress: packProgress,
         voiceProgress: voiceProgress,
         voiceDownloaded: voiceDownloaded,
-        includeVoice: includeVoice,
-        onToggleVoice: onToggleVoice ?? (_) {},
+        hasCharacter: hasCharacter,
         onDownload: onDownload ?? () {},
         onDownloadVoice: onDownloadVoice ?? () {},
         onDelete: onDelete ?? () {},
+        onDeleteVoice: onDeleteVoice ?? () {},
         onSelect: onSelect ?? () {},
       );
     }
@@ -70,7 +70,7 @@ void main() {
 
     // -- Not downloaded state --
 
-    testWidgets('shows download icon when not downloaded', (tester) async {
+    testWidgets('shows download buttons when not downloaded', (tester) async {
       await tester.pumpWidget(wrap(buildTile(local: null)));
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.download_rounded), findsWidgets);
@@ -84,7 +84,6 @@ void main() {
       )));
       await tester.pumpAndSettle();
 
-      // Tap the download icon button in the sentences trailing
       await tester.tap(find.byIcon(Icons.download_rounded).first);
       expect(downloaded, isTrue);
     });
@@ -97,13 +96,15 @@ void main() {
       expect(find.byIcon(Icons.check_circle), findsWidgets);
     });
 
-    testWidgets('shows delete button when downloaded', (tester) async {
+    testWidgets('shows delete button on sentences row when downloaded',
+        (tester) async {
       await tester.pumpWidget(wrap(buildTile(local: localPack)));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+      expect(find.byIcon(Icons.delete_outline), findsWidgets);
     });
 
-    testWidgets('fires onDelete when tapping delete', (tester) async {
+    testWidgets('fires onDelete when tapping sentences delete',
+        (tester) async {
       var deleted = false;
       await tester.pumpWidget(wrap(buildTile(
         local: localPack,
@@ -111,7 +112,8 @@ void main() {
       )));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.delete_outline));
+      // First delete icon is the sentences row
+      await tester.tap(find.byIcon(Icons.delete_outline).first);
       expect(deleted, isTrue);
     });
 
@@ -144,6 +146,22 @@ void main() {
       expect(find.byIcon(Icons.volume_up_rounded), findsNothing);
     });
 
+    testWidgets('voice download is disabled when sentences not installed',
+        (tester) async {
+      var voiceDownloaded = false;
+      await tester.pumpWidget(wrap(buildTile(
+        local: null,
+        voiceDownloaded: false,
+        onDownloadVoice: () => voiceDownloaded = true,
+      )));
+      await tester.pumpAndSettle();
+
+      // Voice download icon should exist but be disabled
+      final downloadIcons = find.byIcon(Icons.download_rounded);
+      await tester.tap(downloadIcons.last);
+      expect(voiceDownloaded, isFalse);
+    });
+
     testWidgets('shows voice download button when pack installed but no voice',
         (tester) async {
       var voiceDownloaded = false;
@@ -154,11 +172,64 @@ void main() {
       )));
       await tester.pumpAndSettle();
 
-      // The voice row should have a download icon
       final downloadIcons = find.byIcon(Icons.download_rounded);
-      // Tap the last one (voice row's)
       await tester.tap(downloadIcons.last);
       expect(voiceDownloaded, isTrue);
+    });
+
+    testWidgets('fires onDeleteVoice when tapping voice trash', (tester) async {
+      var voiceDeleted = false;
+      await tester.pumpWidget(wrap(buildTile(
+        local: localPack,
+        voiceDownloaded: true,
+        onDeleteVoice: () => voiceDeleted = true,
+      )));
+      await tester.pumpAndSettle();
+
+      // Last delete icon is the voice row's
+      final deleteIcons = find.byIcon(Icons.delete_outline);
+      await tester.tap(deleteIcons.last);
+      expect(voiceDeleted, isTrue);
+    });
+
+    // -- Action button --
+
+    testWidgets('shows Start when no character', (tester) async {
+      await tester.pumpWidget(wrap(buildTile(hasCharacter: false)));
+      await tester.pumpAndSettle();
+      expect(find.text('Start'), findsOneWidget);
+    });
+
+    testWidgets('shows Continue when character exists', (tester) async {
+      await tester.pumpWidget(wrap(buildTile(hasCharacter: true)));
+      await tester.pumpAndSettle();
+      expect(find.text('Continue'), findsOneWidget);
+    });
+
+    testWidgets('action button fires onSelect when downloaded',
+        (tester) async {
+      var selected = false;
+      await tester.pumpWidget(wrap(buildTile(
+        local: localPack,
+        onSelect: () => selected = true,
+      )));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Start'));
+      expect(selected, isTrue);
+    });
+
+    testWidgets('action button is disabled when not downloaded',
+        (tester) async {
+      var selected = false;
+      await tester.pumpWidget(wrap(buildTile(
+        local: null,
+        onSelect: () => selected = true,
+      )));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Start'));
+      expect(selected, isFalse);
     });
   });
 }

@@ -21,5 +21,8 @@
   "chooseYourEgg": "Choose your egg!",
   "whoWillHatch": "Who will hatch from it?",
   "sentences": "Sentences",
-  "voice": "Voice"
+  "voice": "Voice",
+  "optional": "Optional",
+  "continueLabel": "Continue",
+  "start": "Start"
 }

@@ -18,10 +18,8 @@ void main() {
       String? sizeText,
       bool downloaded = false,
       double? progress,
-      VoidCallback? onTap,
-      Widget trailing = const SizedBox.shrink(),
-      Widget? leading,
-      String? title,
+      VoidCallback? onDownload,
+      VoidCallback? onDelete,
     }) {
       return ContentRow(
         icon: Icons.text_snippet_outlined,
@@ -29,26 +27,13 @@ void main() {
         sizeText: sizeText,
         downloaded: downloaded,
         progress: progress,
-        onTap: onTap,
-        trailing: trailing,
-        leading: leading,
-        title: title,
+        onDownload: onDownload,
+        onDelete: onDelete,
       );
     }
 
     testWidgets('displays label', (tester) async {
       await tester.pumpWidget(wrap(buildRow(label: 'Sentences')));
-      expect(find.text('Sentences'), findsOneWidget);
-    });
-
-    testWidgets('displays title when provided', (tester) async {
-      await tester.pumpWidget(wrap(buildRow(title: 'French')));
-      expect(find.text('French'), findsOneWidget);
-    });
-
-    testWidgets('hides title when null', (tester) async {
-      await tester.pumpWidget(wrap(buildRow(title: null)));
-      // Only label text, no title
       expect(find.text('Sentences'), findsOneWidget);
     });
 
@@ -72,26 +57,58 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsNothing);
     });
 
-    testWidgets('renders leading widget when provided', (tester) async {
-      await tester.pumpWidget(wrap(buildRow(
-        leading: const Icon(Icons.flag, key: Key('flag')),
-      )));
-      expect(find.byKey(const Key('flag')), findsOneWidget);
+    testWidgets('shows check icon when downloaded', (tester) async {
+      await tester.pumpWidget(wrap(buildRow(downloaded: true)));
+      expect(find.byIcon(Icons.check_circle), findsOneWidget);
     });
 
-    testWidgets('fires onTap callback', (tester) async {
-      var tapped = false;
-      await tester.pumpWidget(wrap(buildRow(onTap: () => tapped = true)));
-
-      await tester.tap(find.byType(InkWell));
-      expect(tapped, isTrue);
+    testWidgets('shows content icon when not downloaded', (tester) async {
+      await tester.pumpWidget(wrap(buildRow(downloaded: false)));
+      expect(find.byIcon(Icons.text_snippet_outlined), findsOneWidget);
     });
 
-    testWidgets('renders trailing widget', (tester) async {
+    testWidgets('shows spinner during download instead of icons',
+        (tester) async {
+      await tester.pumpWidget(wrap(buildRow(progress: 0.5)));
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle), findsNothing);
+      expect(find.byIcon(Icons.text_snippet_outlined), findsNothing);
+    });
+
+    testWidgets('shows download button when not downloaded', (tester) async {
+      await tester.pumpWidget(wrap(buildRow(downloaded: false)));
+      expect(find.byIcon(Icons.download_rounded), findsOneWidget);
+    });
+
+    testWidgets('shows trash icon when downloaded', (tester) async {
+      await tester.pumpWidget(wrap(buildRow(downloaded: true)));
+      expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+    });
+
+    testWidgets('hides action buttons during download', (tester) async {
+      await tester.pumpWidget(wrap(buildRow(progress: 0.5)));
+      expect(find.byIcon(Icons.download_rounded), findsNothing);
+      expect(find.byIcon(Icons.delete_outline), findsNothing);
+    });
+
+    testWidgets('fires onDownload when tapping download', (tester) async {
+      var downloaded = false;
       await tester.pumpWidget(wrap(buildRow(
-        trailing: const Icon(Icons.download, key: Key('dl')),
+        downloaded: false,
+        onDownload: () => downloaded = true,
       )));
-      expect(find.byKey(const Key('dl')), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.download_rounded));
+      expect(downloaded, isTrue);
+    });
+
+    testWidgets('fires onDelete when tapping trash', (tester) async {
+      var deleted = false;
+      await tester.pumpWidget(wrap(buildRow(
+        downloaded: true,
+        onDelete: () => deleted = true,
+      )));
+      await tester.tap(find.byIcon(Icons.delete_outline));
+      expect(deleted, isTrue);
     });
   });
 }
