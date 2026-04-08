@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 import '../providers.dart';
@@ -95,6 +96,24 @@ class SettingsScreen extends ConsumerWidget {
                         value: haptics,
                         onChanged: (v) =>
                             ref.read(hapticsEnabledProvider.notifier).set(v),
+                      ),
+                      const SizedBox(height: 24),
+                      _SectionHeader(label: 'About'),
+                      const SizedBox(height: 8),
+                      _LinkRow(
+                        label: AppLocalizations.of(context)!.privacyPolicy,
+                        onTap: () {
+                          final lang =
+                              Localizations.localeOf(context).languageCode;
+                          const base =
+                              'https://lexaway.github.io/lexaway/privacy';
+                          const supported = {'es', 'fr', 'de', 'it', 'pt'};
+                          final url = supported.contains(lang)
+                              ? '$base-$lang.html'
+                              : '$base.html';
+                          launchUrl(Uri.parse(url),
+                              mode: LaunchMode.externalApplication);
+                        },
                       ),
                     ],
                   ),
@@ -215,6 +234,41 @@ class _ToggleRow extends StatelessWidget {
             inactiveTrackColor: AppColors.controlInactive,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _LinkRow extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _LinkRow({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.pixelifySans(
+                  color: AppColors.accent,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.open_in_new,
+              size: 18,
+              color: AppColors.accent,
+            ),
+          ],
+        ),
       ),
     );
   }

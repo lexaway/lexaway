@@ -26,5 +26,6 @@
   "continueLabel": "Continue",
   "start": "Start",
   "settings": "Settings",
-  "updateApp": "Update App"
+  "updateApp": "Update App",
+  "privacyPolicy": "Privacy Policy"
 }

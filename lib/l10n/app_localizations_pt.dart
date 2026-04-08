@@ -62,4 +62,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get updateApp => 'Atualizar o app';
+
+  @override
+  String get privacyPolicy => 'Política de privacidade';
 }

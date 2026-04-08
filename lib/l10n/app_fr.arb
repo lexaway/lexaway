@@ -16,5 +16,6 @@
   "continueLabel": "Continuer",
   "start": "Commencer",
   "settings": "Paramètres",
-  "updateApp": "Mettre à jour l'appli"
+  "updateApp": "Mettre à jour l'appli",
+  "privacyPolicy": "Politique de confidentialité"
 }
