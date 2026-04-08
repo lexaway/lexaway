@@ -9,10 +9,14 @@ class Entity extends PositionComponent with HasGameReference<LexawayGame> {
   final Vector2 spriteSize;
   double worldX;
 
+  /// Index into the WorldMap's item list, used for tracking active entities.
+  final int itemIndex;
+
   Entity({
     required this.sprite,
     required this.spriteSize,
     required this.worldX,
+    this.itemIndex = -1,
   });
 
   static final Paint _paint = Paint()..filterQuality = FilterQuality.none;

@@ -28,16 +28,9 @@
   },
   "manifest_cache": "{\"schema_version\":1,\"packs\":[{\"lang\":\"fra\",\"from_lang\":\"eng\",\"name\":\"French\",\"flag\":\"F\",\"built_at\":\"2025-01-15T00:00:00Z\",\"schema_version\":1}]}",
   "world": {
-    "_version": 1,
-    "ground": {
-      "offset": 1234.5
-    },
-    "coin_manager": {
-      "next_spawn_at": 2000.0,
-      "coins": [
-        { "t": 0, "x": 1500.0 },
-        { "t": 1, "x": 1800.0 }
-      ]
-    }
+    "seed": 42,
+    "extensions": 0,
+    "scroll_offset": 1234.5,
+    "collected_coins": [3, 7, 15]
   }
 }

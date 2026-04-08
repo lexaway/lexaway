@@ -3,10 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexaway/data/pack_manager.dart';
-import 'package:lexaway/game/components/coin.dart';
-import 'package:lexaway/game/components/coin_manager.dart';
-import 'package:lexaway/game/components/ground.dart';
-import 'package:lexaway/game/lexaway_game.dart';
+import 'package:lexaway/game/world/world_generator.dart';
+import 'package:lexaway/game/world/world_map.dart';
 import 'package:lexaway/main.dart' show hiveSchemaVersion;
 
 /// Fixture-based tests that verify current code can still read persisted data
@@ -82,56 +80,52 @@ void main() {
     });
   });
 
-  group('World state v1 compatibility', () {
-    late Map<String, dynamic> world;
-
-    setUp(() {
-      world = Map<String, dynamic>.from(fixture['world'] as Map);
+  group('World state', () {
+    test('world state fixture has expected keys', () {
+      final world = Map<String, dynamic>.from(fixture['world'] as Map);
+      expect(world['seed'], isA<int>());
+      expect((world['scroll_offset'] as num).toDouble(), isA<double>());
+      expect(world['collected_coins'], isA<List>());
+      expect(world['extensions'], isA<int>());
     });
 
-    test('version tag is present and understood', () {
-      final version = world['_version'] as int;
-      expect(version, lessThanOrEqualTo(LexawayGame.worldStateVersion));
-    });
+    test('world regenerates deterministically from seed', () {
+      final world = Map<String, dynamic>.from(fixture['world'] as Map);
+      final seed = world['seed'] as int;
+      final map1 = WorldGenerator().generate(seed);
+      final map2 = WorldGenerator().generate(seed);
 
-    test('Ground.restoreState round-trips fixture data', () {
-      final data = Map<String, dynamic>.from(world['ground'] as Map);
-      final ground = Ground();
-
-      // Actually call the production deserialization path.
-      ground.restoreState(data);
-      expect(ground.scrollOffset, equals(1234.5));
-
-      // Verify saveState produces the same shape.
-      final resaved = ground.saveState();
-      expect(resaved['offset'], equals(ground.scrollOffset));
-    });
-
-    test('Coin.fromJson round-trips every coin in the fixture', () {
-      final data = Map<String, dynamic>.from(world['coin_manager'] as Map);
-      final coins = data['coins'] as List;
-
-      for (final raw in coins) {
-        final json = Map<String, dynamic>.from(raw as Map);
-        final coin = Coin.fromJson(json);
-        // Round-trip: toJson should produce an equivalent map.
-        final reserialized = coin.toJson();
-        expect(Coin.fromJson(reserialized).worldX, equals(coin.worldX));
-        expect(Coin.fromJson(reserialized).type, equals(coin.type));
+      expect(map1.segments.length, equals(map2.segments.length));
+      for (var i = 0; i < map1.segments.length; i++) {
+        expect(map1.segments[i].startTile, equals(map2.segments[i].startTile));
+        expect(map1.segments[i].endTile, equals(map2.segments[i].endTile));
+        expect(map1.segments[i].items.length,
+            equals(map2.segments[i].items.length));
+        for (var j = 0; j < map1.segments[i].items.length; j++) {
+          expect(map1.segments[i].items[j].worldX,
+              equals(map2.segments[i].items[j].worldX));
+          expect(map1.segments[i].items[j].name,
+              equals(map2.segments[i].items[j].name));
+        }
       }
     });
 
-    test('CoinManager.restoreState accepts fixture data', () {
-      final data = Map<String, dynamic>.from(world['coin_manager'] as Map);
-      final cm = CoinManager();
+    test('collected_coins indices are respected', () {
+      final world = Map<String, dynamic>.from(fixture['world'] as Map);
+      final collected = (world['collected_coins'] as List).cast<int>().toSet();
+      final seed = world['seed'] as int;
+      final map = WorldGenerator().generate(seed);
 
-      // Actually call the production deserialization path.
-      // This will add Coin children and set _nextSpawnAt.
-      cm.restoreState(data);
+      final allCoinIndices = map.segments
+          .expand((s) => s.items)
+          .where((item) => item.category == ItemCategory.coin)
+          .map((item) => item.index)
+          .toSet();
 
-      // Verify it consumed the data without throwing and state is populated.
-      final resaved = cm.saveState();
-      expect(resaved['next_spawn_at'], equals(data['next_spawn_at']));
+      // All collected indices should be valid coin indices in the world.
+      for (final idx in collected) {
+        expect(allCoinIndices, contains(idx));
+      }
     });
   });
 }

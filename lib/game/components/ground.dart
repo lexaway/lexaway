@@ -2,22 +2,15 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 import '../lexaway_game.dart';
-import '../persistable.dart';
+import '../world/world_map.dart';
 
-class Ground extends Component with HasGameReference<LexawayGame>, Persistable {
+class Ground extends Component with HasGameReference<LexawayGame> {
+  final WorldMap worldMap;
+
   double scrollOffset = 0;
   double _scrollSpeed = 0;
 
-  @override
-  String get saveKey => 'ground';
-
-  @override
-  Map<String, dynamic> saveState() => {'offset': scrollOffset};
-
-  @override
-  void restoreState(Map<String, dynamic> state) {
-    scrollOffset = (state['offset'] as num).toDouble();
-  }
+  Ground({required this.worldMap});
 
   late Sprite _grassSprite;
   late Sprite _dirtSprite;
@@ -54,6 +47,8 @@ class Ground extends Component with HasGameReference<LexawayGame>, Persistable {
 
   @override
   void render(Canvas canvas) {
+    // Future: use worldMap.biomeAt(scrollOffset) to pick terrain sprites.
+    // Phase 1: always grassland.
     final tileSize = 16.0 * LexawayGame.pixelScale;
     final groundTop = game.size.y * LexawayGame.groundLevel;
     final tilesAcross = (game.size.x / tileSize).ceil() + 2;

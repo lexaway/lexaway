@@ -16,14 +16,10 @@ class Coin extends SpriteAnimationComponent
   double worldX;
   bool collected = false;
 
-  Coin({required this.type, required this.worldX});
+  /// Index into the WorldMap's item list, used for collection tracking.
+  final int itemIndex;
 
-  factory Coin.fromJson(Map<String, dynamic> json) => Coin(
-    type: CoinType.values[json['t'] as int],
-    worldX: (json['x'] as num).toDouble(),
-  );
-
-  Map<String, dynamic> toJson() => {'x': worldX, 't': type.index};
+  Coin({required this.type, required this.worldX, this.itemIndex = -1});
 
   @override
   Future<void> onLoad() async {
@@ -58,7 +54,8 @@ class Coin extends SpriteAnimationComponent
     add(RectangleHitbox());
   }
 
-  Function(int value)? onCollected;
+  /// Called with (coinValue, itemIndex) when the player collects this coin.
+  Function(int value, int itemIndex)? onCollected;
 
   @override
   void onCollisionStart(
@@ -70,7 +67,7 @@ class Coin extends SpriteAnimationComponent
     collected = true;
 
     final value = type == CoinType.diamond ? 3 : 1;
-    onCollected?.call(value);
+    onCollected?.call(value, itemIndex);
 
     if (type == CoinType.diamond) {
       AudioManager.instance.playGem();
@@ -90,6 +87,5 @@ class Coin extends SpriteAnimationComponent
     );
 
     removeFromParent();
-    game.saveWorldState();
   }
 }
