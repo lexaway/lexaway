@@ -40,6 +40,14 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
     _questions = List.of(widget.questions)..shuffle(_rng);
     _shuffledOptions = _shuffleOptions(_questions[0]);
 
+    // Rebuild once the game finishes loading so the mini-map appears
+    // without waiting for the first user interaction.
+    if (!widget.game.isLoaded) {
+      widget.game.loaded.then((_) {
+        if (mounted) setState(() {});
+      });
+    }
+
     _shakeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
