@@ -48,7 +48,8 @@ assets/dinoCharactersVersion1.1/
 assets/kenney_ui-pack-pixel-adventure 2
 assets/BaT_v2.0/
 
-# Simulator screenshots
+# Screenshots
+screenshots/
 simulator_screenshot_*.png
 
 DESIGN.md
