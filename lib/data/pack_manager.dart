@@ -5,11 +5,9 @@ import 'package:hive_ce/hive_ce.dart';
 import 'package:http/http.dart' as http;
 import 'package:sqlite_async/sqlite_async.dart';
 
+import 'content_urls.dart';
 import 'download_helper.dart';
 import 'hive_keys.dart';
-
-const _baseUrl =
-    'https://github.com/lexaway/lexaway-packs/releases/latest/download';
 
 const maxSupportedPackSchema = 1;
 
@@ -118,7 +116,8 @@ class PackManager {
 
   Future<Manifest> fetchManifest() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/manifest.json'));
+      final url = await packsUrl('manifest.json');
+      final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         _box.put(HiveKeys.manifestCache, response.body);
         return Manifest.fromJson(
@@ -153,8 +152,9 @@ class PackManager {
     await Directory(dir).create(recursive: true);
 
     final tmpPath = '$dir/$packId.db.tmp';
+    final url = await packsUrl('$packId.db');
     await downloadToFile(
-      '$_baseUrl/$packId.db',
+      url,
       tmpPath,
       onProgress: onProgress,
     );

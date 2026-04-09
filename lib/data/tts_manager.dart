@@ -5,11 +5,9 @@ import 'dart:isolate';
 import 'package:archive/archive.dart';
 import 'package:hive_ce/hive_ce.dart';
 
+import 'content_urls.dart';
 import 'download_helper.dart';
 import 'hive_keys.dart';
-
-const _modelsBaseUrl =
-    'https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models';
 
 class TtsModelInfo {
   final String archiveName;
@@ -22,7 +20,6 @@ class TtsModelInfo {
     required this.approximateSizeMB,
   });
 
-  String get downloadUrl => '$_modelsBaseUrl/$archiveName.tar.bz2';
 }
 
 /// Registry of Piper VITS models, keyed by ISO 639-3 language code
@@ -94,7 +91,8 @@ class TtsManager {
       await Directory(dir).create(recursive: true);
 
       final tmpPath = '$dir/espeak-ng-data.tar.bz2.tmp';
-      await downloadToFile('$_modelsBaseUrl/espeak-ng-data.tar.bz2', tmpPath);
+      final url = await ttsUrl('espeak-ng-data.tar.bz2');
+      await downloadToFile(url, tmpPath);
       await _extractInIsolate(tmpPath, dir);
       await File(tmpPath).delete();
 
@@ -159,7 +157,8 @@ class TtsManager {
 
     final tmpPath = '$dir/${info.archiveName}.tar.bz2.tmp';
     try {
-      await downloadToFile(info.downloadUrl, tmpPath, onProgress: onProgress);
+      final url = await ttsUrl('${info.archiveName}.tar.bz2');
+      await downloadToFile(url, tmpPath, onProgress: onProgress);
       await _extractInIsolate(tmpPath, dir);
       await File(tmpPath).delete();
     } catch (_) {
