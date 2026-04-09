@@ -90,4 +90,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get attributions => 'Quellenangaben';
+
+  @override
+  String get extracting => 'Entpacken…';
 }

@@ -188,6 +188,7 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
     final packId = '$fromLang-$lang';
 
     final packFuture = () async {
+      ref.read(downloadProgressProvider(packId).notifier).state = 0.0;
       try {
         await pm.downloadPack(
           lang,
@@ -203,12 +204,17 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
 
     final voiceFuture = (includeVoice && TtsManager.isSupported(lang))
         ? () async {
+            ref.read(voiceDownloadProgressProvider(lang).notifier).state = 0.0;
             try {
               await tm.downloadModel(
                 lang,
                 onProgress: (p) {
                   ref.read(voiceDownloadProgressProvider(lang).notifier).state =
                       p;
+                },
+                onExtracting: () {
+                  ref.read(voiceDownloadProgressProvider(lang).notifier).state =
+                      -1.0;
                 },
               );
             } finally {
@@ -222,16 +228,26 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
     state = AsyncData(pm.getLocalPacks());
   }
 
-  /// Download just the voice model for an already-installed pack.
-  Future<void> downloadVoice(String lang) async {
+  /// Download a voice model for an already-installed pack.
+  /// If [modelId] is null, downloads the default model for the language.
+  Future<void> downloadVoice(String lang, {String? modelId}) async {
     final tm = ref.read(ttsManagerProvider);
-    if (!TtsManager.isSupported(lang) || tm.isModelDownloaded(lang)) return;
+    if (!TtsManager.isSupported(lang)) return;
 
+    // Release engine before replacing — avoids native crash if model files change
+    ref.read(ttsServiceProvider).releaseEngine();
+
+    // Show indeterminate spinner immediately (covers URL resolution delay)
+    ref.read(voiceDownloadProgressProvider(lang).notifier).state = 0.0;
     try {
       await tm.downloadModel(
         lang,
+        modelId: modelId,
         onProgress: (p) {
           ref.read(voiceDownloadProgressProvider(lang).notifier).state = p;
+        },
+        onExtracting: () {
+          ref.read(voiceDownloadProgressProvider(lang).notifier).state = -1.0;
         },
       );
     } finally {

@@ -10,51 +10,56 @@ import 'download_helper.dart';
 import 'hive_keys.dart';
 
 class TtsModelInfo {
+  final String modelId;
+  final String displayName;
   final String archiveName;
   final String onnxFile;
   final int approximateSizeMB;
 
   const TtsModelInfo({
+    required this.modelId,
+    required this.displayName,
     required this.archiveName,
     required this.onnxFile,
     required this.approximateSizeMB,
   });
-
 }
 
-/// Registry of Piper VITS models, keyed by ISO 639-3 language code
-/// (matching the pack manifest).
-const ttsModelRegistry = <String, TtsModelInfo>{
-  'fra': TtsModelInfo(
-    archiveName: 'vits-piper-fr_FR-siwis-medium',
-    onnxFile: 'fr_FR-siwis-medium.onnx',
-    approximateSizeMB: 61,
-  ),
-  'deu': TtsModelInfo(
-    archiveName: 'vits-piper-de_DE-thorsten-medium',
-    onnxFile: 'de_DE-thorsten-medium.onnx',
-    approximateSizeMB: 61,
-  ),
-  'spa': TtsModelInfo(
-    archiveName: 'vits-piper-es_ES-davefx-medium',
-    onnxFile: 'es_ES-davefx-medium.onnx',
-    approximateSizeMB: 61,
-  ),
-  'ita': TtsModelInfo(
-    archiveName: 'vits-piper-it_IT-riccardo-x_low',
-    onnxFile: 'it_IT-riccardo-x_low.onnx',
-    approximateSizeMB: 16,
-  ),
-  'por': TtsModelInfo(
-    archiveName: 'vits-piper-pt_BR-faber-medium',
-    onnxFile: 'pt_BR-faber-medium.onnx',
-    approximateSizeMB: 61,
-  ),
-  'jpn': TtsModelInfo(
-    archiveName: 'vits-piper-ja_JP-amitaro-medium',
-    onnxFile: 'ja_JP-amitaro-medium.onnx',
-    approximateSizeMB: 61,
-  ),
+/// Registry of Piper VITS models, keyed by ISO 639-3 language code.
+/// Each language maps to a list of available voices (first = default).
+const ttsModelRegistry = <String, List<TtsModelInfo>>{
+  'eng': [
+    TtsModelInfo(modelId: 'hfc_male', displayName: 'HFC Male', archiveName: 'vits-piper-en_US-hfc_male-medium', onnxFile: 'en_US-hfc_male-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'lessac', displayName: 'Lessac', archiveName: 'vits-piper-en_US-lessac-medium', onnxFile: 'en_US-lessac-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'amy', displayName: 'Amy', archiveName: 'vits-piper-en_US-amy-low', onnxFile: 'en_US-amy-low.onnx', approximateSizeMB: 16),
+    TtsModelInfo(modelId: 'ryan', displayName: 'Ryan', archiveName: 'vits-piper-en_US-ryan-medium', onnxFile: 'en_US-ryan-medium.onnx', approximateSizeMB: 61),
+  ],
+  'fra': [
+    TtsModelInfo(modelId: 'siwis', displayName: 'Siwis', archiveName: 'vits-piper-fr_FR-siwis-medium', onnxFile: 'fr_FR-siwis-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'tom', displayName: 'Tom', archiveName: 'vits-piper-fr_FR-tom-medium', onnxFile: 'fr_FR-tom-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'gilles', displayName: 'Gilles', archiveName: 'vits-piper-fr_FR-gilles-low', onnxFile: 'fr_FR-gilles-low.onnx', approximateSizeMB: 16),
+    TtsModelInfo(modelId: 'miro', displayName: 'Miro', archiveName: 'vits-piper-fr_FR-miro-high', onnxFile: 'fr_FR-miro-high.onnx', approximateSizeMB: 61),
+  ],
+  'deu': [
+    TtsModelInfo(modelId: 'thorsten', displayName: 'Thorsten', archiveName: 'vits-piper-de_DE-thorsten-medium', onnxFile: 'de_DE-thorsten-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'eva_k', displayName: 'Eva', archiveName: 'vits-piper-de_DE-eva_k-x_low', onnxFile: 'de_DE-eva_k-x_low.onnx', approximateSizeMB: 16),
+    TtsModelInfo(modelId: 'kerstin', displayName: 'Kerstin', archiveName: 'vits-piper-de_DE-kerstin-low', onnxFile: 'de_DE-kerstin-low.onnx', approximateSizeMB: 16),
+    TtsModelInfo(modelId: 'thorsten_emotional', displayName: 'Thorsten Emotional', archiveName: 'vits-piper-de_DE-thorsten_emotional-medium', onnxFile: 'de_DE-thorsten_emotional-medium.onnx', approximateSizeMB: 61),
+  ],
+  'spa': [
+    TtsModelInfo(modelId: 'davefx', displayName: 'Davefx', archiveName: 'vits-piper-es_ES-davefx-medium', onnxFile: 'es_ES-davefx-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'sharvard', displayName: 'Sharvard', archiveName: 'vits-piper-es_ES-sharvard-medium', onnxFile: 'es_ES-sharvard-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'carlfm', displayName: 'Carlfm', archiveName: 'vits-piper-es_ES-carlfm-x_low', onnxFile: 'es_ES-carlfm-x_low.onnx', approximateSizeMB: 16),
+  ],
+  'ita': [
+    TtsModelInfo(modelId: 'riccardo', displayName: 'Riccardo', archiveName: 'vits-piper-it_IT-riccardo-x_low', onnxFile: 'it_IT-riccardo-x_low.onnx', approximateSizeMB: 16),
+    TtsModelInfo(modelId: 'paola', displayName: 'Paola', archiveName: 'vits-piper-it_IT-paola-medium', onnxFile: 'it_IT-paola-medium.onnx', approximateSizeMB: 61),
+  ],
+  'por': [
+    TtsModelInfo(modelId: 'faber', displayName: 'Faber', archiveName: 'vits-piper-pt_BR-faber-medium', onnxFile: 'pt_BR-faber-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'cadu', displayName: 'Cadu', archiveName: 'vits-piper-pt_BR-cadu-medium', onnxFile: 'pt_BR-cadu-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'edresson', displayName: 'Edresson', archiveName: 'vits-piper-pt_BR-edresson-low', onnxFile: 'pt_BR-edresson-low.onnx', approximateSizeMB: 16),
+  ],
 };
 
 class TtsManager {
@@ -67,7 +72,9 @@ class TtsManager {
   /// Guards the single shared espeak-ng-data download.
   Completer<void>? _espeakDownload;
 
-  TtsManager(this._box, {required this.modelsDir});
+  TtsManager(this._box, {required this.modelsDir}) {
+    _migrateHiveIfNeeded();
+  }
 
   // -- espeak-ng-data (shared by all Piper models) --
 
@@ -109,33 +116,62 @@ class TtsManager {
   // -- Model download/delete --
 
   bool isModelDownloaded(String lang) {
+    return downloadedModelId(lang) != null;
+  }
+
+  /// Returns the model_id of the currently downloaded model for [lang],
+  /// or null if nothing is downloaded.
+  String? downloadedModelId(String lang) {
     final models = _getModels();
-    return models.containsKey(lang);
+    final entry = models[lang];
+    if (entry == null) return null;
+    return (entry as Map)['model_id'] as String?;
+  }
+
+  /// Returns the [TtsModelInfo] for the currently downloaded model for [lang],
+  /// or null if nothing is downloaded or the model ID is no longer in the registry.
+  TtsModelInfo? downloadedModelInfo(String lang) {
+    final id = downloadedModelId(lang);
+    if (id == null) return null;
+    final voices = ttsModelRegistry[lang];
+    if (voices == null) return null;
+    for (final m in voices) {
+      if (m.modelId == id) return m;
+    }
+    return null;
   }
 
   /// Returns the directory containing the model files for [lang],
   /// or null if not downloaded.
   String? modelDir(String lang) {
-    if (!isModelDownloaded(lang)) return null;
-    final info = ttsModelRegistry[lang];
-    if (info == null) return null;
-    return '$modelsDir/${info.archiveName}';
+    final models = _getModels();
+    final entry = models[lang];
+    if (entry == null) return null;
+    final archiveName = (entry as Map)['archive_name'] as String?;
+    if (archiveName == null) return null;
+    return '$modelsDir/$archiveName';
   }
 
   Future<void> downloadModel(
     String lang, {
+    String? modelId,
     void Function(double)? onProgress,
+    void Function()? onExtracting,
   }) async {
-    final info = ttsModelRegistry[lang];
-    if (info == null) return;
-    if (isModelDownloaded(lang)) return;
+    final voices = ttsModelRegistry[lang];
+    if (voices == null || voices.isEmpty) return;
 
-    // Prevent double-tap: if already downloading this lang, join the existing future
-    if (_activeDownloads.containsKey(lang)) {
-      return _activeDownloads[lang];
-    }
+    final info = modelId != null
+        ? voices.firstWhere((m) => m.modelId == modelId, orElse: () => voices.first)
+        : voices.first;
 
-    final future = _doDownloadModel(lang, info, onProgress: onProgress);
+    // If the same model is already downloaded, nothing to do
+    if (downloadedModelId(lang) == info.modelId) return;
+
+    // Reject if a download for this lang is already in flight
+    if (_activeDownloads.containsKey(lang)) return;
+
+    final future = _doDownloadModel(lang, info, onProgress: onProgress, onExtracting: onExtracting);
     _activeDownloads[lang] = future;
     try {
       await future;
@@ -148,6 +184,7 @@ class TtsManager {
     String lang,
     TtsModelInfo info, {
     void Function(double)? onProgress,
+    void Function()? onExtracting,
   }) async {
     // Ensure espeak-ng-data is present first
     await downloadEspeakData();
@@ -155,10 +192,13 @@ class TtsManager {
     final dir = modelsDir;
     await Directory(dir).create(recursive: true);
 
+    // Download the new model first, then swap — so if the download fails
+    // the old model is still intact.
     final tmpPath = '$dir/${info.archiveName}.tar.bz2.tmp';
     try {
       final url = await ttsUrl('${info.archiveName}.tar.bz2');
       await downloadToFile(url, tmpPath, onProgress: onProgress);
+      onExtracting?.call();
       await _extractInIsolate(tmpPath, dir);
       await File(tmpPath).delete();
     } catch (_) {
@@ -170,25 +210,38 @@ class TtsManager {
       rethrow;
     }
 
+    // New model is fully extracted — now remove the old one if present
     final models = _getModels();
+    final oldEntry = models[lang];
+    if (oldEntry != null) {
+      final oldArchive = (oldEntry as Map)['archive_name'] as String?;
+      if (oldArchive != null && oldArchive != info.archiveName) {
+        final oldDir = Directory('$dir/$oldArchive');
+        if (await oldDir.exists()) await oldDir.delete(recursive: true);
+      }
+    }
+
     models[lang] = {
       'archive_name': info.archiveName,
+      'model_id': info.modelId,
       'downloaded_at': DateTime.now().toUtc().toIso8601String(),
     };
     _box.put(HiveKeys.ttsModels, models);
   }
 
   Future<void> deleteModel(String lang) async {
-    final info = ttsModelRegistry[lang];
-    if (info == null) return;
+    final models = _getModels();
+    final entry = models[lang];
+    if (entry == null) return;
 
-    final dir = modelsDir;
-    final modelDirectory = Directory('$dir/${info.archiveName}');
-    if (await modelDirectory.exists()) {
-      await modelDirectory.delete(recursive: true);
+    final archiveName = (entry as Map)['archive_name'] as String?;
+    if (archiveName != null) {
+      final modelDirectory = Directory('$modelsDir/$archiveName');
+      if (await modelDirectory.exists()) {
+        await modelDirectory.delete(recursive: true);
+      }
     }
 
-    final models = _getModels();
     models.remove(lang);
     _box.put(HiveKeys.ttsModels, models);
   }
@@ -197,6 +250,31 @@ class TtsManager {
   static bool isSupported(String lang) => ttsModelRegistry.containsKey(lang);
 
   // -- Internals --
+
+  /// Backfill model_id for downloads made before multi-voice support.
+  void _migrateHiveIfNeeded() {
+    final models = _getModels();
+    var dirty = false;
+    final migrated = <String, dynamic>{};
+    for (final entry in models.entries) {
+      final data = Map<String, dynamic>.from(entry.value as Map);
+      if (!data.containsKey('model_id')) {
+        final archiveName = data['archive_name'] as String?;
+        final voices = ttsModelRegistry[entry.key];
+        if (archiveName != null && voices != null) {
+          for (final m in voices) {
+            if (m.archiveName == archiveName) {
+              data['model_id'] = m.modelId;
+              dirty = true;
+              break;
+            }
+          }
+        }
+      }
+      migrated[entry.key] = data;
+    }
+    if (dirty) _box.put(HiveKeys.ttsModels, migrated);
+  }
 
   Map<String, dynamic> _getModels() {
     final raw = _box.get(HiveKeys.ttsModels);

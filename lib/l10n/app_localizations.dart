@@ -261,6 +261,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Attributions'**
   String get attributions;
+
+  /// No description provided for @extracting.
+  ///
+  /// In en, this message translates to:
+  /// **'Extracting…'**
+  String get extracting;
 }
 
 class _AppLocalizationsDelegate

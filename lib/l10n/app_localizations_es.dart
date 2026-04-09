@@ -91,4 +91,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get attributions => 'Atribuciones';
+
+  @override
+  String get extracting => 'Extrayendo…';
 }

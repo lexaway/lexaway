@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../data/hive_keys.dart';
 import '../data/pack_manager.dart';
+import '../data/tts_manager.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -128,14 +129,14 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     }
   }
 
-  Future<void> _downloadVoice(String lang) async {
+  Future<void> _downloadVoice(String lang, String modelId) async {
     try {
-      await ref.read(localPacksProvider.notifier).downloadVoice(lang);
+      await ref.read(localPacksProvider.notifier).downloadVoice(lang, modelId: modelId);
     } catch (e) {
       if (mounted) {
         _showError(
           AppLocalizations.of(context)!.downloadFailed(e.toString()),
-          onRetry: () => _downloadVoice(lang),
+          onRetry: () => _downloadVoice(lang, modelId),
         );
       }
     }
@@ -270,6 +271,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                         final pack = packs[i - 1];
                         final box = ref.read(hiveBoxProvider);
                         final status = packUpdateStatus(pack, local[pack.packId]);
+                        final ttsManager = ref.watch(ttsManagerProvider);
                         return PackTile(
                           pack: pack,
                           local: local[pack.packId],
@@ -280,13 +282,13 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                           voiceProgress: ref.watch(
                             voiceDownloadProgressProvider(pack.lang),
                           ),
-                          voiceDownloaded: ref.watch(ttsManagerProvider)
-                              .isModelDownloaded(pack.lang),
+                          voiceModels: ttsModelRegistry[pack.lang] ?? const [],
+                          downloadedModelId: ttsManager.downloadedModelId(pack.lang),
                           hasCharacter:
                               box.get(HiveKeys.character(pack.lang)) != null,
                           onDownload: () => _download(pack),
                           onUpdate: () => _download(pack),
-                          onDownloadVoice: () => _downloadVoice(pack.lang),
+                          onDownloadVoice: (modelId) => _downloadVoice(pack.lang, modelId),
                           onDelete: () => _delete(pack.packId),
                           onDeleteVoice: () => _deleteVoice(pack.lang),
                           onSelect: () => _select(pack.packId),

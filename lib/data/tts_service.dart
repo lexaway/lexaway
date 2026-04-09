@@ -13,6 +13,7 @@ class TtsService {
   final String tmpDir;
   sherpa.OfflineTts? _tts;
   String? _currentLang;
+  String? _currentModelId;
   final _player = AudioPlayer();
 
   TtsService({required this.tmpDir});
@@ -39,8 +40,9 @@ class TtsService {
       await stop();
     }
 
-    // Re-init engine if language changed
-    if (_currentLang != lang || _tts == null) {
+    // Re-init engine if language or model changed
+    final activeModelId = ttsManager.downloadedModelId(lang);
+    if (_currentLang != lang || _currentModelId != activeModelId || _tts == null) {
       _releaseEngine();
       await _init(lang, ttsManager);
     }
@@ -105,7 +107,7 @@ class TtsService {
   // -- Internals --
 
   Future<void> _init(String lang, TtsManager ttsManager) async {
-    final info = ttsModelRegistry[lang];
+    final info = ttsManager.downloadedModelInfo(lang);
     if (info == null) return;
 
     final dir = ttsManager.modelDir(lang);
@@ -140,10 +142,12 @@ class TtsService {
 
       _tts = sherpa.OfflineTts(config);
       _currentLang = lang;
+      _currentModelId = info.modelId;
     } catch (_) {
       // Model files may be corrupt — fail gracefully
       _tts = null;
       _currentLang = null;
+      _currentModelId = null;
     }
   }
 
@@ -151,6 +155,7 @@ class TtsService {
     _tts?.free();
     _tts = null;
     _currentLang = null;
+    _currentModelId = null;
   }
 
   /// Write PCM float samples to a WAV file.

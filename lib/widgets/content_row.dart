@@ -18,6 +18,7 @@ class ContentRow extends StatelessWidget {
   final VoidCallback? onDownload;
   final VoidCallback? onUpdate;
   final VoidCallback? onDelete;
+  final void Function(BuildContext context)? onSwap;
 
   const ContentRow({
     super.key,
@@ -31,6 +32,7 @@ class ContentRow extends StatelessWidget {
     this.onDownload,
     this.onUpdate,
     this.onDelete,
+    this.onSwap,
   });
 
   bool get _isDownloading => progress != null;
@@ -129,7 +131,19 @@ class ContentRow extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   onPressed: onUpdate,
                 )
-              else if (downloaded)
+              else if (downloaded) ...[
+                if (onSwap != null)
+                  Builder(
+                    builder: (btnContext) => IconButton(
+                      icon: Icon(
+                        Icons.swap_horiz,
+                        color: AppColors.tileTextSecondary,
+                        size: 20,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => onSwap!(btnContext),
+                    ),
+                  ),
                 IconButton(
                   icon: Icon(
                     Icons.delete_outline,
@@ -138,8 +152,25 @@ class ContentRow extends StatelessWidget {
                   ),
                   visualDensity: VisualDensity.compact,
                   onPressed: onDelete,
-                )
-              else
+                ),
+              ]
+              else ...[
+                if (onSwap != null)
+                  Builder(
+                    builder: (btnContext) => IconButton(
+                      icon: Icon(
+                        Icons.swap_horiz,
+                        color: onDownload != null
+                            ? AppColors.tileTextSecondary
+                            : AppColors.tileTextFaint,
+                        size: 20,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: onDownload != null
+                          ? () => onSwap!(btnContext)
+                          : null,
+                    ),
+                  ),
                 IconButton(
                   icon: Icon(
                     Icons.download_rounded,
@@ -151,6 +182,7 @@ class ContentRow extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   onPressed: onDownload,
                 ),
+              ],
             ],
           ),
           // Progress bar

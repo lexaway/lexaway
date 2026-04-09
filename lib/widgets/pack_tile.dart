@@ -14,11 +14,12 @@ class PackTile extends StatelessWidget {
   final PackUpdateStatus packStatus;
   final double? packProgress;
   final double? voiceProgress;
-  final bool voiceDownloaded;
+  final List<TtsModelInfo> voiceModels;
+  final String? downloadedModelId;
   final bool hasCharacter;
   final VoidCallback onDownload;
   final VoidCallback onUpdate;
-  final VoidCallback onDownloadVoice;
+  final void Function(String modelId) onDownloadVoice;
   final VoidCallback onDelete;
   final VoidCallback onDeleteVoice;
   final VoidCallback onSelect;
@@ -30,7 +31,8 @@ class PackTile extends StatelessWidget {
     required this.packStatus,
     required this.packProgress,
     required this.voiceProgress,
-    required this.voiceDownloaded,
+    required this.voiceModels,
+    required this.downloadedModelId,
     required this.hasCharacter,
     required this.onDownload,
     required this.onUpdate,
@@ -41,7 +43,52 @@ class PackTile extends StatelessWidget {
   });
 
   bool get _isDownloaded => local != null;
-  bool get _hasVoiceSupport => TtsManager.isSupported(pack.lang);
+  bool get _hasVoiceSupport => voiceModels.isNotEmpty;
+  bool get _voiceDownloaded => downloadedModelId != null;
+
+  TtsModelInfo? get _activeVoice {
+    if (downloadedModelId == null) return null;
+    for (final m in voiceModels) {
+      if (m.modelId == downloadedModelId) return m;
+    }
+    return null;
+  }
+
+  void _showVoicePicker(BuildContext buttonContext) {
+    final RenderBox button = buttonContext.findRenderObject()! as RenderBox;
+    final overlay = Overlay.of(buttonContext).context.findRenderObject()! as RenderBox;
+    final position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        button.localToGlobal(Offset.zero, ancestor: overlay),
+        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
+      ),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu<String>(
+      context: buttonContext,
+      position: position,
+      color: AppColors.surface,
+      items: [
+        for (final model in voiceModels)
+          PopupMenuItem<String>(
+            value: model.modelId,
+            enabled: model.modelId != downloadedModelId,
+            child: Text(
+              '${model.displayName}  ~${model.approximateSizeMB} MB',
+              style: TextStyle(
+                color: model.modelId == downloadedModelId
+                    ? AppColors.success
+                    : AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+          ),
+      ],
+    ).then((modelId) {
+      if (modelId != null) onDownloadVoice(modelId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,14 +178,20 @@ class PackTile extends StatelessWidget {
             ),
             ContentRow(
               icon: Icons.volume_up_rounded,
-              label: l10n.voice,
-              subtitle: l10n.optional,
-              sizeText:
-                  '~${ttsModelRegistry[pack.lang]!.approximateSizeMB} MB',
-              downloaded: voiceDownloaded,
+              label: (_activeVoice ?? voiceModels.first).displayName,
+              subtitle: voiceProgress != null && voiceProgress! < 0
+                  ? l10n.extracting
+                  : _voiceDownloaded ? null : l10n.optional,
+              sizeText: '~${(_activeVoice ?? voiceModels.first).approximateSizeMB} MB',
+              downloaded: _voiceDownloaded,
               progress: voiceProgress,
-              onDownload: _isDownloaded ? onDownloadVoice : null,
+              onDownload: _isDownloaded
+                  ? () => onDownloadVoice(voiceModels.first.modelId)
+                  : null,
               onDelete: onDeleteVoice,
+              onSwap: _isDownloaded && voiceModels.length > 1 && voiceProgress == null
+                  ? (btnContext) => _showVoicePicker(btnContext)
+                  : null,
             ),
           ],
           // -- Action button --
