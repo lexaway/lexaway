@@ -50,44 +50,46 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
             final current = ref.watch(localeProvider);
             final l10n = AppLocalizations.of(context)!;
             return SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Globe icon instead of localized text — universally
-                  // recognizable even if the user is stuck in the wrong
-                  // language (#5 fix).
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xs),
-                    child: Icon(
-                      Icons.language,
-                      color: AppColors.textSecondary,
-                      size: 32,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Globe icon instead of localized text — universally
+                    // recognizable even if the user is stuck in the wrong
+                    // language (#5 fix).
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xs),
+                      child: Icon(
+                        Icons.language,
+                        color: AppColors.textSecondary,
+                        size: 32,
+                      ),
                     ),
-                  ),
-                  // System default — show resolved endonym as subtitle so
-                  // it's understandable regardless of current UI language.
-                  LocaleOption(
-                    label: l10n.systemDefault,
-                    subtitle: systemEndonym,
-                    selected: current == null,
-                    onTap: () {
-                      ref.read(localeProvider.notifier).setLocale(null);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                  // Each supported locale
-                  for (final locale in AppLocalizations.supportedLocales)
+                    // System default — show resolved endonym as subtitle so
+                    // it's understandable regardless of current UI language.
                     LocaleOption(
-                      label:
-                          _endonyms[locale.languageCode] ?? locale.languageCode,
-                      selected: current?.languageCode == locale.languageCode,
+                      label: l10n.systemDefault,
+                      subtitle: systemEndonym,
+                      selected: current == null,
                       onTap: () {
-                        ref.read(localeProvider.notifier).setLocale(locale);
+                        ref.read(localeProvider.notifier).setLocale(null);
                         Navigator.pop(ctx);
                       },
                     ),
-                  const SizedBox(height: AppSpacing.sm),
-                ],
+                    // Each supported locale
+                    for (final locale in AppLocalizations.supportedLocales)
+                      LocaleOption(
+                        label:
+                            _endonyms[locale.languageCode] ?? locale.languageCode,
+                        selected: current?.languageCode == locale.languageCode,
+                        onTap: () {
+                          ref.read(localeProvider.notifier).setLocale(locale);
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                    const SizedBox(height: AppSpacing.sm),
+                  ],
+                ),
               ),
             );
           },
