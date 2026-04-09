@@ -5,6 +5,15 @@
 support_url: "https://lexaway.github.io/lexaway"
 marketing_url: "https://lexaway.github.io/lexaway"
 
+# Max 30 chars. Shown below app name on the store.
+subtitle:
+  en: "Learn languages step by step"
+  de: "Sprachen Schritt für Schritt"
+  es: "Aprende idiomas paso a paso"
+  fr: "Apprends les langues pas à pas"
+  it: "Impara le lingue passo a passo"
+  pt: "Aprenda idiomas passo a passo"
+
 en:
   # Max 170 chars. Shown above description, can be updated without a new build.
   promotional_text: "A pixel-art language game. Pick a language, hatch a dino, and learn vocabulary as you walk through a world that grows with every correct answer."
