@@ -2,8 +2,14 @@
 
 Reads tools/screenshot_config.yaml for screen captions and style,
 then overlays a bottom scrim + caption text on each raw PNG.
+
+Supports per-language captions. Raw screenshots are expected at:
+  screenshots/raw/{lang}/{device}/01_packs.png
+Output goes to:
+  screenshots/final/{lang}/{device}/01_packs.png
 """
 
+import argparse
 import os
 from pathlib import Path
 
@@ -77,6 +83,25 @@ def hex_to_rgb(hex_color: str) -> tuple:
     return tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))
 
 
+def _word_wrap(draw: ImageDraw.ImageDraw, text: str, font, max_width: int) -> str:
+    """Break text into lines that fit within max_width pixels."""
+    words = text.split()
+    lines = []
+    current = ""
+    for word in words:
+        test = f"{current} {word}".strip()
+        bbox = draw.textbbox((0, 0), test, font=font)
+        if bbox[2] - bbox[0] <= max_width:
+            current = test
+        else:
+            if current:
+                lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return "\n".join(lines)
+
+
 def compose_image(
     raw_path: Path,
     output_path: Path,
@@ -129,47 +154,85 @@ def compose_image(
 
     caption_color = hex_to_rgb(style["caption_color"])
 
-    # Center text vertically in the solid band
-    bbox = draw.textbbox((0, 0), caption, font=font)
+    # Word-wrap caption if it's too wide (keep 10% margin on each side)
+    max_text_w = int(width * 0.80)
+    wrapped = _word_wrap(draw, caption, font, max_text_w)
+
+    # Center text block vertically in the solid band
+    line_spacing = int(font_size * 0.4)
+    bbox = draw.multiline_textbbox((0, 0), wrapped, font=font, align="center", spacing=line_spacing)
     text_w = bbox[2] - bbox[0]
     text_h = bbox[3] - bbox[1]
     text_x = (width - text_w) // 2
     text_y = height - solid_h + (solid_h - text_h) // 2
 
-    draw.text((text_x, text_y), caption, fill=(*caption_color, 255), font=font)
+    draw.multiline_text(
+        (text_x, text_y), wrapped,
+        fill=(*caption_color, 255), font=font, align="center", spacing=line_spacing,
+    )
 
     img.save(output_path)
 
 
+def resolve_caption(caption_field, lang: str) -> str | None:
+    """Extract caption string for a given language.
+
+    Supports both the old format (plain string) and the new format (dict keyed by lang).
+    """
+    if caption_field is None:
+        return None
+    if isinstance(caption_field, str):
+        return caption_field
+    if isinstance(caption_field, dict):
+        return caption_field.get(lang) or caption_field.get("en")
+    return None
+
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--lang", help="Process a single language only")
+    args = parser.parse_args()
+
     config = load_config()
     style = config["style"]
+    languages = [args.lang] if args.lang else config.get("languages", ["en"])
 
-    # Build caption + per-screen override lookups
-    captions = {s["filename"]: s.get("caption") for s in config["screens"]}
+    # Build per-screen lookups
     overrides = {s["filename"]: s.get("style", {}) for s in config["screens"]}
 
     if not RAW_DIR.exists():
         print(f"No raw screenshots found at {RAW_DIR}")
         return
 
-    for device_dir in sorted(RAW_DIR.iterdir()):
-        if not device_dir.is_dir():
+    for lang in languages:
+        lang_raw_dir = RAW_DIR / lang
+        if not lang_raw_dir.exists():
+            print(f"Skipping {lang} — no raw screenshots at {lang_raw_dir}")
             continue
 
-        output_dir = FINAL_DIR / device_dir.name
-        output_dir.mkdir(parents=True, exist_ok=True)
+        # Build caption lookup for this language
+        captions = {
+            s["filename"]: resolve_caption(s.get("caption"), lang)
+            for s in config["screens"]
+        }
 
-        print(f"--- {device_dir.name} ---")
-        for png in sorted(device_dir.glob("*.png")):
-            stem = png.stem
-            caption = captions.get(stem)
-            output_path = output_dir / png.name
+        for device_dir in sorted(lang_raw_dir.iterdir()):
+            if not device_dir.is_dir():
+                continue
 
-            label = f'"{caption}"' if caption else "(no scrim)"
-            print(f"  {png.name} {label}")
+            output_dir = FINAL_DIR / lang / device_dir.name
+            output_dir.mkdir(parents=True, exist_ok=True)
 
-            compose_image(png, output_path, caption, style, overrides.get(stem))
+            print(f"--- {lang}/{device_dir.name} ---")
+            for png in sorted(device_dir.glob("*.png")):
+                stem = png.stem
+                caption = captions.get(stem)
+                output_path = output_dir / png.name
+
+                label = f'"{caption}"' if caption else "(no scrim)"
+                print(f"  {png.name} {label}")
+
+                compose_image(png, output_path, caption, style, overrides.get(stem))
 
     print("Done! Output in screenshots/final/")
 

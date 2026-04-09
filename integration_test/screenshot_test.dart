@@ -31,6 +31,8 @@ void main() {
 
   late Box box;
   late Directory tmpDir;
+  const lang = String.fromEnvironment('SCREENSHOT_LANG', defaultValue: 'en');
+  final localeData = screenshotLocaleData[lang]!;
 
   setUp(() async {
     tmpDir = await Directory.systemTemp.createTemp('lexaway_screenshots_');
@@ -40,6 +42,7 @@ void main() {
     // Minimal Hive state — just enough for the app to boot.
     // Screens get their state progressively as we navigate.
     box.put(HiveKeys.gender, 'female');
+    box.put(HiveKeys.uiLocale, lang);
   });
 
   tearDown(() async {
@@ -57,7 +60,7 @@ void main() {
           tmpDirProvider.overrideWithValue('${tmpDir.path}/tmp'),
           activePackProvider.overrideWith(FakeActivePackNotifier.new),
           localPacksProvider.overrideWith(FakeLocalPacksNotifier.new),
-          manifestProvider.overrideWith((_) async => screenshotManifest),
+          manifestProvider.overrideWith((_) async => localeData.manifest),
         ],
         child: const LexawayApp(),
       ),
@@ -65,6 +68,18 @@ void main() {
 
     // No active pack, no character → router redirects /loading → /packs
     await pumpFrames(tester, 30);
+
+    // Wire up locale-specific data into fakes
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(Scaffold).first),
+    );
+    final fakePack =
+        container.read(activePackProvider.notifier) as FakeActivePackNotifier;
+    fakePack.setLocaleData(localeData);
+
+    final fakeLocalPacks =
+        container.read(localPacksProvider.notifier) as FakeLocalPacksNotifier;
+    fakeLocalPacks.setPacks(localeData.localPacks);
 
     // Helper to navigate via GoRouter
     void navigate(String path) {
@@ -85,11 +100,6 @@ void main() {
 
     // --- 3. Egg Selection ---
     // Activate the pack so the router sees questions, but no character yet.
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(Scaffold).first),
-    );
-    final fakePack =
-        container.read(activePackProvider.notifier) as FakeActivePackNotifier;
     fakePack.activate();
     // Router now has questions + no character → allows /hatch
     navigate('/hatch');
@@ -101,7 +111,7 @@ void main() {
     // Seed character + world state so the game screen can render.
     box.put(HiveKeys.coins, 42);
     box.put(HiveKeys.streak, 7);
-    box.put(HiveKeys.character('fra'), 'female/doux');
+    box.put(HiveKeys.character(localeData.characterKey), 'female/doux');
     box.put(HiveKeys.world, {
       'seed': 12345,
       'extensions': 0,

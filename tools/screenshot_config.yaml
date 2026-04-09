@@ -6,17 +6,43 @@ devices:
     simulator_type: com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro-Max
     runtime: com.apple.CoreSimulator.SimRuntime.iOS-18-2
 
+languages: [en, de, es, fr, it, pt]
+
 screens:
   - filename: 01_packs
-    caption: "Choose your language"
+    caption:
+      en: "Choose your language"
+      de: "Wähle deine Sprache"
+      es: "Elige tu idioma"
+      fr: "Choisis ta langue"
+      it: "Scegli la tua lingua"
+      pt: "Escolha seu idioma"
     style:
       scrim_height: 0.18
   - filename: 02_settings
-    caption: "Learn your way"
+    caption:
+      en: "Learn your way"
+      de: "Lerne auf deine Art"
+      es: "Aprende a tu manera"
+      fr: "Apprends à ta façon"
+      it: "Impara a modo tuo"
+      pt: "Aprenda do seu jeito"
   - filename: 03_egg_selection
-    caption: "Hatch your companion"
+    caption:
+      en: "Hatch your companion"
+      de: "Schlüpfe deinen Begleiter"
+      es: "Eclosiona tu compañero"
+      fr: "Fais éclore ton compagnon"
+      it: "Schiudi il tuo compagno"
+      pt: "Choque seu companheiro"
   - filename: 04_game
-    caption: "Learn by playing"
+    caption:
+      en: "Learn by playing"
+      de: "Lerne beim Spielen"
+      es: "Aprende jugando"
+      fr: "Apprends en jouant"
+      it: "Impara giocando"
+      pt: "Aprenda jogando"
     style:
       scrim_height: 0.15
   - filename: 05_loading
