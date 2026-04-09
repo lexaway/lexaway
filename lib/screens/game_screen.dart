@@ -80,7 +80,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
   @override
   Widget build(BuildContext context) {
     final game = _game!;
-    final questions = ref.watch(activePackProvider).valueOrNull ?? [];
+    final source = ref.watch(activePackProvider).valueOrNull;
 
     // Sync volume settings to the audio singleton
     final audio = AudioManager.instance;
@@ -92,7 +92,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
         children: [
           GameWidget(game: game),
           Positioned(left: 0, right: 0, top: 0, child: const HudBar()),
-          if (questions.isNotEmpty)
+          if (source != null)
             Positioned(
               left: 0,
               right: 0,
@@ -101,9 +101,10 @@ class _GameScreenState extends ConsumerState<GameScreen>
                   64,
               bottom: -24,
               child: QuestionPanel(
-                key: ValueKey(questions),
+                // Identity equality — new source on pack switch rebuilds the panel.
+                key: ValueKey(source),
                 game: game,
-                questions: questions,
+                source: source,
               ),
             ),
         ],

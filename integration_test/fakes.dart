@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lexaway/data/pack_manager.dart';
-import 'package:lexaway/models/question.dart';
+import 'package:lexaway/data/question_source.dart';
 import 'package:lexaway/providers.dart';
 import 'screenshot_data.dart';
 
@@ -13,8 +13,8 @@ class FakeActivePackNotifier extends ActivePackNotifier {
   }
 
   @override
-  Future<List<Question>> build() async =>
-      _hasQuestions ? (_data?.questions ?? []) : [];
+  Future<QuestionSource?> build() async =>
+      _hasQuestions ? _sourceFromData() : null;
 
   @override
   String? get activePackId => _hasQuestions ? _data?.packId : null;
@@ -25,13 +25,19 @@ class FakeActivePackNotifier extends ActivePackNotifier {
   /// Activate the fake pack so the router sees questions + a language.
   void activate() {
     _hasQuestions = true;
-    state = AsyncData(_data?.questions ?? []);
+    state = AsyncData(_sourceFromData());
   }
 
   /// Put the provider into loading state so the router stays on /loading.
   void setLoading() {
     _hasQuestions = false;
     state = const AsyncLoading();
+  }
+
+  QuestionSource? _sourceFromData() {
+    final qs = _data?.questions;
+    if (qs == null || qs.isEmpty) return null;
+    return QuestionSource.static(qs);
   }
 }
 

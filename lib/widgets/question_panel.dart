@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/question_source.dart';
 import '../data/tts_manager.dart';
 import '../game/lexaway_game.dart';
 import '../theme/app_colors.dart';
@@ -16,8 +18,8 @@ enum _AnswerState { unanswered, correct, wrong }
 
 class QuestionPanel extends ConsumerStatefulWidget {
   final LexawayGame game;
-  final List<Question> questions;
-  const QuestionPanel({super.key, required this.game, required this.questions});
+  final QuestionSource source;
+  const QuestionPanel({super.key, required this.game, required this.source});
 
   @override
   ConsumerState<QuestionPanel> createState() => _QuestionPanelState();
@@ -26,11 +28,10 @@ class QuestionPanel extends ConsumerStatefulWidget {
 class _QuestionPanelState extends ConsumerState<QuestionPanel>
     with SingleTickerProviderStateMixin {
   final _rng = Random();
-  late List<Question> _questions;
-  int _questionIndex = 0;
   _AnswerState _answerState = _AnswerState.unanswered;
   String? _selectedOption;
   late List<String> _shuffledOptions;
+  Timer? _advanceTimer;
 
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
@@ -38,8 +39,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
   @override
   void initState() {
     super.initState();
-    _questions = List.of(widget.questions)..shuffle(_rng);
-    _shuffledOptions = _shuffleOptions(_questions[0]);
+    _shuffledOptions = _shuffleOptions(widget.source.current);
 
     // Rebuild once the game finishes loading so the mini-map appears
     // without waiting for the first user interaction.
@@ -64,26 +64,31 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
 
   @override
   void dispose() {
+    _advanceTimer?.cancel();
     _shakeController.dispose();
     super.dispose();
   }
 
-  Question get _current => _questions[_questionIndex % _questions.length];
+  Question get _current => widget.source.current;
 
   List<String> _shuffleOptions(Question q) => List.of(q.options)..shuffle(_rng);
 
   void _onOptionTap(String option) {
     if (_answerState != _AnswerState.unanswered) return;
 
+    final correct = option == _current.answer;
+    widget.source.recordAnswer(_current, correct: correct);
+
     setState(() {
       _selectedOption = option;
-      if (option == _current.answer) {
+      if (correct) {
         _answerState = _AnswerState.correct;
         ref.read(streakProvider.notifier).increment();
         final streak = ref.read(streakProvider);
         widget.game.correctAnswer(streak: streak, answer: _current.answer);
         if (ref.read(hapticsEnabledProvider)) HapticFeedback.lightImpact();
-        Future.delayed(const Duration(milliseconds: 900), _advance);
+        _advanceTimer?.cancel();
+        _advanceTimer = Timer(const Duration(milliseconds: 900), _advance);
       } else {
         _answerState = _AnswerState.wrong;
         ref.read(streakProvider.notifier).reset();
@@ -94,13 +99,11 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
     });
   }
 
-  void _advance() {
+  Future<void> _advance() async {
+    if (!mounted) return;
+    await widget.source.advance();
     if (!mounted) return;
     setState(() {
-      _questionIndex++;
-      if (_questionIndex % _questions.length == 0) {
-        _questions.shuffle(_rng);
-      }
       _answerState = _AnswerState.unanswered;
       _selectedOption = null;
       _shuffledOptions = _shuffleOptions(_current);

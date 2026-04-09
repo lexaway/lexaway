@@ -23,7 +23,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final activePack = ref.read(activePackProvider);
       final isLoading = activePack.isLoading;
-      final hasQuestions = activePack.valueOrNull?.isNotEmpty ?? false;
+      final hasQuestions = activePack.valueOrNull?.hasQuestions ?? false;
       final loc = state.matchedLocation;
       final box = ref.read(hiveBoxProvider);
 

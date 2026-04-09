@@ -179,7 +179,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     final nativeLang = ref.watch(nativeLangProvider);
 
     // Watch the state so we rebuild when it changes; read the notifier for the packId.
-    final hasActiveQuestions = ref.watch(activePackProvider).valueOrNull?.isNotEmpty ?? false;
+    final hasActiveQuestions = ref.watch(activePackProvider).valueOrNull?.hasQuestions ?? false;
     final activePackId = ref.read(activePackProvider.notifier).activePackId;
     final canGoBack = hasActiveQuestions && activePackId != null && local.containsKey(activePackId);
 

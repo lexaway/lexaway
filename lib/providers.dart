@@ -5,9 +5,9 @@ import 'package:hive_ce/hive_ce.dart';
 import 'data/hive_keys.dart';
 import 'data/pack_database.dart';
 import 'data/pack_manager.dart';
+import 'data/question_source.dart';
 import 'data/tts_manager.dart';
 import 'data/tts_service.dart';
-import 'models/question.dart';
 
 // Bootstrap
 
@@ -397,23 +397,23 @@ class StepsNotifier extends HiveIntNotifier {
 // Active pack
 
 final activePackProvider =
-    AsyncNotifierProvider<ActivePackNotifier, List<Question>>(
+    AsyncNotifierProvider<ActivePackNotifier, QuestionSource?>(
       ActivePackNotifier.new,
     );
 
-class ActivePackNotifier extends AsyncNotifier<List<Question>> {
+class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
   late final PackDatabase _db;
   String? _activePackId;
 
   @override
-  Future<List<Question>> build() async {
+  Future<QuestionSource?> build() async {
     final db = PackDatabase(packsDir: ref.read(packsDirProvider));
     _db = db;
     ref.onDispose(() => db.close());
 
     final pm = ref.read(packManagerProvider);
     final local = pm.getLocalPacks();
-    if (local.isEmpty) return [];
+    if (local.isEmpty) return null;
 
     final packId = pm.lastUsed ?? local.keys.first;
     return _openAndLoad(packId);
@@ -433,7 +433,7 @@ class ActivePackNotifier extends AsyncNotifier<List<Question>> {
       // DB may never have been opened (e.g. no packs installed).
     }
     _activePackId = null;
-    state = const AsyncData([]);
+    state = const AsyncData(null);
   }
 
   Future<void> switchPack(String packId) async {
@@ -441,7 +441,7 @@ class ActivePackNotifier extends AsyncNotifier<List<Question>> {
     state = await AsyncValue.guard(() => _openAndLoad(packId));
   }
 
-  Future<List<Question>> _openAndLoad(String packId) async {
+  Future<QuestionSource?> _openAndLoad(String packId) async {
     try {
       await _db.open(packId);
     } catch (_) {
@@ -451,7 +451,7 @@ class ActivePackNotifier extends AsyncNotifier<List<Question>> {
       await pm.deletePack(packId);
       ref.invalidate(localPacksProvider);
       _activePackId = null;
-      return [];
+      return null;
     }
     final qs = await _db.loadQuestions(limit: 200);
     if (qs.isEmpty) {
@@ -460,10 +460,10 @@ class ActivePackNotifier extends AsyncNotifier<List<Question>> {
       await pm.deletePack(packId);
       ref.invalidate(localPacksProvider);
       _activePackId = null;
-      return [];
+      return null;
     }
     ref.read(packManagerProvider).setLastUsed(packId);
     _activePackId = packId;
-    return qs;
+    return QuestionSource(_db, qs);
   }
 }
