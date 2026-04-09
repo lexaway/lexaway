@@ -1,14 +1,39 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../widgets/tiled_background.dart';
 
-class LoadingScreen extends StatelessWidget {
+class LoadingScreen extends ConsumerStatefulWidget {
   const LoadingScreen({super.key});
+
+  @override
+  ConsumerState<LoadingScreen> createState() => _LoadingScreenState();
+}
+
+class _LoadingScreenState extends ConsumerState<LoadingScreen> {
+  late final Timer _failsafe;
+
+  @override
+  void initState() {
+    super.initState();
+    // If we're still here after 3 seconds, kick the provider to unstick.
+    _failsafe = Timer(const Duration(seconds: 3), () {
+      if (mounted) ref.invalidate(activePackProvider);
+    });
+  }
+
+  @override
+  void dispose() {
+    _failsafe.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

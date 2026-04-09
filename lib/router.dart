@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,21 +13,9 @@ import 'screens/settings_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _RefreshNotifier();
-  ref.listen(activePackProvider, (prev, next) {
-    final wasLoading = prev?.isLoading ?? true;
-    final hasQuestions = next.valueOrNull?.isNotEmpty ?? false;
-    // Notify when loading completes (initial navigation) or a pack is loaded.
-    // Skip when an active pack is cleared (delete) — user is already on /packs.
-    if (wasLoading || hasQuestions) refreshNotifier.notify();
-  });
+  // Always notify — the redirect is idempotent and handles all states.
+  ref.listen(activePackProvider, (_, __) => refreshNotifier.notify());
   ref.onDispose(refreshNotifier.dispose);
-
-  // Guard against a race where activePackProvider resolves before the
-  // listener above is attached — without this kick the router would
-  // never re-evaluate its redirect and stay stuck on /loading.
-  SchedulerBinding.instance.addPostFrameCallback((_) {
-    refreshNotifier.notify();
-  });
 
   return GoRouter(
     initialLocation: '/loading',
