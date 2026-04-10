@@ -2,6 +2,12 @@
 
 A language learning adventure game built with Flutter and Flame. Answer questions, walk a tiny dino across pixel-art landscapes.
 
+## LLM Usage
+
+LLMs are used to help develop this app and its related lexaway-packs repo.
+
+Suggestions and code edits are always reviewed and nothing is done fully "hands-off".
+
 ## Running
 
 ```bash
