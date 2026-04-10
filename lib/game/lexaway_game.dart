@@ -29,12 +29,12 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   static const double walkTarget = 3 * 16 * pixelScale;
   static const double cloudDrift = 1.5;
 
-  final Box? hiveBox;
+  final Box hiveBox;
   final String characterPath;
   String _locale;
 
   LexawayGame({
-    this.hiveBox,
+    required this.hiveBox,
     String locale = 'en',
     required this.characterPath,
   }) : _locale = locale;
@@ -178,7 +178,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
   Map<String, dynamic>? _loadWorldState() {
     try {
-      final saved = hiveBox?.get(HiveKeys.world) as Map?;
+      final saved = hiveBox.get(HiveKeys.world) as Map?;
       if (saved == null) return null;
       return Map<String, dynamic>.from(saved);
     } catch (_) {
@@ -189,8 +189,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   /// Save world state to Hive. Called after walk completion,
   /// coin collection, and on app lifecycle events.
   void saveWorldState() {
-    if (hiveBox == null) return;
-    hiveBox!.put(HiveKeys.world, {
+    hiveBox.put(HiveKeys.world, {
       'seed': worldMap.seed,
       'extensions': _worldExtensions,
       'scroll_offset': ground.scrollOffset,
