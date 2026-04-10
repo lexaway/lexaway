@@ -1,5 +1,9 @@
 # Lexaway
 
+<p align="center">
+  <img src="docs/launch.gif" width="280" alt="Lexaway gameplay: a pixel-art dino walks forward when a vocab prompt is answered correctly" />
+</p>
+
 A language learning adventure game built with Flutter and Flame. Answer questions, walk a tiny dino across pixel-art landscapes.
 
 ## LLM Usage
