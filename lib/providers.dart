@@ -443,6 +443,16 @@ final activePackProvider =
       ActivePackNotifier.new,
     );
 
+/// Reactive view of [ActivePackNotifier.activeLang]. The lang lives on the
+/// notifier (derived from `_activePackId`), but `_activePackId` only ever
+/// changes alongside a state transition — so watching the state reliably
+/// catches every change without exposing the "watch then read notifier"
+/// dance at call sites.
+final activeLangProvider = Provider<String?>((ref) {
+  ref.watch(activePackProvider);
+  return ref.read(activePackProvider.notifier).activeLang;
+});
+
 class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
   late final PackDatabase _db;
   String? _activePackId;

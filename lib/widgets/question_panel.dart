@@ -335,8 +335,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
 
   /// Visual-only speaker icon (the whole inset panel is tappable now).
   Widget _buildSpeakerIcon() {
-    ref.watch(activePackProvider);
-    final lang = ref.read(activePackProvider.notifier).activeLang;
+    final lang = ref.watch(activeLangProvider);
     if (lang == null || !TtsManager.isSupported(lang)) {
       return const SizedBox.shrink();
     }
