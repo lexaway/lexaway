@@ -3,7 +3,6 @@ import '../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../data/hive_keys.dart';
 import '../data/pack_manager.dart';
 import '../data/tts_manager.dart';
 import '../providers.dart';
@@ -269,7 +268,6 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                           );
                         }
                         final pack = packs[i - 1];
-                        final box = ref.read(hiveBoxProvider);
                         final status = packUpdateStatus(pack, local[pack.packId]);
                         final ttsManager = ref.watch(ttsManagerProvider);
                         return PackTile(
@@ -285,7 +283,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                           voiceModels: ttsModelRegistry[pack.lang] ?? const [],
                           downloadedModelId: ttsManager.downloadedModelId(pack.lang),
                           hasCharacter:
-                              box.get(HiveKeys.character(pack.lang)) != null,
+                              ref.watch(characterProvider(pack.lang)) != null,
                           onDownload: () => _download(pack),
                           onUpdate: () => _download(pack),
                           onDownloadVoice: (modelId) => _downloadVoice(pack.lang, modelId),

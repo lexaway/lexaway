@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'data/hive_keys.dart';
 import 'providers.dart';
 import 'screens/egg_selection_screen.dart';
 import 'screens/game_screen.dart';
@@ -25,7 +24,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoading = activePack.isLoading;
       final hasQuestions = activePack.valueOrNull?.hasQuestions ?? false;
       final loc = state.matchedLocation;
-      final box = ref.read(hiveBoxProvider);
 
       // Settings, attributions, and packs are always reachable, even while loading
       if (loc == '/settings' || loc == '/attributions' || loc == '/packs') return null;
@@ -35,7 +33,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (loc == '/loading') {
         if (!hasQuestions) return '/packs';
         final lang = ref.read(activePackProvider.notifier).activeLang;
-        final hasChar = lang != null && box.get(HiveKeys.character(lang)) != null;
+        final hasChar = lang != null && ref.read(characterProvider(lang)) != null;
         return hasChar ? '/game' : '/hatch';
       }
 
@@ -43,7 +41,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (loc == '/game') {
         final lang = ref.read(activePackProvider.notifier).activeLang;
-        final hasChar = lang != null && box.get(HiveKeys.character(lang)) != null;
+        final hasChar = lang != null && ref.read(characterProvider(lang)) != null;
         if (!hasChar) return '/hatch';
       }
 

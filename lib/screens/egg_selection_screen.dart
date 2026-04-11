@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../data/hive_keys.dart';
 import '../game/egg_preview_game.dart';
 import '../l10n/app_localizations.dart';
 import '../models/character.dart';
@@ -135,7 +134,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
     if (lang == null) return;
 
     final character = _eggs[_selected!];
-    ref.read(hiveBoxProvider).put(HiveKeys.character(lang), character.key);
+    ref.read(characterProvider(lang).notifier).set(character.key);
 
     // Brief pause to admire the new dino, then go
     Future.delayed(const Duration(milliseconds: 800), () {

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/app_font.dart';
-import '../data/hive_keys.dart';
 import '../data/pack_manager.dart';
 import '../game/audio_manager.dart';
 import '../game/lexaway_game.dart';
@@ -36,7 +35,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
     final dinoLocale = iso3to2[lang] ?? 'en';
     if (_game == null) {
       final box = ref.read(hiveBoxProvider);
-      final charKey = box.get(HiveKeys.character(lang)) as String? ?? 'female/doux';
+      final charKey = ref.read(characterProvider(lang)) ?? 'female/doux';
       final character = CharacterInfo.fromKey(charKey);
 
       _game = LexawayGame(
