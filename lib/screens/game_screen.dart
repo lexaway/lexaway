@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/app_font.dart';
 import '../data/pack_manager.dart';
 import '../game/audio_manager.dart';
+import '../game/events.dart';
 import '../game/lexaway_game.dart';
 import '../models/character.dart';
 import '../providers.dart';
@@ -21,6 +24,7 @@ class GameScreen extends ConsumerStatefulWidget {
 class _GameScreenState extends ConsumerState<GameScreen>
     with WidgetsBindingObserver {
   LexawayGame? _game;
+  StreamSubscription<GameEvent>? _eventSub;
 
   @override
   void initState() {
@@ -49,12 +53,21 @@ class _GameScreenState extends ConsumerState<GameScreen>
         characterPath: character.basePath,
         fontFamily: ref.read(fontProvider).family,
       );
-      _game!.onCoinCollected = (value) {
-        ref.read(coinProvider.notifier).add(value);
-      };
-      _game!.onStepTaken = (steps) {
-        ref.read(stepsProvider.notifier).add(steps);
-      };
+      // Bridge game events into Riverpod notifiers. The game bus is alive as
+      // soon as LexawayGame is constructed, so subscribing here (not in
+      // onLoad) is safe and avoids races on very first-frame pickups.
+      // One subscription, switched on the sealed event family, so there's
+      // exactly one stream listener to remember to cancel.
+      _eventSub = _game!.events.on<GameEvent>().listen((event) {
+        switch (event) {
+          case CoinCollected(:final value):
+            ref.read(coinProvider.notifier).add(value);
+          case StepTaken(:final count):
+            ref.read(stepsProvider.notifier).add(count);
+          default:
+            break;
+        }
+      });
     } else {
       _game!.locale = dinoLocale;
     }
@@ -65,6 +78,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
     // Lifecycle observer already flushes on pause/inactive before dispose,
     // but flush again in case of direct navigation without backgrounding.
     _flushGameState();
+    _eventSub?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

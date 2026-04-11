@@ -20,8 +20,6 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
 
   bool get isWalking => _state.walking;
 
-  Function(int steps)? onStepTaken;
-
   void correctAnswer({required int streak, required String answer}) {
     final shouldRun = streak >= _runStreakThreshold;
     final distance = shouldRun
@@ -65,7 +63,6 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     if (_state.stepTimer >= _stepInterval) {
       _state.stepTimer -= _stepInterval;
       game.events.emit(const StepTaken(1));
-      onStepTaken?.call(1);
     }
     if (_state.remaining <= 0) {
       _state.remaining = 0;
@@ -79,7 +76,7 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     final skipDistance = _state.remaining;
     final skippedSteps =
         (skipDistance / (_state.currentSpeed * _stepInterval)).ceil();
-    if (skippedSteps > 0) onStepTaken?.call(skippedSteps);
+    if (skippedSteps > 0) game.events.emit(StepTaken(skippedSteps));
     _state.remaining = 0;
     _stop(skipDistance: skipDistance);
   }

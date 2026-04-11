@@ -5,19 +5,27 @@ import 'package:flame/components.dart';
 import 'package:flame/sprite.dart';
 import '../events.dart';
 import '../lexaway_game.dart';
-import 'coin_fly_effect.dart';
+import '../world/scrolling_item_layer.dart';
 import 'player.dart';
 
 enum CoinType { coin, diamond }
 
 class Coin extends SpriteAnimationComponent
-    with HasGameReference<LexawayGame>, CollisionCallbacks {
+    with
+        HasGameReference<LexawayGame>,
+        CollisionCallbacks,
+        ScrollingWorldItem {
   final CoinType type;
+  @override
   double worldX;
   bool collected = false;
 
   /// Index into the WorldMap's item list, used for collection tracking.
+  @override
   final int itemIndex;
+
+  @override
+  double get layerWidth => size.x;
 
   Coin({required this.type, required this.worldX, this.itemIndex = -1});
 
@@ -64,19 +72,10 @@ class Coin extends SpriteAnimationComponent
     collected = true;
 
     final value = type == CoinType.diamond ? 3 : 1;
+    // Sync event — CoinManager reads this coin's position/animation/size
+    // from its handler (before removeFromParent propagates) to spawn the
+    // fly-to-counter visual effect.
     game.events.emit(CoinCollected(type, value, itemIndex));
-
-    // Spawn fly-to-counter effect
-    final target = Vector2(game.size.x - 60, 50);
-    game.add(
-      CoinFlyEffect(
-        start: position.clone(),
-        target: target,
-        animation: animation!.clone(),
-        spriteSize: size.clone(),
-      ),
-    );
-
     removeFromParent();
   }
 }

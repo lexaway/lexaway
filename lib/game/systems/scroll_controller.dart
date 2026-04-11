@@ -36,7 +36,6 @@ class ScrollController extends Component with HasGameReference<LexawayGame> {
         if (skipDistance > 0) _ground.scrollOffset += skipDistance;
         _parallax.parallax!.baseVelocity = Vector2.zero();
         _ground.stopScrolling();
-        game.markWorldDirty();
       default:
         break;
     }

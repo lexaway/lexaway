@@ -6,20 +6,22 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../components/entity.dart';
 import '../lexaway_game.dart';
 import 'biome_registry.dart';
+import 'scrolling_item_layer.dart';
 import 'world_map.dart';
 
 /// Materializes entities from the pre-generated [WorldMap] as the player
 /// scrolls. Replaces the old random-spawning EntityManager.
-class WorldRenderer extends Component with HasGameReference<LexawayGame> {
-  final WorldMap worldMap;
-
+class WorldRenderer extends ScrollingItemLayer<Entity> {
   /// Sprite definitions keyed by biome, then entity name.
   final Map<BiomeType, Map<String, _EntityDef>> _defs = {};
 
-  /// Track which item indices are currently on screen to avoid double-spawning.
-  final Set<int> _activeIndices = {};
-
-  WorldRenderer(this.worldMap);
+  WorldRenderer(WorldMap worldMap)
+      : super(
+          worldMap: worldMap,
+          category: ItemCategory.entity,
+          spawnMarginPx: 128,
+          cullMarginPx: 128,
+        );
 
   @override
   Future<void> onLoad() async {
@@ -63,47 +65,24 @@ class WorldRenderer extends Component with HasGameReference<LexawayGame> {
   }
 
   @override
-  void update(double dt) {
-    final offset = game.ground.scrollOffset;
-    final startX = offset - 128;
-    final endX = offset + game.size.x + 128;
+  Entity? createItem(PlacedItem item) {
+    final biome = worldMap.biomeAt(item.worldX);
+    final def = _defs[biome]?[item.name];
+    if (def == null) return null;
 
-    // Spawn items entering the viewport
-    for (final item in worldMap.itemsInRange(startX, endX)) {
-      if (item.category != ItemCategory.entity) continue;
-      if (_activeIndices.contains(item.index)) continue;
+    final scale = LexawayGame.pixelScale;
+    final spriteSize = Vector2(
+      def.widthTiles * 16.0 * scale,
+      def.heightTiles * 16.0 * scale,
+    );
+    final groundTop = game.size.y * LexawayGame.groundLevel;
 
-      final biome = worldMap.biomeAt(item.worldX);
-      final def = _defs[biome]?[item.name];
-      if (def == null) continue;
-
-      final scale = LexawayGame.pixelScale;
-      final spriteSize = Vector2(
-        def.widthTiles * 16.0 * scale,
-        def.heightTiles * 16.0 * scale,
-      );
-      final groundTop = game.size.y * LexawayGame.groundLevel;
-
-      final entity = Entity(
-        sprite: def.sprite,
-        spriteSize: spriteSize,
-        worldX: item.worldX,
-        itemIndex: item.index,
-      )..position.y = groundTop - spriteSize.y;
-
-      _activeIndices.add(item.index);
-      add(entity);
-    }
-
-    // Position & cull
-    for (final entity in children.query<Entity>()) {
-      entity.position.x = entity.worldX - offset;
-
-      if (entity.position.x + entity.spriteSize.x < -128) {
-        _activeIndices.remove(entity.itemIndex);
-        entity.removeFromParent();
-      }
-    }
+    return Entity(
+      sprite: def.sprite,
+      spriteSize: spriteSize,
+      worldX: item.worldX,
+      itemIndex: item.index,
+    )..position.y = groundTop - spriteSize.y;
   }
 }
 

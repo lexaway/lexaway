@@ -68,6 +68,13 @@ class IdleChatterTriggered extends GameEvent {
   const IdleChatterTriggered();
 }
 
+/// A batch of additional world segments has been appended. Fired by
+/// [WorldStreamer] whenever the player gets close to the end of the
+/// generated map and a new chunk is lazily produced.
+class WorldExtended extends GameEvent {
+  const WorldExtended();
+}
+
 /// Thin broadcast wrapper. Use [on] to get a filtered stream of a specific
 /// event subtype; use [emit] to publish.
 class GameEvents {

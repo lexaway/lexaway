@@ -5,7 +5,6 @@ import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/parallax.dart';
 
-import '../data/world_state.dart';
 import '../data/world_state_repository.dart';
 import 'audio_manager.dart';
 import 'components/coin_manager.dart';
@@ -21,6 +20,8 @@ import 'systems/audio_cue_controller.dart';
 import 'systems/dialogue_controller.dart';
 import 'systems/scroll_controller.dart';
 import 'systems/wind_controller.dart';
+import 'systems/world_state_persister.dart';
+import 'systems/world_streamer.dart';
 import 'world/biome_registry.dart';
 import 'world/world_generator.dart';
 import 'world/world_map.dart';
@@ -80,19 +81,8 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   late CoinManager coinManager;
   late WindLines windLines;
   late MovementController movementController;
-
-  /// Coin item indices the player has already collected.
-  final Set<int> collectedCoins = {};
-
-  /// How many extension batches have been appended.
-  int _worldExtensions = 0;
-
-  /// Set by components when the persistable world state has changed.
-  /// Drained once per frame in [update] and on [flushWorldState].
-  bool _worldDirty = false;
-
-  Function(int value)? onCoinCollected;
-  Function(int steps)? onStepTaken;
+  late WorldStreamer worldStreamer;
+  late WorldStatePersister worldStatePersister;
 
   @override
   Color backgroundColor() => const Color(0xFF50BBFF);
@@ -101,16 +91,22 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   Future<void> onLoad() async {
     final saved = worldStateRepository.load();
     final seed = saved?.seed ?? Random().nextInt(1 << 32);
-    _worldExtensions = saved?.extensions ?? 0;
 
     worldMap = WorldGenerator().generate(seed);
-    // Replay extensions with the same seeds used during original gameplay.
-    final targetExtensions = _worldExtensions;
-    _worldExtensions = 0;
-    for (var i = 0; i < targetExtensions; i++) {
-      _worldExtensions++;
-      _extendWorld();
+    // Replay previously-persisted extensions at their original seeds so
+    // worldMap.segments matches the saved scroll offset before any
+    // components that read the map come online. [WorldStreamer.extend]
+    // is a no-op on the event bus while unmounted, so replay doesn't
+    // spuriously dirty the persister.
+    worldStreamer = WorldStreamer(worldMap: worldMap);
+    for (var i = 0; i < (saved?.extensions ?? 0); i++) {
+      worldStreamer.extend();
     }
+
+    worldStatePersister = WorldStatePersister(
+      repository: worldStateRepository,
+      initialCollectedCoins: saved?.collectedCoins ?? const [],
+    );
 
     final initialBiome = BiomeRegistry.get(worldMap.segments.first.biome);
     final parallaxHeight = size.y * groundLevel + 16 * pixelScale - 40;
@@ -130,16 +126,16 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     }
     add(ground);
 
-    if (saved != null) {
-      collectedCoins.addAll(saved.collectedCoins);
-    }
-
     worldRenderer = WorldRenderer(worldMap)..priority = 1;
     add(worldRenderer);
 
-    coinManager = CoinManager(worldMap: worldMap, collectedCoins: collectedCoins)
-      ..priority = 1
-      ..onCoinCollected = (value) => onCoinCollected?.call(value);
+    // CoinManager shares the collectedCoins Set with the persister so its
+    // spawn loop can dedup against saved pickups; the persister owns the
+    // mutation lifecycle via its CoinCollected subscription.
+    coinManager = CoinManager(
+      worldMap: worldMap,
+      collectedCoins: worldStatePersister.collectedCoins,
+    )..priority = 1;
     add(coinManager);
 
     player = Player(spritePath: characterPath)..priority = 2;
@@ -153,8 +149,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       ..priority = 3;
     add(speechBubble);
 
-    movementController = MovementController()
-      ..onStepTaken = (steps) => onStepTaken?.call(steps);
+    movementController = MovementController();
     add(movementController);
 
     add(AudioCueController());
@@ -162,33 +157,22 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     add(WindController());
     add(AnimationController());
     add(DialogueController());
+    add(worldStreamer);
+    // Persister is added AFTER coinManager so its CoinCollected handler
+    // runs second. CoinManager's handler reads the still-alive Coin's
+    // sprite state to spawn the fly effect; the persister then mutates
+    // collectedCoins. Reordering would still work today (sync emit, both
+    // handlers run before the next frame), but the trajectory would be
+    // first-frame race-prone — keep them in this order.
+    add(worldStatePersister);
 
     await AudioManager.instance.preload();
     await SpeechMessages.load('en');
     if (locale != 'en') await SpeechMessages.load(locale);
 
-    // Persist the seed on first run. Calls the private writer directly
-    // because `isLoaded` is still false inside onLoad, so flushWorldState()
-    // would no-op.
-    if (saved == null) _writeWorldState();
-  }
-
-  @override
-  void update(double dt) {
-    super.update(dt);
-
-    // Lazy world extension: if player is within 200 tiles of the end,
-    // generate another batch.
-    final tilePx = 16.0 * pixelScale;
-    if (ground.scrollOffset + 200 * tilePx > worldMap.totalLengthPx) {
-      _worldExtensions++;
-      _extendWorld();
-      _worldDirty = true;
-    }
-
-    // Coalesce saves to at most one per frame. Components flip the dirty
-    // flag via [markWorldDirty]; the actual write happens here.
-    if (_worldDirty) _writeWorldState();
+    // Persist the seed on first run. The persister isn't mounted yet so
+    // its per-frame dirty drain hasn't started — flush() writes directly.
+    if (saved == null) worldStatePersister.flush();
   }
 
   void correctAnswer({required int streak, required String answer}) {
@@ -199,42 +183,16 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     movementController.wrongAnswer();
   }
 
-  /// Append 1000 more tiles to the world using a derived seed.
-  void _extendWorld() {
-    final extensionSeed = worldMap.seed + _worldExtensions;
-    final extension = WorldGenerator().generate(
-      extensionSeed,
-      totalTiles: 1000,
-      startTile: worldMap.totalTiles,
-      startIndex: worldMap.nextItemIndex,
-    );
-    worldMap.segments.addAll(extension.segments);
-    worldMap.nextItemIndex = extension.nextItemIndex;
-  }
-
-  /// Mark the world state as changed. Components call this whenever they
-  /// mutate persistable state (walk finish, coin pickup, world extension);
-  /// the save itself is coalesced to one per frame inside [update].
-  void markWorldDirty() {
-    _worldDirty = true;
-  }
-
-  /// Force an immediate synchronous write, bypassing the per-frame coalesce.
-  /// Use this from lifecycle hooks (pause/dispose) where [update] may never
-  /// run again before the process is torn down.
+  /// Force an immediate synchronous write, bypassing the per-frame
+  /// coalesce in [WorldStatePersister]. Use this from lifecycle hooks
+  /// (pause, dispose) where the next tick may never run.
   ///
-  /// No-ops if [onLoad] hasn't finished yet, because [_snapshot] reads `late`
-  /// fields that don't exist until mid-boot. This matters on the boot-failure
-  /// dispose path, where `GameScreen.dispose` can fire after a partial
-  /// `onLoad`.
+  /// No-ops if [onLoad] hasn't finished yet — [worldStatePersister] is a
+  /// late field and the `late` access would throw if the boot-failure
+  /// dispose path calls this after a partial `onLoad`.
   void flushWorldState() {
     if (!isLoaded) return;
-    _writeWorldState();
-  }
-
-  void _writeWorldState() {
-    _worldDirty = false;
-    worldStateRepository.save(_snapshot());
+    worldStatePersister.flush();
   }
 
   @override
@@ -242,11 +200,4 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     events.dispose();
     super.onRemove();
   }
-
-  WorldState _snapshot() => WorldState(
-        seed: worldMap.seed,
-        extensions: _worldExtensions,
-        scrollOffset: ground.scrollOffset,
-        collectedCoins: collectedCoins.toList(),
-      );
 }

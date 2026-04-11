@@ -3,70 +3,71 @@ import 'dart:async';
 import 'package:flame/components.dart';
 
 import '../events.dart';
-import '../lexaway_game.dart';
+import '../world/scrolling_item_layer.dart';
 import '../world/world_map.dart';
 import 'coin.dart';
+import 'coin_fly_effect.dart';
 
 /// Materializes coins from the pre-generated [WorldMap] as the player scrolls.
-/// Tracks collected coins by index so they don't reappear after restart.
-class CoinManager extends Component with HasGameReference<LexawayGame> {
-  static const int _maxSpawnsPerFrame = 5;
+/// Tracks collected coins by index so they don't reappear after restart, and
+/// owns the "fly to HUD counter" visual effect spawned on pickup — this keeps
+/// HUD layout knowledge out of [Coin].
+class CoinManager extends ScrollingItemLayer<Coin> {
+  /// Screen-space offset of the coin counter inside the HUD. Centralized
+  /// here (not on [Coin]) so only one place in the game code knows where
+  /// the counter lives.
+  static final Vector2 _hudCounterOffset = Vector2(-60, 50);
 
-  final WorldMap worldMap;
   final Set<int> collectedCoins;
 
-  /// Track which item indices are currently on screen.
-  final Set<int> _activeIndices = {};
+  StreamSubscription<GameEvent>? _sub;
 
-  Function(int value)? onCoinCollected;
+  CoinManager({required super.worldMap, required this.collectedCoins})
+      : super(
+          category: ItemCategory.coin,
+          spawnMarginPx: 64,
+          cullMarginPx: 64,
+          maxSpawnsPerFrame: 5,
+        );
 
-  StreamSubscription<CoinCollected>? _sub;
-
-  CoinManager({required this.worldMap, required this.collectedCoins});
+  @override
+  Coin? createItem(PlacedItem item) {
+    if (collectedCoins.contains(item.index)) return null;
+    final type = item.name == 'diamond' ? CoinType.diamond : CoinType.coin;
+    return Coin(type: type, worldX: item.worldX, itemIndex: item.index);
+  }
 
   @override
   void onMount() {
     super.onMount();
-    _sub = game.events.on<CoinCollected>().listen(_onCoinCollected);
+    _sub = game.events.on<GameEvent>().listen(_handle);
   }
 
-  @override
-  void update(double dt) {
-    final offset = game.ground.scrollOffset;
-
-    final startX = offset - 64;
-    final endX = offset + game.size.x + 64;
-
-    var spawned = 0;
-    for (final item in worldMap.itemsInRange(startX, endX)) {
-      if (item.category != ItemCategory.coin) continue;
-      if (_activeIndices.contains(item.index)) continue;
-      if (collectedCoins.contains(item.index)) continue;
-      if (spawned >= _maxSpawnsPerFrame) break;
-
-      final type = item.name == 'diamond' ? CoinType.diamond : CoinType.coin;
-      final coin = Coin(type: type, worldX: item.worldX, itemIndex: item.index);
-      _activeIndices.add(item.index);
-      add(coin);
-      spawned++;
+  void _handle(GameEvent event) {
+    switch (event) {
+      case CoinCollected(:final itemIndex):
+        // [WorldStatePersister] also listens to CoinCollected and owns
+        // the collectedCoins mutation + dirty flag. We just handle the
+        // visual pickup effect here.
+        //
+        // Event is delivered synchronously, so the Coin is still
+        // attached and its sprite state is still readable — spawn the
+        // fly effect here rather than forcing Coin to know HUD
+        // coordinates.
+        final coin = activeItems.remove(itemIndex);
+        if (coin != null && coin.animation != null) {
+          game.add(
+            CoinFlyEffect(
+              start: coin.position.clone(),
+              target: Vector2(game.size.x, 0) + _hudCounterOffset,
+              animation: coin.animation!.clone(),
+              spriteSize: coin.size.clone(),
+            ),
+          );
+        }
+      default:
+        break;
     }
-
-    // Position & cull
-    for (final coin in children.query<Coin>()) {
-      coin.position.x = coin.worldX - offset;
-
-      if (coin.position.x + coin.size.x < -64) {
-        _activeIndices.remove(coin.itemIndex);
-        coin.removeFromParent();
-      }
-    }
-  }
-
-  void _onCoinCollected(CoinCollected event) {
-    collectedCoins.add(event.itemIndex);
-    _activeIndices.remove(event.itemIndex);
-    onCoinCollected?.call(event.value);
-    game.markWorldDirty();
   }
 
   @override
