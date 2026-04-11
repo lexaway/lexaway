@@ -17,7 +17,7 @@ class TtsCache {
     this.maxEntries = 60,
   });
 
-  final _cache = LinkedHashMap<String, Uint8List>();
+  final _cache = <String, Uint8List>{};
   final _inFlight = <String, Future<Uint8List?>>{};
   final _queue = Queue<_PrefetchEntry>();
   bool _processing = false;
