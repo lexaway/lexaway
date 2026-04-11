@@ -146,10 +146,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
   }
 
   Future<void> _deleteVoice(String lang) async {
-    ref.read(ttsServiceProvider).releaseEngine();
-    await ref.read(ttsManagerProvider).deleteModel(lang);
-    // Invalidate so the UI picks up the removed voice state.
-    ref.invalidate(localPacksProvider);
+    await ref.read(localPacksProvider.notifier).deleteVoice(lang);
   }
 
   Future<void> _select(String packId) async {

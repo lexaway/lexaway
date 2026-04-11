@@ -19,7 +19,8 @@ final packManagerProvider = Provider<PackManager>((ref) {
   return PackManager(ref.watch(hiveBoxProvider), packsDir: ref.watch(packsDirProvider));
 });
 
-/// Local packs on disk. Invalidate after download/delete.
+/// Local packs on disk. Mutations go through the notifier, which owns its
+/// own state updates — callers don't need to invalidate afterwards.
 final localPacksProvider =
     AsyncNotifierProvider<LocalPacksNotifier, Map<String, LocalPack>>(
       LocalPacksNotifier.new,
@@ -107,6 +108,17 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
       ref.read(voiceDownloadProgressProvider(lang).notifier).state = null;
     }
     // Trigger rebuild so the UI picks up the new voice state
+    ref.invalidateSelf();
+  }
+
+  /// Delete the voice model for [lang] while leaving the sentence pack intact.
+  /// Unlike [delete], which removes the voice only as a cleanup step, this
+  /// honors an explicit user action and removes the model unconditionally.
+  Future<void> deleteVoice(String lang) async {
+    // Release TTS engine before deleting files to avoid native crash
+    ref.read(ttsServiceProvider).releaseEngine();
+    await ref.read(ttsManagerProvider).deleteModel(lang);
+    // Trigger rebuild so the UI picks up the removed voice state.
     ref.invalidateSelf();
   }
 
