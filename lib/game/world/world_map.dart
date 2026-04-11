@@ -61,12 +61,6 @@ class WorldMap {
     return segments.last.endTile;
   }
 
-  double progressFraction(double playerX) {
-    final len = totalLengthPx;
-    if (len <= 0) return 0;
-    return (playerX / len).clamp(0.0, 1.0);
-  }
-
   BiomeType biomeAt(double worldX) {
     for (final seg in segments) {
       if (worldX < seg.endPx) return seg.biome;
