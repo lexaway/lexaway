@@ -26,6 +26,11 @@ class _GameScreenState extends ConsumerState<GameScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Initial volume sync. `ref.listen` below only fires on subsequent
+    // changes (WidgetRef.listen has no `fireImmediately` flag), so seed
+    // the audio singleton with the current provider values here.
+    AudioManager.instance.masterVolume = ref.read(masterVolumeProvider);
+    AudioManager.instance.sfxVolume = ref.read(sfxVolumeProvider);
   }
 
   @override
@@ -102,13 +107,14 @@ class _GameScreenState extends ConsumerState<GameScreen>
       _game?.fontFamily = next.family;
     });
 
-    // Sync volume settings to the audio singleton
+    // Sync volume settings to the audio singleton (initial values are
+    // seeded in initState).
     ref.listen<double>(masterVolumeProvider, (prev, next) {
       AudioManager.instance.masterVolume = next;
-    }, fireImmediately: true);
+    });
     ref.listen<double>(sfxVolumeProvider, (prev, next) {
       AudioManager.instance.sfxVolume = next;
-    }, fireImmediately: true);
+    });
 
     return Scaffold(
       body: Stack(
