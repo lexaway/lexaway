@@ -103,9 +103,12 @@ class _GameScreenState extends ConsumerState<GameScreen>
     });
 
     // Sync volume settings to the audio singleton
-    final audio = AudioManager.instance;
-    audio.masterVolume = ref.watch(masterVolumeProvider);
-    audio.sfxVolume = ref.watch(sfxVolumeProvider);
+    ref.listen<double>(masterVolumeProvider, (prev, next) {
+      AudioManager.instance.masterVolume = next;
+    }, fireImmediately: true);
+    ref.listen<double>(sfxVolumeProvider, (prev, next) {
+      AudioManager.instance.sfxVolume = next;
+    }, fireImmediately: true);
 
     return Scaffold(
       body: Stack(
