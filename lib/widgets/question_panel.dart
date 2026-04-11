@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/question_source.dart';
-import '../data/tts_manager.dart';
 import '../game/lexaway_game.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -14,6 +13,7 @@ import '../models/question.dart';
 import '../providers.dart';
 import 'mini_map.dart';
 import 'phrase_text.dart';
+import 'tts_controller.dart';
 
 enum _AnswerState { unanswered, correct, wrong }
 
@@ -34,12 +34,15 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
   late List<String> _shuffledOptions;
   Timer? _advanceTimer;
 
+  late final TtsController _tts;
+
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
 
   @override
   void initState() {
     super.initState();
+    _tts = TtsController(ref: ref, isMounted: () => mounted);
     _shuffledOptions = _shuffleOptions(widget.source.current);
 
     // Rebuild once the game finishes loading so the mini-map appears
@@ -62,7 +65,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
       TweenSequenceItem(tween: Tween(begin: 4, end: 0), weight: 1),
     ]).animate(_shakeController);
 
-    _triggerPrefetch();
+    _tts.prefetch(_prefetchTexts());
     if (ref.read(autoPlayTtsProvider)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _speakSentence();
@@ -109,7 +112,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
 
   Future<void> _advance() async {
     if (!mounted) return;
-    _speakGeneration++;
+    _tts.invalidatePending();
     await widget.source.advance();
     if (!mounted) return;
     setState(() {
@@ -117,7 +120,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
       _selectedOption = null;
       _shuffledOptions = _shuffleOptions(_current);
     });
-    _triggerPrefetch();
+    _tts.prefetch(_prefetchTexts());
     if (ref.read(autoPlayTtsProvider)) {
       _speakSentence();
     }
@@ -134,47 +137,17 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
 
   // -- TTS --
 
-  /// Incremented on each question advance to discard stale speak requests.
-  int _speakGeneration = 0;
-
-  bool get _ttsAvailable {
-    final lang = ref.read(activePackProvider.notifier).activeLang;
-    if (lang == null || !TtsManager.isSupported(lang)) return false;
-    return ref.read(ttsManagerProvider).isModelDownloaded(lang);
-  }
-
-  void _triggerPrefetch() {
-    final lang = ref.read(activePackProvider.notifier).activeLang;
-    if (lang == null || !TtsManager.isSupported(lang)) return;
-    final ttsManager = ref.read(ttsManagerProvider);
-    if (!ttsManager.isModelDownloaded(lang)) return;
-
-    final cache = ref.read(ttsCacheProvider);
+  List<String> _prefetchTexts() {
     final texts = <String>[_current.phrase, ..._current.words];
     for (final q in widget.source.peek(2)) {
       texts.add(q.phrase);
       texts.addAll(q.words);
     }
-    cache.prefetch(lang, texts);
+    return texts;
   }
 
-  void _speakSentence() => _speak(_current.phrase);
-  void _speakWord(String word) => _speak(word);
-
-  Future<void> _speak(String text) async {
-    if (!_ttsAvailable) return;
-    final myGen = _speakGeneration;
-    final lang = ref.read(activePackProvider.notifier).activeLang!;
-    final cache = ref.read(ttsCacheProvider);
-    final bytes = await cache.getOrGenerate(lang, text);
-    if (bytes == null || !mounted || myGen != _speakGeneration) return;
-    final masterVol = ref.read(masterVolumeProvider);
-    final ttsVol = ref.read(ttsVolumeProvider);
-    await ref.read(ttsServiceProvider).playBytes(
-      bytes,
-      volume: masterVol * ttsVol,
-    );
-  }
+  void _speakSentence() => _tts.speak(_current.phrase);
+  void _speakWord(String word) => _tts.speak(word);
 
   @override
   Widget build(BuildContext context) {
@@ -335,15 +308,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
 
   /// Visual-only speaker icon (the whole inset panel is tappable now).
   Widget _buildSpeakerIcon() {
-    final lang = ref.watch(activeLangProvider);
-    if (lang == null || !TtsManager.isSupported(lang)) {
-      return const SizedBox.shrink();
-    }
-    final ttsManager = ref.watch(ttsManagerProvider);
-    if (!ttsManager.isModelDownloaded(lang)) {
-      return const SizedBox.shrink();
-    }
-
+    if (ref.watch(activeTtsLangProvider) == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.xs),
       child: Icon(

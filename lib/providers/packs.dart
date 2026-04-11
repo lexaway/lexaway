@@ -170,6 +170,27 @@ final activeLangProvider = Provider<String?>((ref) {
   return ref.read(activePackProvider.notifier).activeLang;
 });
 
+/// The active lang *if* TTS can speak for it — null otherwise. Non-null iff
+///   1. there is an active lang, AND
+///   2. the engine supports it, AND
+///   3. a voice model has been downloaded for it.
+///
+/// Rebuilds when the active lang changes or when a voice model is added /
+/// removed (both of which flow through [localPacksProvider]).
+///
+/// Returning the lang instead of a bool lets callers do a single read and
+/// use the non-null value directly, avoiding a second `activeLangProvider`
+/// read plus a bang-assertion at each call site.
+final activeTtsLangProvider = Provider<String?>((ref) {
+  final lang = ref.watch(activeLangProvider);
+  if (lang == null || !TtsManager.isSupported(lang)) return null;
+  // Watched for its invalidation signal — voice downloads/deletes rebuild it,
+  // which is how we learn that `isModelDownloaded` may now return differently.
+  ref.watch(localPacksProvider);
+  if (!ref.read(ttsManagerProvider).isModelDownloaded(lang)) return null;
+  return lang;
+});
+
 class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
   late final PackDatabase _db;
   String? _activePackId;
