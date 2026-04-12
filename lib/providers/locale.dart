@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/hive_keys.dart';
-import '../data/pack_manager.dart';
+import '../data/lang_codes.dart';
 import 'bootstrap.dart';
 
 final localeProvider = NotifierProvider<LocaleNotifier, Locale?>(

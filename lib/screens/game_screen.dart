@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/app_font.dart';
-import '../data/pack_manager.dart';
+import '../data/lang_codes.dart';
 import '../game/audio_manager.dart';
 import '../game/events.dart';
 import '../game/lexaway_game.dart';
