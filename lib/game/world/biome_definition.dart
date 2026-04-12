@@ -8,6 +8,44 @@ class WeightedEntity {
   const WeightedEntity(this.name, this.weight);
 }
 
+/// One noise-driven placement layer for a single entity type.
+///
+/// Each layer runs its own independent Poisson disk pass, with density
+/// modulated by 1D value noise. Stack layers like Minecraft stacks Perlin
+/// octaves — each one controls a single entity type's distribution.
+class SpawnLayer {
+  /// Which entity to place (must match a key in the biome's entity manifest).
+  final String entityName;
+
+  /// Noise frequency — smaller values produce broad, rolling hills of density;
+  /// larger values create tight, patchy clusters.
+  final double noiseScale;
+
+  /// Noise must exceed this to allow any spawning. 0.0 = always active,
+  /// 0.9 = only at the tallest noise peaks. Controls overall rarity.
+  final double threshold;
+
+  /// Spacing range (in tiles) when the layer is active. Noise interpolates
+  /// between these — high noise → minGap (dense), low noise → maxGap (sparse).
+  final int minGapTiles;
+  final int maxGapTiles;
+
+  /// Offset added to the world seed so this layer samples different noise than
+  /// its siblings. Just needs to be unique per layer — the actual value doesn't
+  /// matter.
+  final int noiseSeedOffset;
+
+  const SpawnLayer({
+    required this.entityName,
+    this.noiseScale = 0.03,
+    this.threshold = 0.3,
+    this.minGapTiles = 10,
+    this.maxGapTiles = 25,
+    this.noiseSeedOffset = 0,
+  }) : assert(minGapTiles < maxGapTiles),
+       assert(threshold >= 0 && threshold < 1.0);
+}
+
 /// Per-creature animation + behavior config. Lives on [CreatureSpriteDef]
 /// so biome registry entries can describe creatures declaratively without a
 /// separate JSON manifest (we only have one creature today).
@@ -85,9 +123,10 @@ class BiomeDefinition {
   final List<String> parallaxLayers;
   final Terrain footstepTerrain;
 
-  final List<WeightedEntity> entityWeights;
-  final int minEntityGapTiles;
-  final int maxEntityGapTiles;
+  /// Independent spawn layers — one per entity type (or group). Each layer
+  /// runs its own noise-modulated Poisson disk pass. The generator merges
+  /// results and resolves collisions afterward.
+  final List<SpawnLayer> entityLayers;
 
   final int minCoinGapTiles;
   final int maxCoinGapTiles;
@@ -122,9 +161,7 @@ class BiomeDefinition {
     required this.entityManifest,
     required this.parallaxLayers,
     required this.footstepTerrain,
-    required this.entityWeights,
-    required this.minEntityGapTiles,
-    required this.maxEntityGapTiles,
+    required this.entityLayers,
     required this.minCoinGapTiles,
     required this.maxCoinGapTiles,
     required this.diamondChance,
@@ -140,9 +177,6 @@ class BiomeDefinition {
          diamondChance + clusterChance <= 1.0,
          'diamondChance + clusterChance must not exceed 1.0',
        );
-
-  int get totalEntityWeight =>
-      entityWeights.fold(0, (sum, w) => sum + w.weight);
 
   int get totalCreatureWeight =>
       creatureWeights.fold(0, (sum, w) => sum + w.weight);

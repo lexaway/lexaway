@@ -3,12 +3,17 @@ import 'dart:math';
 import '../lexaway_game.dart';
 import 'biome_definition.dart';
 import 'biome_registry.dart';
+import 'noise.dart';
 import 'world_map.dart';
 
 class WorldGenerator {
   static const int _minSegmentTiles = 30;
   static const int _maxSegmentTiles = 80;
   static const double _tilePx = 16.0 * LexawayGame.pixelScale;
+
+  /// Minimum pixel distance between any two entities from different layers.
+  /// Prevents visual overlaps when independent layers happen to land nearby.
+  static const double _minCollisionPx = 6.0 * _tilePx;
 
   /// Generates a world of approximately [totalTiles] tiles from [seed].
   ///
@@ -39,21 +44,39 @@ class WorldGenerator {
 
       final items = <PlacedItem>[];
 
-      // Entity placement via 1D Poisson disk sampling
-      final entityPositions = _poissonDisk(
-        rng,
-        startPx: tile * _tilePx,
-        endPx: segEnd * _tilePx,
-        minGapPx: def.minEntityGapTiles * _tilePx,
-        maxGapPx: def.maxEntityGapTiles * _tilePx,
-      );
+      // Entity placement — each spawn layer runs its own noise-modulated
+      // Poisson disk pass independently, then we merge and resolve collisions.
+      final layerEntities = <_LayerPlacement>[];
+      for (final layer in def.entityLayers) {
+        final noise = Noise1D(seed + layer.noiseSeedOffset);
+        final positions = _noisePoissonDisk(
+          rng,
+          noise: noise,
+          layer: layer,
+          startPx: tile * _tilePx,
+          endPx: segEnd * _tilePx,
+        );
+        for (final x in positions) {
+          if (_insidePierZone(x, pierZones)) continue;
+          layerEntities.add(_LayerPlacement(layer.entityName, x));
+        }
+      }
 
-      for (final x in entityPositions) {
-        if (_insidePierZone(x, pierZones)) continue;
+      // Merge: sort by position, then cull any entity that's too close to a
+      // previously accepted one. This naturally resolves overlaps between
+      // layers while preserving each layer's noise-driven distribution.
+      layerEntities.sort((a, b) => a.worldX.compareTo(b.worldX));
+      final entityPositions = <double>[];
+      for (final lp in layerEntities) {
+        if (entityPositions.isNotEmpty &&
+            (lp.worldX - entityPositions.last) < _minCollisionPx) {
+          continue;
+        }
+        entityPositions.add(lp.worldX);
         items.add(PlacedItem(
-          name: _pickWeightedEntity(rng, def),
+          name: lp.name,
           category: ItemCategory.entity,
-          worldX: x,
+          worldX: lp.worldX,
           index: itemIndex++,
         ));
       }
@@ -137,26 +160,52 @@ class WorldGenerator {
     required double maxGapPx,
   }) {
     final positions = <double>[];
-    // Start with a random offset into the segment so entities don't always
-    // begin at the segment boundary.
     var x = startPx + minGapPx * (0.5 + rng.nextDouble() * 0.5);
 
     while (x < endPx - minGapPx * 0.5) {
       positions.add(x);
-      // Next position: at least minGapPx away, up to maxGapPx.
       x += minGapPx + rng.nextDouble() * (maxGapPx - minGapPx);
     }
 
     return positions;
   }
 
-  String _pickWeightedEntity(Random rng, BiomeDefinition def) {
-    var roll = rng.nextInt(def.totalEntityWeight);
-    for (final w in def.entityWeights) {
-      roll -= w.weight;
-      if (roll < 0) return w.name;
+  /// Noise-modulated 1D Poisson disk for a single [SpawnLayer].
+  ///
+  /// The noise value at each candidate position controls two things:
+  ///  1. Whether to spawn at all (must exceed [layer.threshold]).
+  ///  2. The gap to the next candidate — high noise shrinks gaps (denser),
+  ///     low noise stretches them (sparser).
+  List<double> _noisePoissonDisk(
+    Random rng, {
+    required Noise1D noise,
+    required SpawnLayer layer,
+    required double startPx,
+    required double endPx,
+  }) {
+    final minGapPx = layer.minGapTiles * _tilePx;
+    final maxGapPx = layer.maxGapTiles * _tilePx;
+    final positions = <double>[];
+
+    var x = startPx + minGapPx * (0.5 + rng.nextDouble() * 0.5);
+
+    while (x < endPx - minGapPx * 0.5) {
+      final n = noise.sample(x, scale: layer.noiseScale);
+
+      if (n > layer.threshold) {
+        positions.add(x);
+      }
+
+      // Noise modulates gap: high noise → small gap, low noise → big gap.
+      // Even when below threshold (no spawn), the walk continues so the noise
+      // pattern stays spatially coherent.
+      final densityFactor = 1.0 - n; // 0 when noise=1, 1 when noise=0
+      final gap = minGapPx + densityFactor * (maxGapPx - minGapPx);
+      // Add a little jitter so positions aren't perfectly grid-locked.
+      x += gap + rng.nextDouble() * minGapPx * 0.3;
     }
-    return def.entityWeights.last.name;
+
+    return positions;
   }
 
   String _pickWeightedCreature(Random rng, BiomeDefinition def) {
@@ -265,6 +314,13 @@ class WorldGenerator {
     }
     return false;
   }
+}
+
+class _LayerPlacement {
+  final String name;
+  final double worldX;
+
+  _LayerPlacement(this.name, this.worldX);
 }
 
 class _CoinPlacement {

@@ -17,17 +17,71 @@ class BiomeRegistry {
       'parallax/foreground.png',
     ],
     footstepTerrain: Terrain.grass,
-    entityWeights: [
-      WeightedEntity('bush', 25),
-      WeightedEntity('mushroom', 20),
-      WeightedEntity('round_tree', 15),
-      WeightedEntity('pine_tree', 15),
-      WeightedEntity('flower_tree', 10),
-      WeightedEntity('fence', 10),
-      WeightedEntity('flower_fence', 5),
+    entityLayers: [
+      // Bushes — everywhere, the bread and butter of grassland foliage.
+      SpawnLayer(
+        entityName: 'bush',
+        noiseScale: 0.04,
+        threshold: 0.2,
+        minGapTiles: 5,
+        maxGapTiles: 14,
+        noiseSeedOffset: 0,
+      ),
+      // Mushrooms — frequent little accents, tight patchy clusters.
+      SpawnLayer(
+        entityName: 'mushroom',
+        noiseScale: 0.06,
+        threshold: 0.25,
+        minGapTiles: 6,
+        maxGapTiles: 16,
+        noiseSeedOffset: 50,
+      ),
+      // Round trees — clumpy groves with broad noise.
+      SpawnLayer(
+        entityName: 'round_tree',
+        noiseScale: 0.02,
+        threshold: 0.25,
+        minGapTiles: 7,
+        maxGapTiles: 20,
+        noiseSeedOffset: 100,
+      ),
+      // Pine trees — similar to round trees but offset noise = different groves.
+      SpawnLayer(
+        entityName: 'pine_tree',
+        noiseScale: 0.02,
+        threshold: 0.25,
+        minGapTiles: 7,
+        maxGapTiles: 20,
+        noiseSeedOffset: 150,
+      ),
+      // Flower trees — less rare now, nice scattered blooms.
+      SpawnLayer(
+        entityName: 'flower_tree',
+        noiseScale: 0.03,
+        threshold: 0.35,
+        minGapTiles: 8,
+        maxGapTiles: 24,
+        noiseSeedOffset: 200,
+      ),
+      // Fences — sparse, isolated stretches.
+      SpawnLayer(
+        entityName: 'fence',
+        noiseScale: 0.015,
+        threshold: 0.55,
+        minGapTiles: 18,
+        maxGapTiles: 40,
+        noiseSeedOffset: 250,
+      ),
+      // Flower fences — rare pops of color.
+      SpawnLayer(
+        entityName: 'flower_fence',
+        noiseScale: 0.02,
+        threshold: 0.6,
+        minGapTiles: 20,
+        maxGapTiles: 45,
+        noiseSeedOffset: 300,
+      ),
     ],
-    minEntityGapTiles: 8,
-    maxEntityGapTiles: 20,
     minCoinGapTiles: 5,
     maxCoinGapTiles: 10,
     diamondChance: 0.15, // 15% diamond, 25% cluster, 60% single coin
@@ -58,13 +112,35 @@ class BiomeRegistry {
       'parallax/tropics_water.png',
     ],
     footstepTerrain: Terrain.dirt,
-    entityWeights: [
-      WeightedEntity('palm_tree', 30),
-      WeightedEntity('wooden_fence', 25),
-      WeightedEntity('rock', 25),
+    entityLayers: [
+      // Palm trees — dominant, dense groves rolling across the coast.
+      SpawnLayer(
+        entityName: 'palm_tree',
+        noiseScale: 0.025,
+        threshold: 0.2,
+        minGapTiles: 5,
+        maxGapTiles: 16,
+        noiseSeedOffset: 0,
+      ),
+      // Wooden fences — medium frequency, independent rhythm.
+      SpawnLayer(
+        entityName: 'wooden_fence',
+        noiseScale: 0.04,
+        threshold: 0.35,
+        minGapTiles: 12,
+        maxGapTiles: 28,
+        noiseSeedOffset: 100,
+      ),
+      // Rocks — scattered boulders, fairly sparse.
+      SpawnLayer(
+        entityName: 'rock',
+        noiseScale: 0.05,
+        threshold: 0.35,
+        minGapTiles: 12,
+        maxGapTiles: 28,
+        noiseSeedOffset: 200,
+      ),
     ],
-    minEntityGapTiles: 8,
-    maxEntityGapTiles: 20,
     minCoinGapTiles: 5,
     maxCoinGapTiles: 10,
     diamondChance: 0.15,
