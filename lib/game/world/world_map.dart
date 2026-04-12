@@ -20,17 +20,28 @@ class PlacedItem {
   });
 }
 
+class PierZone {
+  final int startTile;
+  final int endTile;
+
+  const PierZone({required this.startTile, required this.endTile});
+
+  int get widthTiles => endTile - startTile;
+}
+
 class WorldSegment {
   final BiomeType biome;
   final int startTile;
   final int endTile;
   final List<PlacedItem> items;
+  final List<PierZone> pierZones;
 
   const WorldSegment({
     required this.biome,
     required this.startTile,
     required this.endTile,
     required this.items,
+    this.pierZones = const [],
   });
 
   double get startPx => startTile * 16.0 * LexawayGame.pixelScale;
@@ -66,6 +77,19 @@ class WorldMap {
       if (worldX < seg.endPx) return seg.biome;
     }
     return segments.last.biome;
+  }
+
+  /// Returns the pier zone at the given tile coordinate, or null.
+  PierZone? pierZoneAt(int tileX) {
+    for (final seg in segments) {
+      if (tileX < seg.endTile) {
+        for (final zone in seg.pierZones) {
+          if (tileX >= zone.startTile && tileX < zone.endTile) return zone;
+        }
+        return null;
+      }
+    }
+    return null;
   }
 
   /// Returns all items whose worldX falls within [startX, endX].

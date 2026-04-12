@@ -62,7 +62,6 @@ class BiomeRegistry {
       WeightedEntity('palm_tree', 30),
       WeightedEntity('wooden_fence', 25),
       WeightedEntity('rock', 25),
-      WeightedEntity('pier', 20),
     ],
     minEntityGapTiles: 8,
     maxEntityGapTiles: 20,

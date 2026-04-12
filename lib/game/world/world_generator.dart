@@ -33,6 +33,10 @@ class WorldGenerator {
       final biome = _pickBiome(rng);
       final def = BiomeRegistry.get(biome);
 
+      final pierZones = biome == BiomeType.tropics
+          ? _generatePierZones(rng, tile, segEnd)
+          : const <PierZone>[];
+
       final items = <PlacedItem>[];
 
       // Entity placement via 1D Poisson disk sampling
@@ -45,6 +49,7 @@ class WorldGenerator {
       );
 
       for (final x in entityPositions) {
+        if (_insidePierZone(x, pierZones)) continue;
         items.add(PlacedItem(
           name: _pickWeightedEntity(rng, def),
           category: ItemCategory.entity,
@@ -88,6 +93,7 @@ class WorldGenerator {
         );
 
         for (final x in creaturePositions) {
+          if (_insidePierZone(x, pierZones)) continue;
           items.add(PlacedItem(
             name: _pickWeightedCreature(rng, def),
             category: ItemCategory.creature,
@@ -104,6 +110,7 @@ class WorldGenerator {
         startTile: tile,
         endTile: segEnd,
         items: items,
+        pierZones: pierZones,
       ));
 
       tile = segEnd;
@@ -209,6 +216,54 @@ class WorldGenerator {
     }
 
     return coins;
+  }
+
+  /// Generates 0–2 pier zones within a tropics segment.
+  List<PierZone> _generatePierZones(Random rng, int segStart, int segEnd) {
+    const minWidth = 5;
+    const maxWidth = 12;
+    const edgePadding = 3;
+    const minGap = 15;
+
+    final available = segEnd - segStart - edgePadding * 2;
+    if (available < minWidth) return const [];
+
+    // Decide how many piers: 0 (30%), 1 (50%), 2 (20%).
+    final roll = rng.nextDouble();
+    final count = roll < 0.3 ? 0 : roll < 0.8 ? 1 : 2;
+    if (count == 0) return const [];
+
+    final zones = <PierZone>[];
+    for (var i = 0; i < count; i++) {
+      final width = minWidth + rng.nextInt(maxWidth - minWidth + 1);
+
+      // Find a valid start position.
+      final earliest = zones.isEmpty
+          ? segStart + edgePadding
+          : zones.last.endTile + minGap;
+      final latest = segEnd - edgePadding - width;
+      if (earliest > latest) break;
+
+      final start = earliest + rng.nextInt(latest - earliest + 1);
+      zones.add(PierZone(startTile: start, endTile: start + width));
+    }
+
+    return zones;
+  }
+
+  /// Returns true if [worldX] (in pixels) falls inside any pier zone (±1 tile
+  /// buffer so entities don't visually overlap pier posts).
+  bool _insidePierZone(double worldX, List<PierZone> zones) {
+    if (zones.isEmpty) return false;
+    final buffer = _tilePx;
+    for (final zone in zones) {
+      final zoneStartPx = zone.startTile * _tilePx;
+      final zoneEndPx = zone.endTile * _tilePx;
+      if (worldX >= zoneStartPx - buffer && worldX <= zoneEndPx + buffer) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 
