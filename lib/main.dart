@@ -5,22 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'data/hive_keys.dart';
+import 'data/hive_migration.dart';
 import 'providers.dart';
 import 'router.dart';
-
-/// Current Hive box schema version. Bump when the shape of stored data changes
-/// and add a migration case in _migrateHive.
-const hiveSchemaVersion = 1;
-
-void _migrateHive(Box box) {
-  final old = box.get(HiveKeys.hiveSchemaVersion, defaultValue: 0) as int;
-  if (old >= hiveSchemaVersion) return;
-
-  // Future migrations go here.
-
-  box.put(HiveKeys.hiveSchemaVersion, hiveSchemaVersion);
-}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +20,7 @@ void main() async {
 
   Hive.init(docsDir.path);
   final box = await Hive.openBox('app');
-  _migrateHive(box);
+  migrateHive(box);
 
   runApp(
     ProviderScope(

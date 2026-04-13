@@ -6,6 +6,8 @@
   "vol_tts": 1.0,
   "haptics": true,
   "gender": "female",
+  "font": "default",
+  "tts_auto_play": true,
   "streak": 7,
   "best_streak": 12,
   "coins": 340,

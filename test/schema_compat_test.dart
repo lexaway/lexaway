@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lexaway/data/pack_manager.dart';
 import 'package:lexaway/game/world/world_generator.dart';
 import 'package:lexaway/game/world/world_map.dart';
-import 'package:lexaway/main.dart' show hiveSchemaVersion;
+import 'package:lexaway/data/hive_keys.dart';
+import 'package:lexaway/data/hive_migration.dart' show hiveSchemaVersion;
 
 /// Fixture-based tests that verify current code can still read persisted data
 /// from every shipped schema version. If a code change breaks deserialization,
@@ -125,6 +126,39 @@ void main() {
       // All collected indices should be valid coin indices in the world.
       for (final idx in collected) {
         expect(allCoinIndices, contains(idx));
+      }
+    });
+  });
+
+  group('Fixture coverage', () {
+    // NB: This list must be kept in sync with HiveKeys manually — Dart
+    // doesn't support runtime reflection in Flutter. When you add a new
+    // static const to HiveKeys, add it here too.
+    test('fixture contains every static HiveKey', () {
+      final requiredKeys = [
+        HiveKeys.hiveSchemaVersion,
+        HiveKeys.uiLocale,
+        HiveKeys.volMaster,
+        HiveKeys.volSfx,
+        HiveKeys.volTts,
+        HiveKeys.haptics,
+        HiveKeys.gender,
+        HiveKeys.font,
+        HiveKeys.ttsAutoPlay,
+        HiveKeys.streak,
+        HiveKeys.bestStreak,
+        HiveKeys.coins,
+        HiveKeys.steps,
+        HiveKeys.world,
+        HiveKeys.manifestCache,
+        HiveKeys.packs,
+        HiveKeys.lastUsed,
+        HiveKeys.ttsEspeakNgData,
+        HiveKeys.ttsModels,
+      ];
+      for (final key in requiredKeys) {
+        expect(fixture.containsKey(key), isTrue,
+            reason: 'hive_v1.json missing key: $key');
       }
     });
   });
