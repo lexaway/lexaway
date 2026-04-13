@@ -51,6 +51,10 @@ abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
   /// already collected, missing sprite def for the biome).
   T? createItem(PlacedItem item);
 
+  /// Whether to skip spawning an item with this index. Subclasses can
+  /// override to suppress items that have already been consumed or fled.
+  bool shouldSkip(int index) => false;
+
   @override
   void update(double dt) {
     final offset = game.ground.scrollOffset;
@@ -61,6 +65,7 @@ abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
     for (final item in worldMap.itemsInRange(startX, endX)) {
       if (item.category != category) continue;
       if (activeItems.containsKey(item.index)) continue;
+      if (shouldSkip(item.index)) continue;
       if (spawned >= maxSpawnsPerFrame) break;
 
       final built = createItem(item);

@@ -13,11 +13,15 @@ class CreatureLayer extends ScrollingItemLayer<Creature> {
   /// — the only real work [_ensureBiome] does is the PNG load.
   final Set<BiomeType> _loadedBiomes = {};
 
+  /// Indices of creatures that have already fled off-screen. Prevents
+  /// respawning at their original world position.
+  final Set<int> _fledIndices = {};
+
   CreatureLayer(WorldMap worldMap)
       : super(
           worldMap: worldMap,
           category: ItemCategory.creature,
-          spawnMarginPx: 128,
+          spawnMarginPx: 640,
           cullMarginPx: 128,
         );
 
@@ -44,6 +48,18 @@ class CreatureLayer extends ScrollingItemLayer<Creature> {
   /// present at startup. No-op in Phase 1 (grassland-only) but kept so the
   /// wiring exists when Phase 2 adds new biomes.
   Future<void> ensureBiomeLoaded(BiomeType biome) => _ensureBiome(biome);
+
+  @override
+  bool shouldSkip(int index) => _fledIndices.contains(index);
+
+  @override
+  void update(double dt) {
+    // Tag fleeing creatures before the base class culls them.
+    for (final entry in activeItems.entries) {
+      if (entry.value.fleeing) _fledIndices.add(entry.key);
+    }
+    super.update(dt);
+  }
 
   @override
   Creature? createItem(PlacedItem item) {

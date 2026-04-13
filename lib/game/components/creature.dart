@@ -14,9 +14,8 @@ enum CreatureAnim { idle, hop, hit, death }
 /// which renders a single static sprite, [Creature] runs a multi-row sprite
 /// sheet with an idle loop and occasional one-shot hops.
 ///
-/// Creatures are non-interactive in the MVP — no collision, no speech, no
-/// independent horizontal motion. They exist purely to make the world feel
-/// alive as the player walks past.
+/// Creatures idle until the player gets close, then flee in the opposite
+/// direction (leftward) with a looping hop animation.
 class Creature extends SpriteAnimationGroupComponent<CreatureAnim>
     with HasGameReference<LexawayGame>, ScrollingWorldItem {
   final String sheetPath;
@@ -37,6 +36,15 @@ class Creature extends SpriteAnimationGroupComponent<CreatureAnim>
 
   double _nextHopIn = 0;
   bool _playingHop = false;
+  bool fleeing = false;
+
+  /// How fast the creature flees leftward in world-space px/s.
+  static const double _fleeSpeed = 260.0;
+
+  /// Distance (in tiles) ahead of the player at which the creature bolts.
+  static const double _fleeTriggerTiles = 2.0;
+  static const double _fleeTriggerPx =
+      _fleeTriggerTiles * 16 * LexawayGame.pixelScale;
 
   Creature({
     required this.sheetPath,
@@ -108,6 +116,23 @@ class Creature extends SpriteAnimationGroupComponent<CreatureAnim>
   @override
   void update(double dt) {
     super.update(dt);
+
+    if (fleeing) {
+      worldX -= _fleeSpeed * dt;
+      return;
+    }
+
+    // Check whether the player is close enough to spook us.
+    final scrollOffset = game.ground.scrollOffset;
+    final playerScreenX = game.size.x * 0.25;
+    final myScreenX = worldX - scrollOffset;
+    final gap = myScreenX - playerScreenX;
+    if (gap > 0 && gap < _fleeTriggerPx) {
+      _startFlee();
+      return;
+    }
+
+    // Normal idle / occasional hop.
     if (_playingHop) return;
 
     _nextHopIn -= dt;
@@ -121,6 +146,25 @@ class Creature extends SpriteAnimationGroupComponent<CreatureAnim>
         _playingHop = false;
         current = CreatureAnim.idle;
         _nextHopIn = _rollHopInterval();
+      };
+  }
+
+  void _startFlee() {
+    fleeing = true;
+    // flipHorizontally negates scale.x, which shifts rendering by the sprite
+    // width. Compensate so the bunny doesn't visually teleport.
+    worldX += size.x;
+    flipHorizontally();
+    _loopHop();
+  }
+
+  /// Keep the hop animation cycling for the duration of the flee.
+  void _loopHop() {
+    current = CreatureAnim.hop;
+    animationTicker!
+      ..reset()
+      ..onComplete = () {
+        if (fleeing && isMounted) _loopHop();
       };
   }
 }
