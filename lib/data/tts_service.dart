@@ -354,10 +354,18 @@ Uint8List _encodeWav(Float32List samples, int sampleRate) {
   buffer.setUint8(39, 0x61); // a
   buffer.setUint32(40, dataSize, Endian.little);
 
+  // Peak-normalize so quiet models use the full 16-bit range.
+  var peak = 0.0;
+  for (var i = 0; i < numSamples; i++) {
+    final abs = samples[i].abs();
+    if (abs > peak) peak = abs;
+  }
+  final gain = (peak > 0.0 && peak < 1.0) ? 1.0 / peak : 1.0;
+
   // Convert float samples to 16-bit PCM
   for (var i = 0; i < numSamples; i++) {
-    final clamped = samples[i].clamp(-1.0, 1.0);
-    final pcm = (clamped * 32767).round().clamp(-32768, 32767);
+    final scaled = (samples[i] * gain).clamp(-1.0, 1.0);
+    final pcm = (scaled * 32767).round().clamp(-32768, 32767);
     buffer.setInt16(44 + i * 2, pcm, Endian.little);
   }
 
