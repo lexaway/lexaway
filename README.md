@@ -6,6 +6,8 @@
 
 A language learning adventure game built with Flutter and Flame. Answer questions, walk a tiny dino across pixel-art landscapes.
 
+[![App Store](https://img.shields.io/badge/App_Store-Download-blue?logo=apple)](https://apps.apple.com/us/app/lexaway/id6761870125)
+
 ## LLM Usage
 
 LLMs are used to help develop this app and its related lexaway-packs repo.
