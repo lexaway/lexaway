@@ -3,6 +3,7 @@ import 'dart:math';
 import '../lexaway_game.dart';
 import 'biome_definition.dart';
 import 'biome_registry.dart';
+import 'entity_footprints.dart';
 import 'noise.dart';
 import 'world_map.dart';
 
@@ -14,6 +15,13 @@ class WorldGenerator {
   /// Minimum pixel distance between any two entities from different layers.
   /// Prevents visual overlaps when independent layers happen to land nearby.
   static const double _minCollisionPx = 6.0 * _tilePx;
+
+  /// widthTiles for every placeable entity, per biome. Consulted when rejecting
+  /// placements that would overlap pier zones — without it, a 3-tile palm tree
+  /// anchored 2 tiles from a pier would still visually clip into it.
+  final EntityFootprints entityFootprints;
+
+  WorldGenerator({this.entityFootprints = const {}});
 
   /// Generates a world of approximately [totalTiles] tiles from [seed].
   ///
@@ -56,8 +64,9 @@ class WorldGenerator {
           startPx: tile * _tilePx,
           endPx: segEnd * _tilePx,
         );
+        final widthTiles = entityFootprints[biome]?[layer.entityName] ?? 1;
         for (final x in positions) {
-          if (_insidePierZone(x, pierZones)) continue;
+          if (_overlapsPierZone(x, widthTiles, pierZones)) continue;
           layerEntities.add(_LayerPlacement(layer.entityName, x));
         }
       }
@@ -116,7 +125,8 @@ class WorldGenerator {
         );
 
         for (final x in creaturePositions) {
-          if (_insidePierZone(x, pierZones)) continue;
+          // Creatures are tiny and drift around anyway — treat as 1 tile wide.
+          if (_overlapsPierZone(x, 1, pierZones)) continue;
           items.add(PlacedItem(
             name: _pickWeightedCreature(rng, def),
             category: ItemCategory.creature,
@@ -300,17 +310,24 @@ class WorldGenerator {
     return zones;
   }
 
-  /// Returns true if [worldX] (in pixels) falls inside any pier zone (±1 tile
-  /// buffer so entities don't visually overlap pier posts).
-  bool _insidePierZone(double worldX, List<PierZone> zones) {
+  /// Returns true if an entity with top-left at [worldX] and width
+  /// [widthTiles] would overlap any pier zone (plus a 1-tile breathing buffer
+  /// so entities don't kiss pier posts). AABB check rather than point-in-zone
+  /// — a 3-tile palm tree anchored just outside the zone still clips in.
+  bool _overlapsPierZone(
+    double worldX,
+    int widthTiles,
+    List<PierZone> zones,
+  ) {
     if (zones.isEmpty) return false;
-    final buffer = _tilePx;
+    const bufferTiles = 1;
+    final bufferPx = bufferTiles * _tilePx;
+    final entityStart = worldX;
+    final entityEnd = worldX + widthTiles * _tilePx;
     for (final zone in zones) {
-      final zoneStartPx = zone.startTile * _tilePx;
-      final zoneEndPx = zone.endTile * _tilePx;
-      if (worldX >= zoneStartPx - buffer && worldX <= zoneEndPx + buffer) {
-        return true;
-      }
+      final zoneStart = zone.startTile * _tilePx - bufferPx;
+      final zoneEnd = zone.endTile * _tilePx + bufferPx;
+      if (entityEnd > zoneStart && entityStart < zoneEnd) return true;
     }
     return false;
   }

@@ -2,6 +2,7 @@ import 'package:flame/components.dart';
 
 import '../events.dart';
 import '../lexaway_game.dart';
+import '../world/entity_footprints.dart';
 import '../world/world_generator.dart';
 import '../world/world_map.dart';
 
@@ -26,10 +27,14 @@ class WorldStreamer extends Component with HasGameReference<LexawayGame> {
   static const int _extensionTiles = 1000;
 
   final WorldMap worldMap;
+  final EntityFootprints entityFootprints;
 
   int _extensions = 0;
 
-  WorldStreamer({required this.worldMap});
+  WorldStreamer({
+    required this.worldMap,
+    this.entityFootprints = const {},
+  });
 
   /// How many extension batches have been appended so far. Read by the
   /// world-state snapshot so reboots can replay the same sequence.
@@ -44,7 +49,8 @@ class WorldStreamer extends Component with HasGameReference<LexawayGame> {
   void extend() {
     _extensions++;
     final extensionSeed = worldMap.seed + _extensions;
-    final extension = WorldGenerator().generate(
+    final extension = WorldGenerator(entityFootprints: entityFootprints)
+        .generate(
       extensionSeed,
       totalTiles: _extensionTiles,
       startTile: worldMap.totalTiles,

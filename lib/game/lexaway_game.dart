@@ -22,6 +22,7 @@ import 'systems/wind_controller.dart';
 import 'systems/world_state_persister.dart';
 import 'systems/world_streamer.dart';
 import 'world/creature_layer.dart';
+import 'world/entity_footprints.dart';
 import 'world/world_generator.dart';
 import 'world/world_map.dart';
 import 'world/world_renderer.dart';
@@ -93,13 +94,18 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     final saved = worldStateRepository.load();
     final seed = saved?.seed ?? Random().nextInt(1 << 32);
 
-    worldMap = WorldGenerator().generate(seed);
+    final entityFootprints = await loadEntityFootprints();
+    worldMap = WorldGenerator(entityFootprints: entityFootprints)
+        .generate(seed);
     // Replay previously-persisted extensions at their original seeds so
     // worldMap.segments matches the saved scroll offset before any
     // components that read the map come online. [WorldStreamer.extend]
     // is a no-op on the event bus while unmounted, so replay doesn't
     // spuriously dirty the persister.
-    worldStreamer = WorldStreamer(worldMap: worldMap);
+    worldStreamer = WorldStreamer(
+      worldMap: worldMap,
+      entityFootprints: entityFootprints,
+    );
     for (var i = 0; i < (saved?.extensions ?? 0); i++) {
       worldStreamer.extend();
     }
