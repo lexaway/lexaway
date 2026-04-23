@@ -72,7 +72,8 @@ void main() {
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
       expect(find.text('Haptics'), findsOneWidget);
-      expect(find.byType(Switch), findsNWidgets(2));
+      // Haptics, Auto-play voice, and Reminder toggles.
+      expect(find.byType(Switch), findsNWidgets(3));
     });
 
     testWidgets('sliders default correctly', (tester) async {
@@ -154,6 +155,46 @@ void main() {
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+    });
+
+    testWidgets('daily goal tiles render one per preset with time labels',
+        (tester) async {
+      await tester.pumpWidget(buildApp());
+      await tester.pumpAndSettle();
+      // Parallel-list-drift guard: if dailyGoalPresets and its minutes/tier
+      // fields ever fall out of sync, one of these asserts fails before the
+      // UI ships a mislabelled tile.
+      expect(find.text('~1 min'), findsOneWidget);
+      expect(find.text('~2 min'), findsOneWidget);
+      expect(find.text('~5 min'), findsOneWidget);
+      expect(find.text('~10 min'), findsOneWidget);
+      expect(find.text('Quick'), findsOneWidget);
+      expect(find.text('Short'), findsOneWidget);
+      expect(find.text('Medium'), findsOneWidget);
+      expect(find.text('Long'), findsOneWidget);
+    });
+
+    testWidgets('tapping a goal tile persists the step count to Hive',
+        (tester) async {
+      await tester.pumpWidget(buildApp());
+      await tester.pumpAndSettle();
+      final tile = find.text('~5 min');
+      await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+      expect(box.get(HiveKeys.dailyGoal), equals(500));
+    });
+
+    testWidgets('stale stored goal snaps to nearest preset on load',
+        (tester) async {
+      // Pre-refactor users may have 50 persisted. Build() should snap to
+      // the closest surviving preset (100) and rewrite Hive so the UI
+      // always has a highlighted tile.
+      box.put(HiveKeys.dailyGoal, 50);
+      await tester.pumpWidget(buildApp());
+      await tester.pumpAndSettle();
+      expect(box.get(HiveKeys.dailyGoal), equals(100));
     });
   });
 }

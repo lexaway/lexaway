@@ -309,6 +309,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Advanced'**
   String get difficultyAdvanced;
+
+  /// No description provided for @settingsDailyGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal'**
+  String get settingsDailyGoal;
+
+  /// No description provided for @goalTimeApprox.
+  ///
+  /// In en, this message translates to:
+  /// **'~{minutes} min'**
+  String goalTimeApprox(int minutes);
+
+  /// No description provided for @goalTierQuick.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick'**
+  String get goalTierQuick;
+
+  /// No description provided for @goalTierShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Short'**
+  String get goalTierShort;
+
+  /// No description provided for @goalTierMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get goalTierMedium;
+
+  /// No description provided for @goalTierLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Long'**
+  String get goalTierLong;
+
+  /// No description provided for @settingsReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder'**
+  String get settingsReminder;
+
+  /// No description provided for @settingsReminderTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind me at'**
+  String get settingsReminderTime;
+
+  /// No description provided for @settingsReminderPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are blocked. Enable them in system settings.'**
+  String get settingsReminderPermissionDenied;
+
+  /// No description provided for @goalMetBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal reached!'**
+  String get goalMetBanner;
+
+  /// No description provided for @reminderNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your dino is waiting'**
+  String get reminderNotificationTitle;
+
+  /// No description provided for @reminderNotificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A few steps and the adventure keeps going.'**
+  String get reminderNotificationBody;
 }
 
 class _AppLocalizationsDelegate

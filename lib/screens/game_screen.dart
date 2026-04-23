@@ -6,12 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/app_font.dart';
+import '../data/hive_keys.dart';
 import '../data/lang_codes.dart';
 import '../game/audio_manager.dart';
 import '../game/events.dart';
 import '../game/lexaway_game.dart';
 import '../models/character.dart';
 import '../providers.dart';
+import '../widgets/goal_met_banner.dart';
 import '../widgets/question_panel.dart';
 import '../widgets/hud_bar.dart';
 
@@ -26,6 +28,19 @@ class _GameScreenState extends ConsumerState<GameScreen>
     with WidgetsBindingObserver {
   LexawayGame? _game;
   StreamSubscription<GameEvent>? _eventSub;
+  bool _goalMetBannerVisible = false;
+
+  String _todayKey() => DateTime.now().toIso8601String().substring(0, 10);
+
+  void _maybeShowGoalMetBanner() {
+    if (_goalMetBannerVisible) return;
+    final box = ref.read(hiveBoxProvider);
+    final shownKey = box.get(HiveKeys.goalMetShownDayKey) as String?;
+    final today = _todayKey();
+    if (shownKey == today) return;
+    box.put(HiveKeys.goalMetShownDayKey, today);
+    setState(() => _goalMetBannerVisible = true);
+  }
 
   @override
   void initState() {
@@ -36,6 +51,13 @@ class _GameScreenState extends ConsumerState<GameScreen>
     // the audio singleton with the current provider values here.
     AudioManager.instance.masterVolume = ref.read(masterVolumeProvider);
     AudioManager.instance.sfxVolume = ref.read(sfxVolumeProvider);
+    // If the user returns to /game with today's goal already met (e.g.
+    // after a background rollover) and we haven't flashed the banner for
+    // this day yet, show it once.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (ref.read(goalMetTodayProvider)) _maybeShowGoalMetBanner();
+    });
   }
 
   @override
@@ -131,6 +153,16 @@ class _GameScreenState extends ConsumerState<GameScreen>
       AudioManager.instance.sfxVolume = next;
     });
 
+    // Goal-met flourish: fire when a *step* pushes today across the goal
+    // line. We gate on the step delta (not the derived goal-met bool) so
+    // that lowering the daily goal from Settings never retroactively
+    // triggers the banner. Once-per-day dedup lives in the shown-key check.
+    ref.listen<StepsState>(stepsProvider, (prev, next) {
+      if (prev == null) return;
+      final goal = ref.read(dailyGoalProvider);
+      if (prev.today < goal && next.today >= goal) _maybeShowGoalMetBanner();
+    });
+
     return Scaffold(
       body: Stack(
         children: [
@@ -166,6 +198,12 @@ class _GameScreenState extends ConsumerState<GameScreen>
                 game: game,
                 source: source,
               ),
+            ),
+          if (_goalMetBannerVisible)
+            GoalMetBanner(
+              onDismissed: () {
+                if (mounted) setState(() => _goalMetBannerVisible = false);
+              },
             ),
         ],
       ),

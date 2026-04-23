@@ -32,6 +32,9 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   static const double groundLevel = 0.35;
 
   /// Tiles of ground covered by a single (non-streak) correct answer.
+  /// These timings feed the session-length labels on daily-goal tiles —
+  /// if you tweak them, re-check `dailyGoalPresets` in
+  /// `lib/providers/daily_goal.dart`.
   static const int tilesPerCorrectAnswer = 4;
   static const double walkSpeed = 80;
   static const double walkTarget = tilesPerCorrectAnswer * 16 * pixelScale;

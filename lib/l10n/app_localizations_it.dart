@@ -115,4 +115,44 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get difficultyAdvanced => 'Avanzato';
+
+  @override
+  String get settingsDailyGoal => 'Obiettivo giornaliero';
+
+  @override
+  String goalTimeApprox(int minutes) {
+    return '~$minutes min';
+  }
+
+  @override
+  String get goalTierQuick => 'Rapida';
+
+  @override
+  String get goalTierShort => 'Breve';
+
+  @override
+  String get goalTierMedium => 'Media';
+
+  @override
+  String get goalTierLong => 'Lunga';
+
+  @override
+  String get settingsReminder => 'Promemoria';
+
+  @override
+  String get settingsReminderTime => 'Ricordami alle';
+
+  @override
+  String get settingsReminderPermissionDenied =>
+      'Le notifiche sono bloccate. Attivale nelle impostazioni di sistema.';
+
+  @override
+  String get goalMetBanner => 'Obiettivo giornaliero raggiunto!';
+
+  @override
+  String get reminderNotificationTitle => 'Il tuo dino ti aspetta';
+
+  @override
+  String get reminderNotificationBody =>
+      'Ancora qualche passo e l\'avventura continua.';
 }

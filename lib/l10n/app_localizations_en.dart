@@ -114,4 +114,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get difficultyAdvanced => 'Advanced';
+
+  @override
+  String get settingsDailyGoal => 'Daily goal';
+
+  @override
+  String goalTimeApprox(int minutes) {
+    return '~$minutes min';
+  }
+
+  @override
+  String get goalTierQuick => 'Quick';
+
+  @override
+  String get goalTierShort => 'Short';
+
+  @override
+  String get goalTierMedium => 'Medium';
+
+  @override
+  String get goalTierLong => 'Long';
+
+  @override
+  String get settingsReminder => 'Reminder';
+
+  @override
+  String get settingsReminderTime => 'Remind me at';
+
+  @override
+  String get settingsReminderPermissionDenied =>
+      'Notifications are blocked. Enable them in system settings.';
+
+  @override
+  String get goalMetBanner => 'Daily goal reached!';
+
+  @override
+  String get reminderNotificationTitle => 'Your dino is waiting';
+
+  @override
+  String get reminderNotificationBody =>
+      'A few steps and the adventure keeps going.';
 }

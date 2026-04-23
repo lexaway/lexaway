@@ -1,0 +1,41 @@
+{
+  "hive_schema_version": 2,
+  "ui_locale": "es",
+  "vol_master": 0.8,
+  "vol_sfx": 0.5,
+  "vol_tts": 1.0,
+  "haptics": true,
+  "gender": "female",
+  "streak": 7,
+  "best_streak": 12,
+  "coins": 340,
+  "steps_lifetime": 1500,
+  "steps_today": 42,
+  "steps_day_key": "2026-04-23",
+  "daily_goal": 100,
+  "reminder_enabled": false,
+  "reminder_time": "19:00",
+  "character_fra": "female/doux",
+  "last_used": "eng-fra",
+  "packs": {
+    "eng-fra": {
+      "schema_version": 1,
+      "built_at": "2025-01-15T00:00:00Z",
+      "size_bytes": 204800
+    }
+  },
+  "tts_espeak_ng_data": true,
+  "tts_models": {
+    "fra": {
+      "archive_name": "vits-piper-fr_FR-siwis-medium",
+      "downloaded_at": "2025-01-15T12:00:00Z"
+    }
+  },
+  "manifest_cache": "{\"schema_version\":1,\"packs\":[{\"lang\":\"fra\",\"from_lang\":\"eng\",\"name\":\"French\",\"flag\":\"F\",\"built_at\":\"2025-01-15T00:00:00Z\",\"schema_version\":1}]}",
+  "world": {
+    "seed": 42,
+    "extensions": 0,
+    "scroll_offset": 1234.5,
+    "collected_coins": [5, 13, 30]
+  }
+}

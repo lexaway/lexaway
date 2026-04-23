@@ -23,7 +23,15 @@ abstract final class HiveKeys {
   static const streak = 'streak';
   static const bestStreak = 'best_streak';
   static const coins = 'coins';
-  static const steps = 'steps';
+  static const stepsLifetime = 'steps_lifetime';
+  static const stepsToday = 'steps_today';
+  static const stepsDayKey = 'steps_day_key';
+
+  // Daily goal
+  static const dailyGoal = 'daily_goal';
+  static const reminderEnabled = 'reminder_enabled';
+  static const reminderTime = 'reminder_time';
+  static const goalMetShownDayKey = 'goal_met_shown_day_key';
 
   // World state
   static const world = 'world';

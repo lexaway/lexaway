@@ -33,5 +33,22 @@
   "settingsDifficulty": "Difficulté",
   "difficultyBeginner": "Débutant",
   "difficultyIntermediate": "Intermédiaire",
-  "difficultyAdvanced": "Avancé"
+  "difficultyAdvanced": "Avancé",
+  "settingsDailyGoal": "Objectif quotidien",
+  "goalTimeApprox": "~{minutes} min",
+  "@goalTimeApprox": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "goalTierQuick": "Rapide",
+  "goalTierShort": "Courte",
+  "goalTierMedium": "Moyenne",
+  "goalTierLong": "Longue",
+  "settingsReminder": "Rappel",
+  "settingsReminderTime": "Me rappeler à",
+  "settingsReminderPermissionDenied": "Les notifications sont bloquées. Active-les dans les réglages du système.",
+  "goalMetBanner": "Objectif du jour atteint !",
+  "reminderNotificationTitle": "Ton dino t'attend",
+  "reminderNotificationBody": "Quelques pas et l'aventure continue."
 }

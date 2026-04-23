@@ -33,5 +33,22 @@
   "settingsDifficulty": "Dificultad",
   "difficultyBeginner": "Principiante",
   "difficultyIntermediate": "Intermedio",
-  "difficultyAdvanced": "Avanzado"
+  "difficultyAdvanced": "Avanzado",
+  "settingsDailyGoal": "Meta diaria",
+  "goalTimeApprox": "~{minutes} min",
+  "@goalTimeApprox": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "goalTierQuick": "Rápida",
+  "goalTierShort": "Corta",
+  "goalTierMedium": "Media",
+  "goalTierLong": "Larga",
+  "settingsReminder": "Recordatorio",
+  "settingsReminderTime": "Recuérdame a las",
+  "settingsReminderPermissionDenied": "Las notificaciones están bloqueadas. Actívalas en los ajustes del sistema.",
+  "goalMetBanner": "¡Meta diaria alcanzada!",
+  "reminderNotificationTitle": "Tu dino te espera",
+  "reminderNotificationBody": "Unos pasos más y la aventura continúa."
 }
