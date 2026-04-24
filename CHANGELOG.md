@@ -1,4 +1,22 @@
 ### 🇬🇧 English
+**1.4.0** — Set a daily step goal and get a gentle reminder if you forget. Flowers now grow in lush, natural meadows instead of tidy little rows. Piers no longer leak sky at their edges.
+
+### 🇫🇷 Français
+**1.4.0** — Fixez un objectif quotidien de pas et recevez un petit rappel si vous oubliez. Les fleurs poussent désormais en prairies luxuriantes et naturelles, au lieu de petites rangées bien rangées. Les quais ne laissent plus passer le ciel sur leurs bords.
+
+### 🇪🇸 Español
+**1.4.0** — Fija una meta diaria de pasos y recibe un recordatorio amable si te olvidas. Las flores crecen ahora en praderas frondosas y naturales en lugar de filas ordenaditas. Los muelles ya no dejan asomar el cielo por los bordes.
+
+### 🇩🇪 Deutsch
+**1.4.0** — Lege ein tägliches Schrittziel fest und erhalte eine sanfte Erinnerung, falls du es vergisst. Blumen wachsen jetzt in üppigen, natürlichen Wiesen statt in ordentlichen Reihen. An den Stegrändern blitzt kein Himmel mehr durch.
+
+### 🇮🇹 Italiano
+**1.4.0** — Imposta un obiettivo giornaliero di passi e ricevi un promemoria gentile se te ne dimentichi. I fiori ora crescono in prati rigogliosi e naturali, non più in file ordinate. I moli non lasciano più filtrare il cielo dai bordi.
+
+### 🇵🇹 Português
+**1.4.0** — Defina uma meta diária de passos e receba um lembrete gentil se esquecer. As flores agora crescem em prados exuberantes e naturais, em vez de fileiras bem arrumadinhas. Os píeres não deixam mais o céu vazar pelas bordas.
+
+### 🇬🇧 English
 **1.3.0** — Butterflies now drift through the tropics. Review timing adapts to what you're still learning, so tricky words come back more often. Pronunciation is louder and clearer. Palm trees no longer grow on piers.
 
 ### 🇫🇷 Français
