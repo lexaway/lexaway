@@ -85,6 +85,13 @@ class Ground extends Component with HasGameReference<LexawayGame> {
     for (final biome in biomes) {
       await _loadBiomeSprites(biome);
     }
+    // Pier sprites are needed whenever any segment declares pier zones,
+    // regardless of biome. Keeping this decoupled from the tropics biome
+    // check means future biomes that host piers won't silently fall back
+    // to sky-reveal rendering because tropics assets never loaded.
+    if (worldMap.segments.any((s) => s.pierZones.isNotEmpty)) {
+      await _loadPierSprites();
+    }
   }
 
   Future<void> _loadBiomeSprites(BiomeType biome) async {
@@ -105,10 +112,6 @@ class Ground extends Component with HasGameReference<LexawayGame> {
       fillLeft: tile(sx - 16, sy + 16),
       fillRight: tile(sx + 16, sy + 16),
     );
-
-    if (biome == BiomeType.tropics && _pierSprites == null) {
-      await _loadPierSprites();
-    }
   }
 
   Future<void> _loadPierSprites() async {
@@ -141,7 +144,15 @@ class Ground extends Component with HasGameReference<LexawayGame> {
     );
   }
 
-  Future<void> ensureBiomeLoaded(BiomeType biome) => _loadBiomeSprites(biome);
+  Future<void> ensureBiomeLoaded(BiomeType biome) async {
+    await _loadBiomeSprites(biome);
+    // Streamed-in segments may introduce the first pier in the world;
+    // don't rely on the initial onLoad() pass having seen one.
+    if (_pierSprites == null &&
+        worldMap.segments.any((s) => s.pierZones.isNotEmpty)) {
+      await _loadPierSprites();
+    }
+  }
 
   void startScrolling(double speed) => _scrollSpeed = speed;
   void stopScrolling() => _scrollSpeed = 0;
@@ -183,9 +194,14 @@ class Ground extends Component with HasGameReference<LexawayGame> {
     final biome = worldMap.biomeAt(worldX);
     final terrain = _sprites[biome] ?? _sprites.values.first;
 
-    // Check if we're on the edge next to a pier.
+    // Check if we're on the edge next to a pier. `PierZone.endTile` is
+    // exclusive (see `widthTiles = endTile - startTile`), so the last tile
+    // actually inside a pier is `endTile - 1` and the terrain tile just
+    // right of the pier is at `endTile`.
     final pierRight = worldMap.pierZoneAt(tileX + 1);
     final pierLeft = worldMap.pierZoneAt(tileX - 1);
+    final adjacentToPier = (pierRight != null && tileX + 1 == pierRight.startTile)
+        || (pierLeft != null && tileX - 1 == pierLeft.endTile - 1);
 
     final Sprite surfaceSprite;
     final Sprite fillSprite;
@@ -198,6 +214,15 @@ class Ground extends Component with HasGameReference<LexawayGame> {
     } else {
       surfaceSprite = terrain.surface;
       fillSprite = terrain.fill;
+    }
+
+    // Paint the full ocean stack behind the edge column so any transparent
+    // pixels in the edge sprite reveal waves + tinted fill (not flat blue),
+    // matching the pier columns next door. The terrain's opaque pixels
+    // cover the water above the visible gap.
+    if (adjacentToPier && _pierSprites != null) {
+      _renderOceanBase(canvas, x, groundTop, tileSize);
+      _renderOceanSurface(canvas, x, groundTop, tileSize);
     }
 
     surfaceSprite.render(
@@ -241,17 +266,11 @@ class Ground extends Component with HasGameReference<LexawayGame> {
       pierSprite = pier.centerAt(localTile - 1);
     }
 
-    final waterTop = groundTop + tileSize * 0.6;
-    final waveHeight = 6.0 * LexawayGame.pixelScale;
+    _renderOceanBase(canvas, x, groundTop, tileSize);
 
-    // 0) Solid ocean-color rect behind everything — extends the parallax
-    //    water layer's bottom edge color to the screen bottom.
-    canvas.drawRect(
-      Rect.fromLTRB(x, groundTop, x + tileSize, game.size.y),
-      _oceanBasePaint,
-    );
-
-    // 1) Pier structure (deck + legs).
+    // Pier structure (deck + legs) sits on top of the solid ocean base,
+    // then waves + semi-transparent fill go in front so the legs look
+    // submerged.
     pierSprite.render(
       canvas,
       position: Vector2(x, groundTop),
@@ -259,7 +278,39 @@ class Ground extends Component with HasGameReference<LexawayGame> {
       overridePaint: _pixelPaint,
     );
 
-    // 2) Semi-transparent wave surface at waterline.
+    _renderOceanSurface(canvas, x, groundTop, tileSize);
+  }
+
+  /// Solid ocean-color rect extending from the waterline to the screen
+  /// bottom. Drawn behind pier legs (so they get tinted by the subsequent
+  /// semi-transparent waves) and also behind the terrain edge column that
+  /// butts against a pier (so transparent pixels in the edge sprite reveal
+  /// water instead of sky).
+  void _renderOceanBase(
+    Canvas canvas,
+    double x,
+    double groundTop,
+    double tileSize,
+  ) {
+    canvas.drawRect(
+      Rect.fromLTRB(x, groundTop, x + tileSize, game.size.y),
+      _oceanBasePaint,
+    );
+  }
+
+  /// Semi-transparent wave strip at the waterline plus the tinted fill
+  /// repeating down to screen bottom. Rendered on top of the pier so the
+  /// legs look submerged.
+  void _renderOceanSurface(
+    Canvas canvas,
+    double x,
+    double groundTop,
+    double tileSize,
+  ) {
+    final pier = _pierSprites!;
+    final waterTop = groundTop + tileSize * 0.6;
+    final waveHeight = 6.0 * LexawayGame.pixelScale;
+
     pier.oceanSurface.render(
       canvas,
       position: Vector2(x, waterTop),
@@ -267,8 +318,6 @@ class Ground extends Component with HasGameReference<LexawayGame> {
       overridePaint: _waterPaint,
     );
 
-    // 3) Semi-transparent ocean fill (bottom 16×16 of the ocean tile)
-    //    repeated from below the waves to screen bottom — legs show through.
     var y = waterTop + waveHeight;
     while (y < game.size.y) {
       pier.oceanFill.render(
