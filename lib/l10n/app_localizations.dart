@@ -244,6 +244,12 @@ abstract class AppLocalizations {
   /// **'SFX'**
   String get settingsSfx;
 
+  /// No description provided for @settingsMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get settingsMusic;
+
   /// No description provided for @settingsGameplay.
   ///
   /// In en, this message translates to:

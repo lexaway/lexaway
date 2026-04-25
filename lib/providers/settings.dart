@@ -45,6 +45,17 @@ class SfxVolumeNotifier extends HiveVolumeNotifier {
   double get defaultValue => 0.5;
 }
 
+final bgmVolumeProvider = NotifierProvider<BgmVolumeNotifier, double>(
+  BgmVolumeNotifier.new,
+);
+
+class BgmVolumeNotifier extends HiveVolumeNotifier {
+  @override
+  String get key => HiveKeys.volBgm;
+  @override
+  double get defaultValue => 0.3;
+}
+
 final ttsVolumeProvider = NotifierProvider<TtsVolumeNotifier, double>(
   TtsVolumeNotifier.new,
 );

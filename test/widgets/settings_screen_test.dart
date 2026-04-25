@@ -53,57 +53,64 @@ void main() {
     );
   }
 
+  Future<void> pumpSettings(WidgetTester tester, {Box? hiveBox}) async {
+    // Settings is a long ListView. Force a tall surface so virtualized
+    // children below the fold (daily-goal tiles, reminder toggle) are
+    // realised in the widget tree without per-test scrolling.
+    await tester.binding.setSurfaceSize(const Size(800, 2000));
+    await tester.pumpWidget(buildApp(hiveBox: hiveBox));
+    await tester.pumpAndSettle();
+  }
+
   group('SettingsScreen', () {
     testWidgets('renders title', (tester) async {
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
       expect(find.text('Settings'), findsOneWidget);
     });
 
     testWidgets('renders all volume sliders', (tester) async {
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
       expect(find.text('Master'), findsOneWidget);
       expect(find.text('SFX'), findsOneWidget);
+      expect(find.text('Music'), findsOneWidget);
       expect(find.text('Voice'), findsOneWidget);
     });
 
     testWidgets('renders haptics toggle', (tester) async {
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
       expect(find.text('Haptics'), findsOneWidget);
       // Haptics, Auto-play voice, and Reminder toggles.
       expect(find.byType(Switch), findsNWidgets(3));
     });
 
     testWidgets('sliders default correctly', (tester) async {
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
 
       final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
-      expect(sliders.length, 3);
+      expect(sliders.length, 4);
       expect(sliders[0].value, 1.0);  // master
       expect(sliders[1].value, 0.5);  // sfx
-      expect(sliders[2].value, 1.0);  // tts
+      expect(sliders[2].value, 0.3);  // bgm
+      expect(sliders[3].value, 1.0);  // tts
     });
 
     testWidgets('sliders read initial values from Hive', (tester) async {
       box.put(HiveKeys.volMaster, 0.3);
       box.put(HiveKeys.volSfx, 0.5);
+      box.put(HiveKeys.volBgm, 0.2);
       box.put(HiveKeys.volTts, 0.7);
 
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
 
       final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
       expect(sliders[0].value, closeTo(0.3, 0.01));
       expect(sliders[1].value, closeTo(0.5, 0.01));
-      expect(sliders[2].value, closeTo(0.7, 0.01));
+      expect(sliders[2].value, closeTo(0.2, 0.01));
+      expect(sliders[3].value, closeTo(0.7, 0.01));
     });
 
     testWidgets('haptics toggle defaults to on', (tester) async {
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
 
       final toggle = tester.widget<Switch>(find.byType(Switch).first);
       expect(toggle.value, isTrue);
@@ -112,16 +119,14 @@ void main() {
     testWidgets('haptics toggle reads initial value from Hive', (tester) async {
       box.put(HiveKeys.haptics, false);
 
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
 
       final toggle = tester.widget<Switch>(find.byType(Switch).first);
       expect(toggle.value, isFalse);
     });
 
     testWidgets('toggling haptics persists to Hive', (tester) async {
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
 
       await tester.tap(find.byType(Switch).first);
       await tester.pumpAndSettle();
@@ -131,8 +136,7 @@ void main() {
 
     testWidgets('dragging master slider updates state and persists',
         (tester) async {
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
 
       final masterSlider = find.byType(Slider).first;
       final sliderCenter = tester.getCenter(masterSlider);
@@ -145,22 +149,19 @@ void main() {
     });
 
     testWidgets('shows section headers', (tester) async {
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
       expect(find.text('Sound'), findsOneWidget);
       expect(find.text('Gameplay'), findsOneWidget);
     });
 
     testWidgets('back button exists', (tester) async {
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
       expect(find.byIcon(Icons.arrow_back), findsOneWidget);
     });
 
     testWidgets('daily goal tiles render one per preset with time labels',
         (tester) async {
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
       // Parallel-list-drift guard: if dailyGoalPresets and its minutes/tier
       // fields ever fall out of sync, one of these asserts fails before the
       // UI ships a mislabelled tile.
@@ -176,8 +177,7 @@ void main() {
 
     testWidgets('tapping a goal tile persists the step count to Hive',
         (tester) async {
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
       final tile = find.text('~5 min');
       await tester.ensureVisible(tile);
       await tester.pumpAndSettle();
@@ -192,8 +192,7 @@ void main() {
       // the closest surviving preset (100) and rewrite Hive so the UI
       // always has a highlighted tile.
       box.put(HiveKeys.dailyGoal, 50);
-      await tester.pumpWidget(buildApp());
-      await tester.pumpAndSettle();
+      await pumpSettings(tester);
       expect(box.get(HiveKeys.dailyGoal), equals(100));
     });
   });

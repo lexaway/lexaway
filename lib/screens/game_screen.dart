@@ -86,6 +86,8 @@ class _GameScreenState extends ConsumerState<GameScreen>
             ref.read(coinProvider.notifier).add(value);
           case StepTaken(:final count):
             ref.read(stepsProvider.notifier).add(count);
+          case BiomeChanged():
+            ref.read(bgmSchedulerProvider).onBiomeChanged();
           default:
             break;
         }

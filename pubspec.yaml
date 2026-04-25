@@ -73,6 +73,7 @@ flutter:
     - assets/images/coins/
     - assets/images/ui/
     - assets/audio/
+    - assets/bgm/
     - assets/dino/
     # Female characters (all 12 complete)
     - assets/images/characters/female/cole/base/

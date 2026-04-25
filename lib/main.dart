@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'l10n/app_localizations.dart';
@@ -46,6 +47,25 @@ void main() async {
   final box = await Hive.openBox('app');
   migrateHive(box);
 
+  // BGM and TTS each create their own AudioPlayer; without mixWithOthers,
+  // iOS deactivates whichever AVAudioSession was active when a new one
+  // activates — so TTS's first utterance would kill BGM. `playback` plays
+  // through the speaker even when the device is muted, which is what we
+  // want for a learning app where TTS is the pedagogical payload.
+  await AudioPlayer.global.setAudioContext(
+    AudioContext(
+      iOS: AudioContextIOS(
+        category: AVAudioSessionCategory.playback,
+        options: const {AVAudioSessionOptions.mixWithOthers},
+      ),
+      android: const AudioContextAndroid(
+        contentType: AndroidContentType.music,
+        usageType: AndroidUsageType.media,
+        audioFocus: AndroidAudioFocus.none,
+      ),
+    ),
+  );
+
   runApp(
     ProviderScope(
       overrides: [
@@ -66,10 +86,12 @@ class LexawayApp extends ConsumerStatefulWidget {
   ConsumerState<LexawayApp> createState() => _LexawayAppState();
 }
 
-class _LexawayAppState extends ConsumerState<LexawayApp> {
+class _LexawayAppState extends ConsumerState<LexawayApp>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Fire-and-forget: initialize the notifications plugin + timezone data,
     // wire the ref-driven listeners, and schedule the first reminder if
     // one is due. We don't block the UI on this — scheduling errors would
@@ -83,6 +105,28 @@ class _LexawayAppState extends ConsumerState<LexawayApp> {
         debugPrint('[ReminderService] init failed: $e\n$s');
       }),
     );
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final bgm = ref.read(bgmServiceProvider);
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      unawaited(bgm.pause());
+    } else if (state == AppLifecycleState.resumed) {
+      unawaited(bgm.resume());
+      // Dart timers don't fire while the app is suspended, so a multi-hour
+      // background nap would leave us still queued for the old hour's track.
+      // Re-arming on resume snaps us back to the current hour.
+      ref.read(bgmSchedulerProvider).onAppResumed();
+    }
   }
 
   @override

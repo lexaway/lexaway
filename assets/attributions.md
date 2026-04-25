@@ -6,6 +6,9 @@ sounds: https://ci.itch.io/400-sounds-pack
 footsteps: Nox_Sound via https://freesound.org/people/Nox_Sound/ (repo: https://github.com/DashNothing/footsteps)
 > My sounds are in CC0, you're free to use them without any conditions.
 
+bgm: Towball's Crossing by Towball — https://towball.itch.io/towballs-crossing
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+
 backgrounds: https://grafxkid.itch.io/seasonal-tilesets
 PERMISSIONS:
 You can freely use these assets for personal and commercial use. Crediting is optional, but if you'd like to, thank you very much!

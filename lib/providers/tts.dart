@@ -4,6 +4,7 @@ import '../data/tts_cache.dart';
 import '../data/tts_manager.dart';
 import '../data/tts_service.dart';
 import '../game/audio_manager.dart';
+import 'bgm.dart';
 import 'bootstrap.dart';
 
 /// Singleton TtsManager backed by the Hive box.
@@ -14,7 +15,11 @@ final ttsManagerProvider = Provider<TtsManager>((ref) {
 /// Singleton TtsService — lazily initialises per language.
 final ttsServiceProvider = Provider<TtsService>((ref) {
   final service = TtsService(tmpDir: ref.watch(tmpDirProvider));
-  service.onSpeakingChange = AudioManager.instance.setTtsDucking;
+  final bgm = ref.watch(bgmServiceProvider);
+  service.onSpeakingChange = (speaking) {
+    AudioManager.instance.setTtsDucking(speaking);
+    bgm.setDucking(speaking);
+  };
   ref.onDispose(() => service.dispose());
   return service;
 });

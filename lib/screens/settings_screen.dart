@@ -20,6 +20,7 @@ class SettingsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final masterVol = ref.watch(masterVolumeProvider);
     final sfxVol = ref.watch(sfxVolumeProvider);
+    final bgmVol = ref.watch(bgmVolumeProvider);
     final ttsVol = ref.watch(ttsVolumeProvider);
     final haptics = ref.watch(hapticsEnabledProvider);
 
@@ -84,6 +85,14 @@ class SettingsScreen extends ConsumerWidget {
                             ref.read(sfxVolumeProvider.notifier).set(v),
                         onChangeEnd: (_) =>
                             ref.read(sfxVolumeProvider.notifier).save(),
+                      ),
+                      _VolumeSlider(
+                        label: l10n.settingsMusic,
+                        value: bgmVol,
+                        onChanged: (v) =>
+                            ref.read(bgmVolumeProvider.notifier).set(v),
+                        onChangeEnd: (_) =>
+                            ref.read(bgmVolumeProvider.notifier).save(),
                       ),
                       _VolumeSlider(
                         label: l10n.voice,

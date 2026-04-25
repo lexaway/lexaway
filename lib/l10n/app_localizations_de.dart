@@ -83,6 +83,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsSfx => 'Effekte';
 
   @override
+  String get settingsMusic => 'Musik';
+
+  @override
   String get settingsGameplay => 'Spieleinstellungen';
 
   @override

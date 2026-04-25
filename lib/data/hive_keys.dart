@@ -12,6 +12,7 @@ abstract final class HiveKeys {
   // Settings
   static const volMaster = 'vol_master';
   static const volSfx = 'vol_sfx';
+  static const volBgm = 'vol_bgm';
   static const volTts = 'vol_tts';
   static const haptics = 'haptics';
   static const gender = 'gender';

@@ -15,6 +15,7 @@ class AttributionsScreen extends StatelessWidget {
     _Attribution('Dino Family', 'ScissorMarks & Demching', 'https://demching.itch.io/dino-family'),
     _Attribution('400 Sounds Pack', 'Ci', 'https://ci.itch.io/400-sounds-pack'),
     _Attribution('Footsteps', 'Nox_Sound', 'https://freesound.org/people/Nox_Sound/'),
+    _Attribution("Towball's Crossing (CC BY 4.0)", 'Towball', 'https://towball.itch.io/towballs-crossing'),
     _Attribution('Seasonal Tilesets', 'GrafxKid', 'https://grafxkid.itch.io/seasonal-tilesets'),
     _Attribution('UI Pack Pixel Adventure', 'Kenney', 'https://kenney.nl/assets/ui-pack-pixel-adventure'),
     _Attribution('Gems & Coins', 'La Red Games', 'https://laredgames.itch.io/gems-coins-free'),
