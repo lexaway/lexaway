@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_font.dart';
+import '../data/app_urls.dart';
 import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../services/reminder_service.dart';
@@ -16,6 +17,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final masterVol = ref.watch(masterVolumeProvider);
     final sfxVol = ref.watch(sfxVolumeProvider);
     final ttsVol = ref.watch(ttsVolumeProvider);
@@ -27,7 +29,7 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.textSecondary,
-        title: Text(AppLocalizations.of(context)!.settings),
+        title: Text(l10n.settings),
       ),
       body: Stack(
         children: [
@@ -65,10 +67,10 @@ class SettingsScreen extends ConsumerWidget {
                   child: ListView(
                     padding: EdgeInsets.zero,
                     children: [
-                      _SectionHeader(label: AppLocalizations.of(context)!.settingsSound),
+                      _SectionHeader(label: l10n.settingsSound),
                       const SizedBox(height: AppSpacing.sm),
                       _VolumeSlider(
-                        label: AppLocalizations.of(context)!.settingsMaster,
+                        label: l10n.settingsMaster,
                         value: masterVol,
                         onChanged: (v) =>
                             ref.read(masterVolumeProvider.notifier).set(v),
@@ -76,7 +78,7 @@ class SettingsScreen extends ConsumerWidget {
                             ref.read(masterVolumeProvider.notifier).save(),
                       ),
                       _VolumeSlider(
-                        label: AppLocalizations.of(context)!.settingsSfx,
+                        label: l10n.settingsSfx,
                         value: sfxVol,
                         onChanged: (v) =>
                             ref.read(sfxVolumeProvider.notifier).set(v),
@@ -84,7 +86,7 @@ class SettingsScreen extends ConsumerWidget {
                             ref.read(sfxVolumeProvider.notifier).save(),
                       ),
                       _VolumeSlider(
-                        label: AppLocalizations.of(context)!.voice,
+                        label: l10n.voice,
                         value: ttsVol,
                         onChanged: (v) =>
                             ref.read(ttsVolumeProvider.notifier).set(v),
@@ -92,31 +94,31 @@ class SettingsScreen extends ConsumerWidget {
                             ref.read(ttsVolumeProvider.notifier).save(),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: AppLocalizations.of(context)!.settingsGameplay),
+                      _SectionHeader(label: l10n.settingsGameplay),
                       const SizedBox(height: AppSpacing.sm),
                       _ToggleRow(
-                        label: AppLocalizations.of(context)!.settingsHaptics,
+                        label: l10n.settingsHaptics,
                         value: haptics,
                         onChanged: (v) =>
                             ref.read(hapticsEnabledProvider.notifier).set(v),
                       ),
                       _ToggleRow(
-                        label: AppLocalizations.of(context)!.settingsAutoPlayVoice,
+                        label: l10n.settingsAutoPlayVoice,
                         value: ref.watch(autoPlayTtsProvider),
                         onChanged: (v) =>
                             ref.read(autoPlayTtsProvider.notifier).set(v),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: AppLocalizations.of(context)!.settingsDailyGoal),
+                      _SectionHeader(label: l10n.settingsDailyGoal),
                       const SizedBox(height: AppSpacing.sm),
                       const _DailyGoalSection(),
                       const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: AppLocalizations.of(context)!.settingsDifficulty),
+                      _SectionHeader(label: l10n.settingsDifficulty),
                       const SizedBox(height: AppSpacing.sm),
                       for (final entry in {
-                        'beginner': AppLocalizations.of(context)!.difficultyBeginner,
-                        'intermediate': AppLocalizations.of(context)!.difficultyIntermediate,
-                        'advanced': AppLocalizations.of(context)!.difficultyAdvanced,
+                        'beginner': l10n.difficultyBeginner,
+                        'intermediate': l10n.difficultyIntermediate,
+                        'advanced': l10n.difficultyAdvanced,
                       }.entries)
                         _RadioRow(
                           label: entry.value,
@@ -125,7 +127,7 @@ class SettingsScreen extends ConsumerWidget {
                               ref.read(difficultyProvider.notifier).set(entry.key),
                         ),
                       const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: AppLocalizations.of(context)!.settingsFont),
+                      _SectionHeader(label: l10n.settingsFont),
                       const SizedBox(height: AppSpacing.sm),
                       for (final font in AppFont.values)
                         _FontPickerRow(
@@ -135,32 +137,28 @@ class SettingsScreen extends ConsumerWidget {
                               ref.read(fontProvider.notifier).set(font),
                         ),
                       const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: AppLocalizations.of(context)!.settingsAbout),
+                      _SectionHeader(label: l10n.settingsAbout),
                       const SizedBox(height: AppSpacing.sm),
                       _LinkRow(
                         label: 'Discord',
                         onTap: () => launchUrl(
-                          Uri.parse('https://discord.gg/DbGTJc7P'),
+                          Uri.parse(discordInvite),
                           mode: LaunchMode.externalApplication,
                         ),
                       ),
                       _LinkRow(
-                        label: AppLocalizations.of(context)!.attributions,
+                        label: l10n.attributions,
                         onTap: () => context.push('/attributions'),
                       ),
                       _LinkRow(
-                        label: AppLocalizations.of(context)!.privacyPolicy,
+                        label: l10n.privacyPolicy,
                         onTap: () {
                           final lang =
                               Localizations.localeOf(context).languageCode;
-                          const base =
-                              'https://lexaway.github.io/lexaway/privacy';
-                          const supported = {'es', 'fr', 'de', 'it', 'pt'};
-                          final url = supported.contains(lang)
-                              ? '$base-$lang.html'
-                              : '$base.html';
-                          launchUrl(Uri.parse(url),
-                              mode: LaunchMode.externalApplication);
+                          launchUrl(
+                            Uri.parse(privacyPolicyUrl(lang)),
+                            mode: LaunchMode.externalApplication,
+                          );
                         },
                       ),
                     ],

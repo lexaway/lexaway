@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/app_font.dart';
+import '../data/day_key.dart';
 import '../data/hive_keys.dart';
 import '../data/lang_codes.dart';
 import '../game/audio_manager.dart';
@@ -30,13 +31,11 @@ class _GameScreenState extends ConsumerState<GameScreen>
   StreamSubscription<GameEvent>? _eventSub;
   bool _goalMetBannerVisible = false;
 
-  String _todayKey() => DateTime.now().toIso8601String().substring(0, 10);
-
   void _maybeShowGoalMetBanner() {
     if (_goalMetBannerVisible) return;
     final box = ref.read(hiveBoxProvider);
     final shownKey = box.get(HiveKeys.goalMetShownDayKey) as String?;
-    final today = _todayKey();
+    final today = todayKey();
     if (shownKey == today) return;
     box.put(HiveKeys.goalMetShownDayKey, today);
     setState(() => _goalMetBannerVisible = true);

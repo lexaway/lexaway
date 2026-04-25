@@ -31,11 +31,7 @@ class StreakNotifier extends HiveIntNotifier {
   void increment() {
     state++;
     _save();
-    final best = _box.get(HiveKeys.bestStreak, defaultValue: 0) as int;
-    if (state > best) {
-      _box.put(HiveKeys.bestStreak, state);
-      ref.read(bestStreakProvider.notifier)._sync();
-    }
+    ref.read(bestStreakProvider.notifier).maybeRaise(state);
   }
 
   void reset() {
@@ -52,7 +48,14 @@ class BestStreakNotifier extends HiveIntNotifier {
   @override
   String get key => HiveKeys.bestStreak;
 
-  void _sync() => state = _box.get(key, defaultValue: defaultValue) as int;
+  /// Raise the best-streak high-water mark if [value] beats it. No-op
+  /// otherwise — best can only go up.
+  void maybeRaise(int value) {
+    if (value > state) {
+      state = value;
+      _save();
+    }
+  }
 }
 
 final coinProvider = NotifierProvider<CoinNotifier, int>(CoinNotifier.new);

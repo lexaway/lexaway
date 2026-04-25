@@ -9,6 +9,21 @@ import 'content_urls.dart';
 import 'download_helper.dart';
 import 'hive_keys.dart';
 
+/// Pack IDs are `<fromLang>-<lang>`. Both halves are ISO 639-3 codes today
+/// (always 3 letters, no internal hyphens). The split is exposed via this
+/// helper so future code that relaxes the format — script tags, region tags,
+/// versioned IDs — only has to update one place.
+({String fromLang, String lang}) parsePackId(String packId) {
+  final i = packId.indexOf('-');
+  if (i < 0) {
+    throw ArgumentError.value(packId, 'packId', 'expected "<fromLang>-<lang>"');
+  }
+  return (fromLang: packId.substring(0, i), lang: packId.substring(i + 1));
+}
+
+String formatPackId({required String fromLang, required String lang}) =>
+    '$fromLang-$lang';
+
 // Schema-compatibility window for local pack files on disk.
 //
 // ⚠️  BUMP BOTH IN LOCKSTEP on breaking schema changes. When the on-disk
@@ -84,7 +99,7 @@ class PackInfo {
     required this.schemaVersion,
   });
 
-  String get packId => '$fromLang-$lang';
+  String get packId => formatPackId(fromLang: fromLang, lang: lang);
 
   factory PackInfo.fromJson(Map<String, dynamic> json) => PackInfo(
     lang: json['lang'] as String,
@@ -111,13 +126,13 @@ class LocalPack {
     required this.sizeBytes,
   });
 
-  String get packId => '$fromLang-$lang';
+  String get packId => formatPackId(fromLang: fromLang, lang: lang);
 
   factory LocalPack.fromJson(String packId, Map<String, dynamic> json) {
-    final parts = packId.split('-');
+    final parsed = parsePackId(packId);
     return LocalPack(
-      lang: parts[1],
-      fromLang: parts[0],
+      lang: parsed.lang,
+      fromLang: parsed.fromLang,
       schemaVersion: json['schema_version'] as int,
       builtAt: json['built_at'] as String,
       sizeBytes: json['size_bytes'] as int,
@@ -185,7 +200,7 @@ class PackManager {
     required String fromLang,
     void Function(double)? onProgress,
   }) async {
-    final packId = '$fromLang-$lang';
+    final packId = formatPackId(fromLang: fromLang, lang: lang);
     final dir = packsDir;
     await Directory(dir).create(recursive: true);
 

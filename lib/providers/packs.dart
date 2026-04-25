@@ -41,7 +41,7 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
   }) async {
     final pm = ref.read(packManagerProvider);
     final tm = ref.read(ttsManagerProvider);
-    final packId = '$fromLang-$lang';
+    final packId = formatPackId(fromLang: fromLang, lang: lang);
 
     final packFuture = () async {
       ref.read(downloadProgressProvider(packId).notifier).state = 0.0;
@@ -130,7 +130,7 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
 
     final pm = ref.read(packManagerProvider);
     final tm = ref.read(ttsManagerProvider);
-    final targetLang = packId.split('-')[1];
+    final targetLang = parsePackId(packId).lang;
 
     await pm.deletePack(packId);
 
@@ -241,7 +241,10 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
   String? get activePackId => _activePackId;
 
   /// The target language code (e.g. "fra"), derived from the active pack ID.
-  String? get activeLang => _activePackId?.split('-')[1];
+  String? get activeLang {
+    final id = _activePackId;
+    return id == null ? null : parsePackId(id).lang;
+  }
 
   /// Clear without rebuilding — avoids the router redirect dance.
   Future<void> clear() async {

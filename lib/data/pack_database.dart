@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:sqlite_async/sqlite_async.dart';
 
 import '../models/question.dart';
+import 'day_key.dart';
 
 class PackDatabase {
   final String packsDir;
@@ -57,7 +58,7 @@ class PackDatabase {
   }) async {
     final db = _db!;
     final diff = _difficultyFilter(difficulty);
-    final today = _today();
+    final today = todayKey();
 
     final conditions = <String>[
       // Exclude items currently due for review — they come from loadReviewQuestions.
@@ -86,7 +87,7 @@ class PackDatabase {
   }) async {
     final db = _db!;
     final diff = _difficultyFilter(difficulty);
-    final today = _today();
+    final today = todayKey();
 
     final conditions = <String>[
       "next_review != ''",
@@ -121,11 +122,6 @@ class PackDatabase {
       'repetitions = ?, next_review = ? WHERE id = ?',
       [easiness, intervalDays, repetitions, nextReview, id],
     );
-  }
-
-  static String _today() {
-    final now = DateTime.now().toUtc();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
   Future<void> close() async {

@@ -4,6 +4,8 @@
 /// updated state. Stateless and pure — no side effects, no dependencies.
 library;
 
+import 'day_key.dart';
+
 typedef Sm2State = ({
   double easiness,
   int intervalDays,
@@ -39,9 +41,7 @@ Sm2State sm2(
     }
   }
 
-  final nextDate = DateTime.now().toUtc().add(Duration(days: newInterval));
-  final nextReview =
-      '${nextDate.year}-${nextDate.month.toString().padLeft(2, '0')}-${nextDate.day.toString().padLeft(2, '0')}';
+  final nextReview = dayKeyOf(DateTime.now().add(Duration(days: newInterval)));
 
   return (
     easiness: ef,

@@ -169,7 +169,7 @@ class TtsService {
     _speaking = true;
     try {
       final wavPath = '$tmpDir/tts_${myId % 2}.wav';
-      File(wavPath).writeAsBytesSync(wavBytes);
+      await File(wavPath).writeAsBytes(wavBytes, flush: true);
 
       if (myId != _playbackId) return;
 

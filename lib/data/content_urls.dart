@@ -31,11 +31,13 @@ Future<String> ttsUrl(String path) async {
 }
 
 /// Probes each base URL with a HEAD request. Returns the first that responds
-/// with a non-error status. Only falls back on definitive failures (HTTP 4xx/5xx,
-/// DNS resolution errors); timeouts keep the primary since a slow primary is
-/// still more likely to work than a non-existent fallback.
+/// with a non-error status. Falls through on definitive failures (HTTP 5xx,
+/// DNS resolution errors); on timeout, sticks with the URL being probed
+/// since a slow primary is still more likely to work than a non-existent
+/// fallback. If every URL fails definitively, returns the last as a final
+/// fallback so callers always get *something* to attempt.
 Future<String> _probe(List<String> baseUrls) async {
-  for (var i = 0; i < baseUrls.length - 1; i++) {
+  for (var i = 0; i < baseUrls.length; i++) {
     try {
       final response = await http.head(Uri.parse(baseUrls[i])).timeout(
         const Duration(seconds: 5),
@@ -46,7 +48,7 @@ Future<String> _probe(List<String> baseUrls) async {
       // DNS or connection refused — definitive failure, try next
       debugPrint('content_urls: ${baseUrls[i]} unreachable ($e), trying fallback');
     } catch (_) {
-      // Timeout or other transient error — stick with primary
+      // Timeout or other transient error — stick with this URL.
       return baseUrls[i];
     }
   }

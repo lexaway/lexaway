@@ -49,12 +49,12 @@ class QuestionSource {
     return _fresh[_freshIndex];
   }
 
-  bool get _servingReview =>
-      (_fresh.isEmpty && _review.isNotEmpty && _reviewIndex < _review.length) ||
-      (_review.isNotEmpty &&
-          _reviewIndex < _review.length &&
-          reviewRatio > 0 &&
-          _sinceLastReview >= (1 / reviewRatio).round());
+  bool get _servingReview {
+    if (_review.isEmpty || _reviewIndex >= _review.length) return false;
+    if (_fresh.isEmpty) return true;
+    if (reviewRatio <= 0) return false;
+    return _sinceLastReview >= (1 / reviewRatio).round();
+  }
 
   /// Advance to the next question, reloading from the database when
   /// either queue is exhausted.

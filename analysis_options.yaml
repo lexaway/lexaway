@@ -2,3 +2,9 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
+    # Within-package imports use relative paths — already the convention,
+    # this keeps it from drifting on new files.
+    prefer_relative_imports: true
+    # NB: `unawaited_futures` is worth turning on once the existing ~26
+    # fire-and-forget sites (mostly Hive writes) are wrapped in
+    # `unawaited(...)`. Tracked separately.
