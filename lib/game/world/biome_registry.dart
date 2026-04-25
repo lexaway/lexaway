@@ -30,9 +30,9 @@ class BiomeRegistry {
         maxGapTiles: 14,
         noiseSeedOffset: 0,
       ),
-      // Mushrooms — frequent little accents, tight patchy clusters.
+      // Signposts — sparse little wooden noticeboards along the path.
       ScatterFeature(
-        entityName: 'mushroom',
+        entityName: 'sign',
         noiseScale: 0.06,
         threshold: 0.25,
         minGapTiles: 6,
@@ -75,9 +75,9 @@ class BiomeRegistry {
         maxGapTiles: 40,
         noiseSeedOffset: 250,
       ),
-      // Flower fences — rare pops of color.
+      // Open-ended fences — bracketed segments, rare standalone runs.
       ScatterFeature(
-        entityName: 'flower_fence',
+        entityName: 'open_fence',
         noiseScale: 0.02,
         threshold: 0.6,
         minGapTiles: 20,
@@ -245,12 +245,88 @@ class BiomeRegistry {
     clusterChance: 0.25,
   );
 
+  static const _winter = BiomeDefinition(
+    type: BiomeType.winter,
+    terrainAsset: 'terrain/winter.png',
+    entitySheet: 'entities/winter.png',
+    entityManifest: 'assets/images/entities/winter.json',
+    parallaxLayers: [
+      'parallax/sky.png',
+      'parallax/winter_mountains_far.png',
+      'parallax/winter_mountains_near.png',
+      'parallax/winter_foreground.png',
+    ],
+    footstepTerrain: Terrain.snow,
+    features: [
+      // Snowy pines — light blue conifers, the iconic winter silhouette.
+      ScatterFeature(
+        entityName: 'snow_pine',
+        noiseScale: 0.02,
+        threshold: 0.25,
+        minGapTiles: 7,
+        maxGapTiles: 20,
+        noiseSeedOffset: 0,
+      ),
+      // Evergreens — dark green firs, offset noise = different groves.
+      ScatterFeature(
+        entityName: 'evergreen',
+        noiseScale: 0.02,
+        threshold: 0.30,
+        minGapTiles: 8,
+        maxGapTiles: 22,
+        noiseSeedOffset: 100,
+      ),
+      // Snow bushes — frequent little tufts.
+      ScatterFeature(
+        entityName: 'snow_bush',
+        noiseScale: 0.04,
+        threshold: 0.20,
+        minGapTiles: 5,
+        maxGapTiles: 14,
+        noiseSeedOffset: 200,
+      ),
+      // Snow mounds — slightly rarer drifts.
+      ScatterFeature(
+        entityName: 'snow_mound',
+        noiseScale: 0.06,
+        threshold: 0.30,
+        minGapTiles: 6,
+        maxGapTiles: 16,
+        noiseSeedOffset: 300,
+      ),
+      // Winter fences — sparse stretches of icy wooden posts.
+      ScatterFeature(
+        entityName: 'winter_fence',
+        noiseScale: 0.015,
+        threshold: 0.55,
+        minGapTiles: 18,
+        maxGapTiles: 40,
+        noiseSeedOffset: 400,
+      ),
+      // Open-ended winter fences — bracketed standalone runs, rarer.
+      ScatterFeature(
+        entityName: 'winter_open_fence',
+        noiseScale: 0.02,
+        threshold: 0.6,
+        minGapTiles: 20,
+        maxGapTiles: 45,
+        noiseSeedOffset: 500,
+      ),
+    ],
+    minCoinGapTiles: 5,
+    maxCoinGapTiles: 10,
+    diamondChance: 0.15,
+    clusterChance: 0.25,
+  );
+
   static BiomeDefinition get(BiomeType type) {
     switch (type) {
       case BiomeType.grassland:
         return _grassland;
       case BiomeType.tropics:
         return _tropics;
+      case BiomeType.winter:
+        return _winter;
     }
   }
 }

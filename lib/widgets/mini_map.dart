@@ -11,6 +11,7 @@ import '../game/world/world_map.dart';
 /// Use a loud fallback so missing entries are obvious during development.
 const _biomeColors = {
   BiomeType.grassland: Color(0xFF4a8c3f),
+  BiomeType.winter: Color(0xFFc7e6f2),
 };
 const _missingBiomeColor = Color(0xFFff00ff); // magenta = "you forgot one"
 

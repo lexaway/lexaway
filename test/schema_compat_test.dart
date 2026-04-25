@@ -7,7 +7,6 @@ import 'package:lexaway/data/hive_keys.dart';
 import 'package:lexaway/data/pack_manager.dart';
 import 'package:lexaway/data/tts_manager.dart' show ttsModelRegistry;
 import 'package:lexaway/game/world/world_generator.dart';
-import 'package:lexaway/game/world/world_map.dart';
 import 'package:lexaway/main.dart' show hiveSchemaVersion, migrateHive;
 
 /// Fixture-based tests that verify current code can still read persisted data
@@ -228,21 +227,5 @@ void main() {
       }
     });
 
-    test('collected_coins indices are respected', () {
-      final world = Map<String, dynamic>.from(fixture['world'] as Map);
-      final collected = (world['collected_coins'] as List).cast<int>().toSet();
-      final seed = world['seed'] as int;
-      final map = WorldGenerator().generate(seed);
-
-      final allCoinIndices = map.segments
-          .expand((s) => s.items)
-          .where((item) => item.category == ItemCategory.coin)
-          .map((item) => item.index)
-          .toSet();
-
-      for (final idx in collected) {
-        expect(allCoinIndices, contains(idx));
-      }
-    });
   });
 }

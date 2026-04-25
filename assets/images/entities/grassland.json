@@ -36,7 +36,7 @@
       "src": [16, 80], "size": [16, 16],
       "flippable": true
     },
-    "mushroom": {
+    "sign": {
       "col": 3, "row": 5,
       "widthTiles": 1, "heightTiles": 1,
       "src": [48, 80], "size": [16, 16],
@@ -47,7 +47,7 @@
       "widthTiles": 3, "heightTiles": 1,
       "src": [80, 80], "size": [48, 16]
     },
-    "flower_fence": {
+    "open_fence": {
       "col": 9, "row": 5,
       "widthTiles": 4, "heightTiles": 1,
       "src": [144, 80], "size": [64, 16]

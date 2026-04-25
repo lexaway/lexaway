@@ -203,7 +203,10 @@ class WorldGenerator {
   }
 
   BiomeType _pickBiome(Random rng) {
-    return rng.nextDouble() < 0.6 ? BiomeType.grassland : BiomeType.tropics;
+    final r = rng.nextDouble();
+    if (r < 0.5) return BiomeType.grassland;
+    if (r < 0.75) return BiomeType.tropics;
+    return BiomeType.winter;
   }
 
   /// Lay out a region's children inside its footprint.

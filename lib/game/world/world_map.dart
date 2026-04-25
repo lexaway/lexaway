@@ -1,6 +1,6 @@
 import '../lexaway_game.dart';
 
-enum BiomeType { grassland, tropics }
+enum BiomeType { grassland, tropics, winter }
 
 enum ItemCategory { entity, coin, creature }
 
