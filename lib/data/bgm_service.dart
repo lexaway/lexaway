@@ -36,6 +36,7 @@ class BgmService {
 
   int _transitionId = 0;
   Timer? _rampTimer;
+  Timer? _duckRampTimer;
 
   /// Fires the asset path of a non-looping track when it reaches its natural
   /// end. The scheduler uses this to pick the next gameplay track only at
@@ -85,6 +86,7 @@ class BgmService {
 
       final id = ++_transitionId;
       _rampTimer?.cancel();
+      _duckRampTimer?.cancel();
 
       // Stop whatever was already on the outgoing slot before reusing it.
       await _previous.stop();
@@ -165,12 +167,21 @@ class BgmService {
     _pushVolumeIfIdle();
   }
 
-  /// Toggle the TTS-driven duck. Volume change is instant — TTS utterances
-  /// are short enough that a ramp would just lag behind the actual word.
+  /// Toggle the TTS-driven duck. Going *down* is instant — a ramp would lag
+  /// behind a short utterance. Coming back *up* eases over ~300ms so the
+  /// music doesn't pop in at full volume the moment TTS finishes.
   void setDucking(bool ducking) {
     if (_ducking == ducking) return;
     _ducking = ducking;
-    _pushVolumeIfIdle();
+    if (_currentAsset == null || _paused) return;
+    if (_rampTimer != null && _rampTimer!.isActive) return;
+    if (ducking) {
+      _duckRampTimer?.cancel();
+      _currentVol = _effectiveVolume();
+      _current.setVolume(_currentVol);
+    } else {
+      _runDuckRamp();
+    }
   }
 
   /// Pause both players. Idempotent. Used on app backgrounding.
@@ -178,6 +189,7 @@ class BgmService {
     if (_paused) return;
     _paused = true;
     _rampTimer?.cancel();
+    _duckRampTimer?.cancel();
     await _current.pause();
     await _previous.pause();
   }
@@ -205,6 +217,7 @@ class BgmService {
 
   Future<void> dispose() async {
     _rampTimer?.cancel();
+    _duckRampTimer?.cancel();
     await _completeSub?.cancel();
     await _completeCtrl.close();
     await _current.dispose();
@@ -257,7 +270,27 @@ class BgmService {
   Future<void> _pushVolumeIfIdle() async {
     if (_currentAsset == null || _paused) return;
     if (_rampTimer != null && _rampTimer!.isActive) return;
+    if (_duckRampTimer != null && _duckRampTimer!.isActive) return;
     _currentVol = _effectiveVolume();
     await _current.setVolume(_currentVol);
+  }
+
+  void _runDuckRamp() {
+    _duckRampTimer?.cancel();
+    const duration = Duration(milliseconds: 300);
+    final startVol = _currentVol;
+    final steps = (duration.inMilliseconds / _rampInterval.inMilliseconds)
+        .ceil()
+        .clamp(1, 1000);
+    var step = 0;
+    _duckRampTimer = Timer.periodic(_rampInterval, (timer) async {
+      step++;
+      final t = (step / steps).clamp(0.0, 1.0);
+      // Sample _effectiveVolume() each tick so a duck flip mid-ramp
+      // smoothly redirects toward the new target.
+      _currentVol = startVol + (_effectiveVolume() - startVol) * t;
+      await _current.setVolume(_currentVol);
+      if (step >= steps) timer.cancel();
+    });
   }
 }
