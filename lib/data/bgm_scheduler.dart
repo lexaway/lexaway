@@ -44,10 +44,16 @@ class BgmScheduler {
     'bgm/bgm_hour_23.m4a',
   ];
 
+  /// Minimum time between biome-driven rerolls. Without this, logging in a
+  /// few steps from a biome edge — or crossing two narrow zones back to
+  /// back — would yank the track before it had a chance to breathe.
+  static const Duration _biomeRerollCooldown = Duration(seconds: 60);
+
   final BgmService service;
   final Random _random;
   StreamSubscription<String>? _completeSub;
   String? _currentGameplayTrack;
+  DateTime? _lastSwapAt;
   bool _inGameplay = false;
 
   BgmScheduler({required this.service, Random? random})
@@ -75,10 +81,16 @@ class BgmScheduler {
     _rollNextTrack();
   }
 
-  /// Player crossed a biome boundary — reroll immediately, the boundary is
-  /// the cue.
+  /// Player crossed a biome boundary — reroll, the boundary is the cue.
+  /// Suppressed if we just swapped within [_biomeRerollCooldown] so a fresh
+  /// track gets time to breathe before another boundary preempts it.
   void onBiomeChanged() {
     if (!_inGameplay) return;
+    final last = _lastSwapAt;
+    if (last != null &&
+        DateTime.now().difference(last) < _biomeRerollCooldown) {
+      return;
+    }
     _rollNextTrack();
   }
 
@@ -89,6 +101,7 @@ class BgmScheduler {
   void _rollNextTrack() {
     final next = _pickNext();
     _currentGameplayTrack = next;
+    _lastSwapAt = DateTime.now();
     service.playLoop(
       next,
       crossfade: const Duration(seconds: 4),
