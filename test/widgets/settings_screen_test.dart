@@ -90,7 +90,7 @@ void main() {
       expect(sliders.length, 4);
       expect(sliders[0].value, 1.0);  // master
       expect(sliders[1].value, 0.5);  // sfx
-      expect(sliders[2].value, 0.3);  // bgm
+      expect(sliders[2].value, 0.0);  // bgm (opt-in)
       expect(sliders[3].value, 1.0);  // tts
     });
 
