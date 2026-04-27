@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/volume_taper.dart';
 import '../providers.dart';
 
 /// Widget-owned helper that handles TTS playback and prefetch.
@@ -37,7 +38,7 @@ class TtsController {
     final ttsVol = ref.read(ttsVolumeProvider);
     await ref.read(ttsServiceProvider).playBytes(
       bytes,
-      volume: masterVol * ttsVol,
+      volume: taperedVolume(masterVol) * taperedVolume(ttsVol),
     );
   }
 }

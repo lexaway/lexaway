@@ -2,12 +2,27 @@ import 'dart:math';
 
 import 'package:flame_audio/flame_audio.dart';
 
+import '../data/volume_taper.dart';
+
 enum Terrain { grass, dirt, snow }
 
 class AudioManager {
   static final AudioManager _instance = AudioManager._();
   static AudioManager get instance => _instance;
   AudioManager._();
+
+  // Feedback SFX confirm user actions, so they stay audible under TTS.
+  // Footsteps are pure ambience and disappear so speech wins cleanly.
+  static const double _feedbackDuck = 0.5;
+  static const double _footstepDuck = 0.0;
+
+  // Footsteps sit under feedback SFX so the ambient layer doesn't compete
+  // with confirmations.
+  static const double _footstepGain = 0.35;
+
+  // Egg crack is a soft squelch, not an event marker — quieter than the
+  // other feedback hits.
+  static const double _eggCrackGain = 0.4;
 
   final _rng = Random();
 
@@ -18,10 +33,17 @@ class AudioManager {
   void setTtsDucking(bool ducking) => _ttsDucking = ducking;
 
   double get _feedbackVol =>
-      (masterVolume * sfxVolume * (_ttsDucking ? 0.5 : 1.0)).clamp(0.0, 1.0);
+      (taperedVolume(masterVolume) *
+              taperedVolume(sfxVolume) *
+              (_ttsDucking ? _feedbackDuck : 1.0))
+          .clamp(0.0, 1.0);
 
-  double get _footstepVol =>
-      _ttsDucking ? 0.0 : (masterVolume * sfxVolume * 0.35).clamp(0.0, 1.0);
+  double get _footstepVol => _ttsDucking
+      ? _footstepDuck
+      : (taperedVolume(masterVolume) *
+                taperedVolume(sfxVolume) *
+                _footstepGain)
+            .clamp(0.0, 1.0);
 
   Future<void> preload() async {
     await FlameAudio.audioCache.loadAll([
@@ -55,7 +77,7 @@ class AudioManager {
   void playGem() => FlameAudio.play('gem.wav', volume: _feedbackVol);
 
   void playEggCrack() =>
-      FlameAudio.play('crunch_crunchy.wav', volume: _feedbackVol * 0.4);
+      FlameAudio.play('crunch_crunchy.wav', volume: _feedbackVol * _eggCrackGain);
 
   void playHatchChime() =>
       FlameAudio.play('hatch_chime.wav', volume: _feedbackVol);
