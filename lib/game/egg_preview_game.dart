@@ -18,8 +18,8 @@ class EggPreviewGame extends FlameGame {
   bool _disposed = false;
   final Completer<void> _loaded = Completer<void>();
 
-  static const double _frameSize = 24;
-  static const double _scale = 4.0;
+  static const double _frameSize = 48;
+  static const double _scale = 2.0;
 
   EggPreviewGame({required this.character});
 
