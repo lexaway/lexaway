@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/pack_manager.dart';
-import '../data/tts_manager.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -276,6 +275,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                         final pack = packs[i - 1];
                         final status = packUpdateStatus(pack, local[pack.packId]);
                         final ttsManager = ref.watch(ttsManagerProvider);
+                        final voiceCatalog = ref.watch(voiceCatalogProvider);
                         return PackTile(
                           pack: pack,
                           local: local[pack.packId],
@@ -286,7 +286,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                           voiceProgress: ref.watch(
                             voiceDownloadProgressProvider(pack.lang),
                           ),
-                          voiceModels: ttsModelRegistry[pack.lang] ?? const [],
+                          voiceModels: voiceCatalog[pack.lang] ?? const [],
                           downloadedModelId: ttsManager.downloadedModelId(pack.lang),
                           hasCharacter:
                               ref.watch(characterProvider(pack.lang)) != null,

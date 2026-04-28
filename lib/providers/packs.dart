@@ -58,7 +58,7 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
       }
     }();
 
-    final voiceFuture = (includeVoice && TtsManager.isSupported(lang))
+    final voiceFuture = (includeVoice && tm.isSupported(lang))
         ? () async {
             ref.read(voiceDownloadProgressProvider(lang).notifier).state = 0.0;
             try {
@@ -88,7 +88,7 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
   /// If [modelId] is null, downloads the default model for the language.
   Future<void> downloadVoice(String lang, {String? modelId}) async {
     final tm = ref.read(ttsManagerProvider);
-    if (!TtsManager.isSupported(lang)) return;
+    if (!tm.isSupported(lang)) return;
 
     // Release engine before replacing — avoids native crash if model files change
     ref.read(ttsServiceProvider).releaseEngine();
@@ -157,6 +157,23 @@ final manifestProvider = FutureProvider<Manifest>((ref) {
   return ref.read(packManagerProvider).fetchManifest();
 });
 
+/// Live TTS voice catalog: bundled baseline overlaid with `Manifest.voices`.
+/// Manifest entries override per-lang (presence wins, even an empty list —
+/// that means "this lang has no voices"). Falls back to baseline alone while
+/// the manifest is loading or errored, so the UI is always populated.
+///
+/// Pure derivation. The push into [TtsManager.voiceCatalog] (so non-Riverpod
+/// playback paths see the same view) is wired separately in `LexawayApp` via
+/// `ref.listenManual`.
+final voiceCatalogProvider = Provider<Map<String, List<TtsModelInfo>>>((ref) {
+  final manifest = ref.watch(manifestProvider);
+  final merged = <String, List<TtsModelInfo>>{...kBaselineVoiceCatalog};
+  manifest.whenData((m) {
+    merged.addAll(m.voices);
+  });
+  return merged;
+});
+
 /// Ephemeral download progress for sentence packs, keyed by lang code.
 final downloadProgressProvider = StateProvider.family<double?, String>(
   (ref, lang) => null,
@@ -197,7 +214,7 @@ final activeLangProvider = Provider<String?>((ref) {
 /// read plus a bang-assertion at each call site.
 final activeTtsLangProvider = Provider<String?>((ref) {
   final lang = ref.watch(activeLangProvider);
-  if (lang == null || !TtsManager.isSupported(lang)) return null;
+  if (lang == null || !ref.read(ttsManagerProvider).isSupported(lang)) return null;
   // Watched for its invalidation signal — voice downloads/deletes rebuild it,
   // which is how we learn that `isModelDownloaded` may now return differently.
   ref.watch(localPacksProvider);

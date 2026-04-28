@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:lexaway/data/hive_keys.dart';
 import 'package:lexaway/data/pack_manager.dart';
-import 'package:lexaway/data/tts_manager.dart' show ttsModelRegistry;
+import 'package:lexaway/data/tts_manager.dart' show kBaselineVoiceCatalog;
 import 'package:lexaway/game/world/world_generator.dart';
 import 'package:lexaway/main.dart' show hiveSchemaVersion, migrateHive;
 
@@ -119,7 +119,7 @@ void main() {
 
     test('tts model metadata matches TtsManager expectations', () {
       final models = fixture['tts_models'] as Map<String, dynamic>;
-      final allArchiveNames = ttsModelRegistry.values
+      final allArchiveNames = kBaselineVoiceCatalog.values
           .expand((voices) => voices)
           .map((m) => m.archiveName)
           .toSet();
@@ -130,7 +130,7 @@ void main() {
         expect(model['downloaded_at'] as String, isA<String>());
         expect(allArchiveNames, contains(archiveName),
             reason: 'archive_name "$archiveName" for lang "$lang" '
-                'not found in ttsModelRegistry');
+                'not found in kBaselineVoiceCatalog');
       }
     });
   });

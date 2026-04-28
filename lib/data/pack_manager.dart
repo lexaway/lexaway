@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:http/http.dart' as http;
 import 'package:sqlite_async/sqlite_async.dart';
@@ -8,6 +9,7 @@ import 'package:sqlite_async/sqlite_async.dart';
 import 'content_urls.dart';
 import 'download_helper.dart';
 import 'hive_keys.dart';
+import 'tts_manager.dart';
 
 /// Pack IDs are `<fromLang>-<lang>`. Both halves are ISO 639-3 codes today
 /// (always 3 letters, no internal hyphens). The split is exposed via this
@@ -150,7 +152,16 @@ class Manifest {
   final int schemaVersion;
   final List<PackInfo> packs;
 
-  const Manifest({required this.schemaVersion, required this.packs});
+  /// Optional remote-driven TTS voice catalog, keyed by ISO 639-3 lang code.
+  /// When a lang appears here, it overrides the bundled baseline; absent langs
+  /// fall back to the baseline. Empty list = "this lang has no voices."
+  final Map<String, List<TtsModelInfo>> voices;
+
+  const Manifest({
+    required this.schemaVersion,
+    required this.packs,
+    this.voices = const {},
+  });
 
   List<PackInfo> packsFor(String fromLang) =>
       packs.where((p) => p.fromLang == fromLang).toList();
@@ -160,7 +171,34 @@ class Manifest {
     packs: (json['packs'] as List)
         .map((p) => PackInfo.fromJson(p as Map<String, dynamic>))
         .toList(),
+    voices: _parseVoices(json['voices']),
   );
+
+  static Map<String, List<TtsModelInfo>> _parseVoices(Object? raw) {
+    if (raw is! Map) return const {};
+    final out = <String, List<TtsModelInfo>>{};
+    raw.forEach((lang, list) {
+      if (lang is! String || list is! List) {
+        if (kDebugMode) debugPrint('Manifest voices: skipping bad entry $lang');
+        return;
+      }
+      final voices = <TtsModelInfo>[];
+      for (final v in list) {
+        if (v is! Map) {
+          if (kDebugMode) debugPrint('Manifest voices[$lang]: non-map entry $v');
+          continue;
+        }
+        final info = TtsModelInfo.tryFromJson(Map<String, dynamic>.from(v));
+        if (info == null) {
+          if (kDebugMode) debugPrint('Manifest voices[$lang]: malformed $v');
+          continue;
+        }
+        voices.add(info);
+      }
+      out[lang] = voices;
+    });
+    return out;
+  }
 }
 
 class PackManager {

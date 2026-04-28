@@ -105,6 +105,13 @@ class _LexawayAppState extends ConsumerState<LexawayApp>
         debugPrint('[ReminderService] init failed: $e\n$s');
       }),
     );
+
+    // Mirror the merged voice catalog into TtsManager so non-Riverpod
+    // playback paths see manifest-supplied voices. `fireImmediately` covers
+    // the initial baseline + any synchronously-available cached manifest.
+    ref.listenManual(voiceCatalogProvider, (_, next) {
+      ref.read(ttsManagerProvider).setVoiceCatalog(next);
+    }, fireImmediately: true);
   }
 
   @override

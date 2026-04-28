@@ -23,11 +23,37 @@ class TtsModelInfo {
     required this.onnxFile,
     required this.approximateSizeMB,
   });
+
+  static TtsModelInfo? tryFromJson(Map<String, dynamic> json) {
+    final modelId = json['model_id'];
+    final displayName = json['display_name'];
+    final archiveName = json['archive_name'];
+    final onnxFile = json['onnx_file'];
+    final size = json['approximate_size_mb'];
+    if (modelId is! String ||
+        displayName is! String ||
+        archiveName is! String ||
+        onnxFile is! String ||
+        size is! int) {
+      return null;
+    }
+    return TtsModelInfo(
+      modelId: modelId,
+      displayName: displayName,
+      archiveName: archiveName,
+      onnxFile: onnxFile,
+      approximateSizeMB: size,
+    );
+  }
 }
 
-/// Registry of Piper VITS models, keyed by ISO 639-3 language code.
-/// Each language maps to a list of available voices (first = default).
-const ttsModelRegistry = <String, List<TtsModelInfo>>{
+/// Bundled fallback catalog of Piper VITS models, keyed by ISO 639-3 lang code.
+///
+/// Used at cold start before the remote manifest loads, when the manifest fetch
+/// fails with no cache, and as the source for legacy Hive migrations. The
+/// runtime catalog merges this with `Manifest.voices` (manifest wins per-lang),
+/// so adding new voices to the manifest ships them without an app update.
+const kBaselineVoiceCatalog = <String, List<TtsModelInfo>>{
   'eng': [
     TtsModelInfo(modelId: 'hfc_male', displayName: 'HFC Male', archiveName: 'vits-piper-en_US-hfc_male-medium', onnxFile: 'en_US-hfc_male-medium.onnx', approximateSizeMB: 61),
     TtsModelInfo(modelId: 'lessac', displayName: 'Lessac', archiveName: 'vits-piper-en_US-lessac-medium', onnxFile: 'en_US-lessac-medium.onnx', approximateSizeMB: 61),
@@ -65,6 +91,22 @@ const ttsModelRegistry = <String, List<TtsModelInfo>>{
 class TtsManager {
   final Box _box;
   final String modelsDir;
+
+  /// Live voice catalog (baseline merged with manifest overrides). Starts at
+  /// the bundled baseline so cold-start callers — including TTS playback
+  /// before the manifest has loaded — get a working answer. Mutated only via
+  /// [setVoiceCatalog]; the Riverpod `voiceCatalogProvider` listener pushes
+  /// the merged view in whenever the manifest changes.
+  Map<String, List<TtsModelInfo>> _voiceCatalog = kBaselineVoiceCatalog;
+
+  Map<String, List<TtsModelInfo>> get voiceCatalog => _voiceCatalog;
+
+  /// Replace the catalog. Stores an unmodifiable view so accidental mutation
+  /// from callers can't leak into the runtime — only the next `setVoiceCatalog`
+  /// call rotates the view.
+  void setVoiceCatalog(Map<String, List<TtsModelInfo>> next) {
+    _voiceCatalog = Map.unmodifiable(next);
+  }
 
   /// Guards against concurrent downloads of the same resource.
   final _activeDownloads = <String, Future<void>>{};
@@ -129,7 +171,9 @@ class TtsManager {
   TtsModelInfo? downloadedModelInfo(String lang) {
     final id = downloadedModelId(lang);
     if (id == null) return null;
-    final voices = ttsModelRegistry[lang];
+    // Fall back to baseline so a voice that was once shipped — but later
+    // dropped from the manifest — still resolves for users who downloaded it.
+    final voices = voiceCatalog[lang] ?? kBaselineVoiceCatalog[lang];
     if (voices == null) return null;
     for (final m in voices) {
       if (m.modelId == id) return m;
@@ -154,7 +198,7 @@ class TtsManager {
     void Function(double)? onProgress,
     void Function()? onExtracting,
   }) async {
-    final voices = ttsModelRegistry[lang];
+    final voices = voiceCatalog[lang];
     if (voices == null || voices.isEmpty) return;
 
     final info = modelId != null
@@ -242,8 +286,13 @@ class TtsManager {
     _box.put(HiveKeys.ttsModels, models);
   }
 
-  /// Whether TTS is supported at all for this language.
-  static bool isSupported(String lang) => ttsModelRegistry.containsKey(lang);
+  /// Whether TTS is supported at all for this language. Reflects the live
+  /// catalog (baseline + manifest overrides), so a manifest-only language
+  /// becomes supported once the manifest has loaded.
+  bool isSupported(String lang) {
+    final voices = voiceCatalog[lang];
+    return voices != null && voices.isNotEmpty;
+  }
 
   /// Backfill model_id for downloads made before multi-voice support.
   void _migrateHiveIfNeeded() {
@@ -254,7 +303,7 @@ class TtsManager {
       final data = Map<String, dynamic>.from(entry.value as Map);
       if (!data.containsKey('model_id')) {
         final archiveName = data['archive_name'] as String?;
-        final voices = ttsModelRegistry[entry.key];
+        final voices = kBaselineVoiceCatalog[entry.key];
         if (archiveName != null && voices != null) {
           for (final m in voices) {
             if (m.archiveName == archiveName) {
