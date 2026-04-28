@@ -1,0 +1,13 @@
+{
+  "correct": ["Goed!", "Ja!", "Precies!", "Top!", "Makkelijk!", "Bravo!", "Klopt!", "Knap!", "Perfect!", "Super!", "Geweldig!", "Sterk!", "Wow!", "Tof!", "Netjes!", "Voltreffer!", "Juist!", "Mega!", "Bom!", "Spitse!"],
+  "streak": {
+    "5": "Vuur!",
+    "10": "Niet te stoppen!",
+    "15": "Machine!",
+    "20": "Genie!",
+    "25": "LEGENDARISCH",
+    "50": "MEEN JE DIT?!"
+  },
+  "wrong": ["Au", "Hmm...", "Nee!", "Net mis", "Oef", "Zo dichtbij!", "Hè", "Opnieuw!", "Mis", "Bijna!", "Niet helemaal...", "Ernaast!", "Volgende keer!", "Die was gemeen"],
+  "idle": ["...hallo?", "zzz", "...", "Nog daar?", "*geeuw*", "Klop klop?", "Hallooo?", "*snurk*", "*rekt zich uit*", "Ik verveel me", "Zullen we spelen?", "Aarde aan mens!"]
+}

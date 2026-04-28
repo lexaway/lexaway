@@ -86,6 +86,11 @@ const kBaselineVoiceCatalog = <String, List<TtsModelInfo>>{
     TtsModelInfo(modelId: 'cadu', displayName: 'Cadu', archiveName: 'vits-piper-pt_BR-cadu-medium', onnxFile: 'pt_BR-cadu-medium.onnx', approximateSizeMB: 61),
     TtsModelInfo(modelId: 'edresson', displayName: 'Edresson', archiveName: 'vits-piper-pt_BR-edresson-low', onnxFile: 'pt_BR-edresson-low.onnx', approximateSizeMB: 16),
   ],
+  'nld': [
+    TtsModelInfo(modelId: 'pim', displayName: 'Pim', archiveName: 'vits-piper-nl_NL-pim-medium', onnxFile: 'nl_NL-pim-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'ronnie', displayName: 'Ronnie', archiveName: 'vits-piper-nl_NL-ronnie-medium', onnxFile: 'nl_NL-ronnie-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'nathalie', displayName: 'Nathalie (BE)', archiveName: 'vits-piper-nl_BE-nathalie-medium', onnxFile: 'nl_BE-nathalie-medium.onnx', approximateSizeMB: 61),
+  ],
 };
 
 class TtsManager {
