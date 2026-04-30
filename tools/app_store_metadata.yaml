@@ -13,6 +13,7 @@ subtitle:
   fr: "Apprends les langues pas à pas"
   it: "Impara le lingue passo a passo"
   pt: "Aprenda idiomas passo a passo"
+  nl: "Leer talen stap voor stap"
 
 en:
   # Max 170 chars. Shown above description, can be updated without a new build. (Apple)
@@ -125,3 +126,21 @@ pt:
 
     Lexaway é código aberto. Feedback e contribuições são bem-vindos em github.com/lexaway.
   keywords: "aprender idiomas,vocabulário,francês,espanhol,alemão,italiano,português,pixel art,jogo,offline"
+
+nl:
+  promotional_text: "Een taalspel in pixel art. Kies een taal, broed een dino uit en leer woorden terwijl je door een wereld loopt die met elk goed antwoord groeit."
+  short_description: "Broed een dino uit en leer woorden in een pixel-art-wereld die meegroeit."
+  description: |
+    Lexaway is een spel om talen te leren met een eenvoudig principe: beantwoord woordvragen correct en je pixel-art-dino loopt vooruit. Blijf doorgaan en ontdek wat de wereld te bieden heeft.
+
+    Kies een taal, download het pakket en begin te spelen — geen account nodig.
+
+    KENMERKEN
+    • Engels, Frans, Spaans, Duits, Italiaans en Portugees vanuit Nederlands
+    • Volledig offline — download een taalpakket en leer waar je maar wilt
+    • Tekst-naar-spraak-uitspraak voor elk woord
+    • Pixel-art-wereld die met je voortgang meegroeit
+    • Geen advertenties, geen accounts, geen tracking
+
+    Lexaway is open source. Feedback en bijdragen welkom op github.com/lexaway.
+  keywords: "talen leren,woordenschat,Engels,Frans,Spaans,Duits,Italiaans,Portugees,pixel art,offline"
