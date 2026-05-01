@@ -104,6 +104,35 @@ class RegionFeature extends Feature {
        assert(minWidthTiles > 0);
 }
 
+/// A small themed cluster of distinct entities placed together at a single
+/// anchor point — e.g. a rest area (vending machine + bench + trash bin) or
+/// a campfire scene. Each anchor lays down one of every child, in a shuffled
+/// order, with adjacent size-aware spacing. Aborts the whole group if any
+/// child can't fit, so partial clusters never appear.
+class GroupFeature extends Feature {
+  /// Stable identifier (informational; useful for debugging/logging).
+  final String kind;
+
+  /// Entity names placed once each per group instance, in shuffled order.
+  final List<String> children;
+
+  /// Poisson spacing between group anchors, in tiles.
+  final int minGapTiles;
+  final int maxGapTiles;
+
+  /// Seed offset so this feature samples independently from siblings.
+  final int noiseSeedOffset;
+
+  const GroupFeature({
+    required this.kind,
+    required this.children,
+    required this.minGapTiles,
+    required this.maxGapTiles,
+    this.noiseSeedOffset = 0,
+  }) : assert(minGapTiles <= maxGapTiles),
+       assert(children.length > 0);
+}
+
 class RegionChild {
   final String entityName;
 

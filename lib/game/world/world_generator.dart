@@ -130,6 +130,29 @@ class WorldGenerator {
         }
       }
 
+      // Phase 3: groups place a shuffled mini-sequence at each anchor.
+      for (final feature in def.features.whereType<GroupFeature>()) {
+        final groupRng = Random(seed + feature.noiseSeedOffset);
+        final anchors = _poissonDisk(
+          groupRng,
+          startPx: tile * _tilePx,
+          endPx: segEnd * _tilePx,
+          minGapPx: feature.minGapTiles * _tilePx,
+          maxGapPx: feature.maxGapTiles * _tilePx,
+        );
+        for (final anchorX in anchors) {
+          _tryPlaceGroup(
+            feature: feature,
+            anchorX: anchorX,
+            segEndPx: segEnd * _tilePx,
+            biome: biome,
+            rng: groupRng,
+            placements: placements,
+            footprints: footprints,
+          );
+        }
+      }
+
       placements.sort((a, b) => a.worldX.compareTo(b.worldX));
 
       final items = <PlacedItem>[];
@@ -278,6 +301,41 @@ class WorldGenerator {
         x += child.minGapTiles * _tilePx;
       }
     }
+  }
+
+  /// Try to place every child of [feature] in a single shuffled cluster,
+  /// starting at [anchorX]. Each child sits at the next collision-clear x to
+  /// the right of the previous one. If any child can't fit (would collide
+  /// with prior placements, an exclusive footprint, or run past
+  /// [segEndPx]), the entire group is dropped — no partial rest areas.
+  void _tryPlaceGroup({
+    required GroupFeature feature,
+    required double anchorX,
+    required double segEndPx,
+    required BiomeType biome,
+    required Random rng,
+    required List<_Placement> placements,
+    required List<_Footprint> footprints,
+  }) {
+    final order = [...feature.children]..shuffle(rng);
+    final pending = <_Placement>[];
+    var x = anchorX;
+    String? prevName;
+
+    for (final name in order) {
+      if (prevName != null) {
+        x += _requiredGapPx(prevName, name, biome);
+      }
+      final widthTiles = entityFootprints[biome]?[name] ?? 1;
+      if (x + widthTiles * _tilePx > segEndPx) return;
+      if (_overlapsExclusiveFootprint(x, widthTiles, footprints)) return;
+      if (_collides(x, name, biome, placements)) return;
+      if (_collides(x, name, biome, pending)) return;
+      pending.add(_Placement(name, x));
+      prevName = name;
+    }
+
+    placements.addAll(pending);
   }
 
   RegionChild _pickWeightedChild(
