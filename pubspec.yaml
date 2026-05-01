@@ -1,7 +1,7 @@
 name: lexaway
 description: A language learning adventure game.
 publish_to: "none"
-version: 1.6.0+10
+version: 1.7.0+11
 
 environment:
   sdk: ^3.9.2
@@ -71,6 +71,7 @@ flutter:
     - assets/images/entities/
     - assets/images/creatures/
     - assets/images/coins/
+    - assets/images/fx/
     - assets/images/ui/
     - assets/audio/
     - assets/bgm/

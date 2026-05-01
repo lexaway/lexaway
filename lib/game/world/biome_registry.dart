@@ -4,6 +4,7 @@ import '../audio_manager.dart';
 import '../components/behaviors/behavior_config.dart';
 import '../lexaway_game.dart';
 import 'biome_definition.dart';
+import 'weather_def.dart';
 import 'world_map.dart';
 
 class BiomeRegistry {
@@ -372,6 +373,7 @@ class BiomeRegistry {
         ],
       ),
     },
+    weather: WeatherDef.snow,
   );
 
   static BiomeDefinition get(BiomeType type) {

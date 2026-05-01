@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import '../audio_manager.dart';
 import '../components/behaviors/behavior_config.dart';
+import 'weather_def.dart';
 import 'world_map.dart';
 
 class WeightedEntity {
@@ -261,6 +262,10 @@ class BiomeDefinition {
   /// Sprite/behavior config for each creature name in [creatureWeights].
   final Map<String, CreatureSpriteDef> creatureDefs;
 
+  /// Optional ambient sky particles (snow, sakura, fireflies, etc.).
+  /// `null` means no overlay for this biome.
+  final WeatherDef? weather;
+
   /// Source position of the surface tile in the terrain sheet.
   /// Stored as `[x, y]` rather than `Vector2` to keep `const`-constructible.
   final List<double> surfaceSrcPosition;
@@ -286,6 +291,7 @@ class BiomeDefinition {
     this.minCreatureGapTiles = 40,
     this.maxCreatureGapTiles = 80,
     this.creatureDefs = const {},
+    this.weather,
   }) : assert(diamondChance >= 0 && clusterChance >= 0),
        assert(
          diamondChance + clusterChance <= 1.0,

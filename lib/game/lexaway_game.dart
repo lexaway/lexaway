@@ -11,6 +11,7 @@ import 'components/ground.dart';
 import 'components/player.dart';
 import 'components/speech_bubble.dart';
 import 'components/speech_messages.dart';
+import 'components/weather_overlay.dart';
 import 'components/wind_lines.dart';
 import 'events.dart';
 import 'movement_controller.dart';
@@ -85,6 +86,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   late SpeechBubble speechBubble;
   late CoinManager coinManager;
   late WindLines windLines;
+  late WeatherOverlay weatherOverlay;
   late MovementController movementController;
   late WorldStreamer worldStreamer;
   late WorldStatePersister worldStatePersister;
@@ -152,8 +154,15 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     windLines = WindLines()..priority = 2;
     add(windLines);
 
+    // Weather sits between player/wind (priority 2) and speech bubble — snow
+    // falls in front of the dino but never obscures dialogue.
+    weatherOverlay = WeatherOverlay(
+      initialScrollOffset: saved?.scrollOffset ?? 0,
+    )..priority = 3;
+    await add(weatherOverlay);
+
     speechBubble = SpeechBubble(follow: player, fontFamily: _fontFamily)
-      ..priority = 3;
+      ..priority = 4;
     add(speechBubble);
 
     movementController = MovementController();
@@ -190,6 +199,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       worldRenderer.ensureBiomeLoaded(seg.biome);
       creatureLayer.ensureBiomeLoaded(seg.biome);
       biomeParallax.ensureBiomeLoaded(seg.biome);
+      weatherOverlay.ensureBiomeLoaded(seg.biome);
     }
   }
 
