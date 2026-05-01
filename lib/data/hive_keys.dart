@@ -12,7 +12,9 @@ abstract final class HiveKeys {
   // Settings
   static const volMaster = 'vol_master';
   static const volSfx = 'vol_sfx';
-  static const volBgm = 'vol_bgm';
+  // v2: new key so existing installs pick up the music-on-by-default era
+  // instead of keeping their old (silent-by-default) saved value.
+  static const volBgm = 'vol_bgm_v2';
   static const volTts = 'vol_tts';
   static const haptics = 'haptics';
   static const gender = 'gender';
