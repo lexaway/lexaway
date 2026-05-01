@@ -57,7 +57,12 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                     // recognizable even if the user is stuck in the wrong
                     // language (#5 fix).
                     const Padding(
-                      padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xs),
+                      padding: EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.md,
+                        AppSpacing.lg,
+                        AppSpacing.xs,
+                      ),
                       child: Icon(
                         Icons.language,
                         color: AppColors.textSecondary,
@@ -79,7 +84,8 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                     for (final locale in AppLocalizations.supportedLocales)
                       LocaleOption(
                         label:
-                            _endonyms[locale.languageCode] ?? locale.languageCode,
+                            _endonyms[locale.languageCode] ??
+                            locale.languageCode,
                         selected: current?.languageCode == locale.languageCode,
                         onTap: () {
                           ref.read(localeProvider.notifier).setLocale(locale);
@@ -129,7 +135,9 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
 
   Future<void> _downloadVoice(String lang, String modelId) async {
     try {
-      await ref.read(localPacksProvider.notifier).downloadVoice(lang, modelId: modelId);
+      await ref
+          .read(localPacksProvider.notifier)
+          .downloadVoice(lang, modelId: modelId);
     } catch (e) {
       if (mounted) {
         _showError(
@@ -151,7 +159,8 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
   Future<void> _select(String packId) async {
     await ref.read(activePackProvider.notifier).switchPack(packId);
     if (!mounted) return;
-    final loaded = ref.read(activePackProvider).valueOrNull?.hasQuestions ?? false;
+    final loaded =
+        ref.read(activePackProvider).valueOrNull?.hasQuestions ?? false;
     if (loaded) {
       context.go('/game');
     } else {
@@ -183,9 +192,13 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     final nativeLang = ref.watch(nativeLangProvider);
 
     // Watch the state so we rebuild when it changes; read the notifier for the packId.
-    final hasActiveQuestions = ref.watch(activePackProvider).valueOrNull?.hasQuestions ?? false;
+    final hasActiveQuestions =
+        ref.watch(activePackProvider).valueOrNull?.hasQuestions ?? false;
     final activePackId = ref.read(activePackProvider.notifier).activePackId;
-    final canGoBack = hasActiveQuestions && activePackId != null && local.containsKey(activePackId);
+    final canGoBack =
+        hasActiveQuestions &&
+        activePackId != null &&
+        local.containsKey(activePackId);
 
     return Scaffold(
       backgroundColor: AppColors.scaffold,
@@ -226,8 +239,10 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                 child: Text(
                   AppLocalizations.of(context)!.packManagerSubtitle,
                   textAlign: TextAlign.center,
-                  style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -237,7 +252,8 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                 child: manifest.when(
                   loading: () => const Center(
                     child: CircularProgressIndicator(
-                        color: AppColors.textTertiary),
+                      color: AppColors.textTertiary,
+                    ),
                   ),
                   error: (_, __) => const SizedBox.shrink(),
                   data: (m) {
@@ -253,23 +269,30 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                       if (local.containsKey(p.packId)) return 1;
                       return 2;
                     }
-                    final packs = [
-                      for (var i = 0; i < source.length; i++) (source[i], i),
-                    ]
-                      ..sort((a, b) {
-                        final c = rank(a.$1).compareTo(rank(b.$1));
-                        return c != 0 ? c : a.$2.compareTo(b.$2);
-                      });
+
+                    final packs =
+                        [for (var i = 0; i < source.length; i++) (source[i], i)]
+                          ..sort((a, b) {
+                            final c = rank(a.$1).compareTo(rank(b.$1));
+                            return c != 0 ? c : a.$2.compareTo(b.$2);
+                          });
                     return ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.xxxl),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        0,
+                        AppSpacing.lg,
+                        AppSpacing.xxxl,
+                      ),
                       itemCount: packs.length + 1,
                       itemBuilder: (context, i) {
                         if (i == 0) {
                           return FractionallySizedBox(
                             widthFactor: 0.5,
                             child: Container(
-                              margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                              padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.md, AppSpacing.sm, AppSpacing.md),
+                              margin: const EdgeInsets.only(
+                                bottom: AppSpacing.md,
+                              ),
+                              padding: const EdgeInsets.all(AppSpacing.md),
                               decoration: const BoxDecoration(
                                 image: DecorationImage(
                                   image: AssetImage(
@@ -284,14 +307,17 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: AppColors.textTertiary,
-                                  fontSize: 12,
+                                  fontSize: 14,
                                 ),
                               ),
                             ),
                           );
                         }
                         final pack = packs[i - 1].$1;
-                        final status = packUpdateStatus(pack, local[pack.packId]);
+                        final status = packUpdateStatus(
+                          pack,
+                          local[pack.packId],
+                        );
                         final ttsManager = ref.watch(ttsManagerProvider);
                         final voiceCatalog = ref.watch(voiceCatalogProvider);
                         return PackTile(
@@ -305,13 +331,16 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                             voiceDownloadProgressProvider(pack.lang),
                           ),
                           voiceModels: voiceCatalog[pack.lang] ?? const [],
-                          downloadedModelId: ttsManager.downloadedModelId(pack.lang),
+                          downloadedModelId: ttsManager.downloadedModelId(
+                            pack.lang,
+                          ),
                           hasCharacter:
                               ref.watch(characterProvider(pack.lang)) != null,
                           langSteps: ref.watch(langStepsProvider(pack.lang)),
                           onDownload: () => _download(pack),
                           onUpdate: () => _download(pack),
-                          onDownloadVoice: (modelId) => _downloadVoice(pack.lang, modelId),
+                          onDownloadVoice: (modelId) =>
+                              _downloadVoice(pack.lang, modelId),
                           onDelete: () => _delete(pack.packId),
                           onDeleteVoice: () => _deleteVoice(pack.lang),
                           onSelect: () => _select(pack.packId),
