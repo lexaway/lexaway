@@ -1,13 +1,32 @@
 {
-  "correct": ["Bien!", "Oui!", "Bravo!", "Exact!", "Facile!", "Parfait!", "Génial!", "Nickel!", "Top!", "Joli!", "Magnifique!", "Superbe!", "Chapeau!", "Impec!", "Trop fort!", "En plein dans le mille!", "Voilà!", "Classe!", "Costaud!", "Splendide!"],
-  "streak": {
-    "5": "En feu!",
-    "10": "Inarrêtable!",
-    "15": "Machine!",
-    "20": "Génie!",
-    "25": "LÉGENDAIRE",
-    "50": "T'ES HUMAIN?!"
+  "correct": {
+    "casual": ["Super !", "Oui !", "Bien !", "Yes !", "Génial !", "Top !", "Joli !", "Bingo !", "Pile !", "Parfait !", "Bravo !", "Bien vu !", "Dans le mille !", "Nickel !"],
+    "dino": ["Rawr !", "Boum !", "*approuve*", "Petits bras !", "*rugit*", "Queue en l'air !", "Tape griffe !", "Miam !", "*gros pas*", "*grogne content*", "Crom crom !"],
+    "food": ["Délicieux !", "Croquant !", "Miam !", "Beurré !", "Juteux !", "Belle feuille !", "Fougère top !", "Mmm fougère", "Croustillant !", "Régalo !", "Tendre !"],
+    "epic": ["MAGNIFIQUE !", "GLORIEUX !", "COLOSSAL !", "MAJESTUEUX !", "PRÉHISTORIQUE !", "JURASSIQUE !", "TITANESQUE !", "DINOSAURESQUE !"],
+    "silly": ["Saperlipopette !", "Hop !", "Boum !", "Plouf !", "Pouet !", "Bidibou !", "Tagada !", "Tchin !", "Cataclop !", "Bidule !"]
   },
-  "wrong": ["Aïe", "Hmm...", "Non!", "Pas tout à fait", "Ouf", "Presque!", "Oups", "Encore!", "Raté", "Si proche!", "Pas ça...", "Loupé!", "La prochaine!", "Costaud celle-là"],
-  "idle": ["...coucou?", "zzz", "...", "T'es là?", "*bâille*", "Toc toc?", "Ouhooou?", "*ronfle*", "*s'étire*", "Je m'ennuie", "On joue?", "Allô la Terre!"]
+  "streak": {
+    "5": "En feu !",
+    "10": "Inarrêtable !",
+    "15": "Machine !",
+    "20": "Génie !",
+    "25": "LÉGENDAIRE",
+    "30": "MYTHIQUE",
+    "40": "MODE TITAN",
+    "50": "T'ES HUMAIN ?!",
+    "75": "DINO SUPRÊME",
+    "100": "MAGE DES MOTS !"
+  },
+  "wrong": {
+    "soft": ["Hmm...", "Presque", "De peu", "Bof", "Aïe", "Si proche", "Nope !", "Oups", "Réessaie", "Pas tout à fait"],
+    "dino": ["*grogne*", "Queue triste", "Aïe", "*rugit triste*", "Pics flétris", "Petits bras tristes", "*renifle*", "Piétine tristement"],
+    "dramatic": ["Horreur !", "Catastrophe !", "Astéroïde !", "Extinction !", "Oh nooon !", "*s'évanouit*", "Mes écailles !"]
+  },
+  "idle": {
+    "sleepy": ["zzz", "*bâille*", "*ronfle*", "...sieste ?", "...mmh", "Dino dort", "*somnole*"],
+    "bored": ["Je m'ennuie", "On joue ?", "Toc toc ?", "Allôôô ?", "Tu es là ?", "...allô ?", "*tapote*"],
+    "dino_life": ["*court après queue*", "Les feuilles ?", "*renifle pierre*", "*s'étire*", "Petits bras !", "*se gratte*", "Pic qui pique", "*voit bestiole*", "Belle pierre"],
+    "dreams": ["Rêvé de comètes", "Ami lézard ?", "On était grands ?", "Fougères me manquent", "Étoiles sucrées", "Vu vache-lune", "J'ai volé hier"]
+  }
 }

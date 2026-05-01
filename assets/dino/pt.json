@@ -1,13 +1,32 @@
 {
-  "correct": ["Boa!", "Sim!", "Isso!", "Vamos!", "Fácil!", "Bravo!", "Certinho!", "Mandou bem!", "Perfeito!", "Show!", "Arrasou!", "Demais!", "Uau!", "Top!", "Incrível!", "Na mosca!", "Acertou!", "Massa!", "Fenomenal!", "Que craque!"],
+  "correct": {
+    "casual": ["Boa!", "Sim!", "Top!", "Show!", "Massa!", "Isso!", "Bingo!", "Na mosca!", "Mandou bem!", "Bravo!", "Jóia!", "Limpo!", "Certinho!", "Demais!"],
+    "dino": ["Rawr!", "Pisão!", "*aprova*", "Bracinhos!", "*ruge*", "Cauda alta!", "Bate pata!", "Nhac!", "*trota*", "*rosna feliz*", "Crom crom!"],
+    "food": ["Gostoso!", "Crocante!", "Nham!", "Amanteigado!", "Suculento!", "Bela folha!", "Samambaia top!", "Mmm samambaia", "Crocantinho!", "Saboroso!", "Macio!"],
+    "epic": ["MAGNÍFICO!", "GLORIOSO!", "COLOSSAL!", "MAJESTOSO!", "PRÉ-HISTÓRICO!", "JURÁSSICO!", "TITÂNICO!", "DINOMITE!"],
+    "silly": ["Pum!", "Boing!", "Zás!", "Plof!", "Tchabum!", "Bup!", "Pim pam!", "Tchanan!", "Doot doot!", "Catapimba!"]
+  },
   "streak": {
-    "5": "Pegando fogo!",
+    "5": "Em chamas!",
     "10": "Imparável!",
     "15": "Máquina!",
     "20": "Gênio!",
     "25": "LENDÁRIO",
-    "50": "VOCÊ É HUMANO?!"
+    "30": "MÍTICO",
+    "40": "MODO TITÃ",
+    "50": "VOCÊ É HUMANO?!",
+    "75": "DINO SUPREMO",
+    "100": "MAGO DAS PALAVRAS!"
   },
-  "wrong": ["Ai", "Hmm...", "Não!", "Quase", "Opa", "Tão perto!", "Eita", "De novo!", "Errou", "Por pouco!", "Essa não...", "Falhou!", "Na próxima!", "Essa foi difícil"],
-  "idle": ["...oi?", "zzz", "...", "Tá aí?", "*bocejo*", "Toc toc?", "Oiii?", "*ronco*", "*se espreguiça*", "Que tédio", "Vamos jogar?", "Terra para humano!"]
+  "wrong": {
+    "soft": ["Hmm...", "Quase", "Por pouco", "De novo", "Ai", "Tão perto!", "Não!", "Ops", "Tenta de novo", "Quase lá"],
+    "dino": ["*resmunga*", "Cauda triste", "Ai", "*ruge triste*", "Espinhos murchos", "Bracinhos choram", "*cheirinho*", "Pisão triste"],
+    "dramatic": ["O horror!", "Catástrofe!", "Asteroide!", "Extinção!", "Ah nãão!", "*desmaia*", "Minhas escamas!"]
+  },
+  "idle": {
+    "sleepy": ["zzz", "*boceja*", "*ronca*", "...soneca?", "...mmh", "Dino dorme", "*cochila*"],
+    "bored": ["Tô entediado", "Brincamos?", "Toc toc?", "Olááá?", "Tá aí?", "...oi?", "*tamborila*"],
+    "dino_life": ["*persegue cauda*", "Cadê folhas?", "*cheira pedra*", "*se estica*", "Bracinhos!", "*se coça*", "Espinho coça", "*vê inseto*", "Bela pedra"],
+    "dreams": ["Sonhei com cometas", "Amigo lagarto?", "A gente era grande?", "Saudade de samambaias", "Estrelas doces", "Vi vaca-lua", "Voei ontem"]
+  }
 }

@@ -1,13 +1,32 @@
 {
-  "correct": ["Goed!", "Ja!", "Precies!", "Top!", "Makkelijk!", "Bravo!", "Klopt!", "Knap!", "Perfect!", "Super!", "Geweldig!", "Sterk!", "Wow!", "Tof!", "Netjes!", "Voltreffer!", "Juist!", "Mega!", "Bom!", "Spitse!"],
+  "correct": {
+    "casual": ["Top!", "Ja!", "Mooi!", "Goed!", "Knap!", "Lekker!", "Bingo!", "Raak!", "Strak!", "Bravo!", "Yes!", "Tof!", "Net goed!", "Klopt!"],
+    "dino": ["Rawr!", "Stamp!", "*knikt*", "Korte armpjes!", "*brult*", "Staart hoog!", "Pootje hoog!", "Hap!", "*dreunt*", "*gromt blij*", "Krom krom!"],
+    "food": ["Lekker!", "Knapperig!", "Mmm!", "Boterig!", "Sappig!", "Lekker blad!", "Varen-top!", "Mmm varen", "Krokant!", "Smakelijk!", "Mals!"],
+    "epic": ["GEWELDIG!", "GLORIEUS!", "KOLOSSAAL!", "MAJESTUEUS!", "OERTIJDS!", "JURASSISCH!", "TITANISCH!", "DINOMIET!"],
+    "silly": ["Hopla!", "Boem!", "Zwiep!", "Plons!", "Toettoet!", "Biep!", "Tsjakka!", "Zoef!", "Klak!", "Joepie!"]
+  },
   "streak": {
-    "5": "Vuur!",
+    "5": "In vuur!",
     "10": "Niet te stoppen!",
     "15": "Machine!",
     "20": "Genie!",
     "25": "LEGENDARISCH",
-    "50": "MEEN JE DIT?!"
+    "30": "MYTHISCH",
+    "40": "TITAN-MODUS",
+    "50": "BEN JE MENS?!",
+    "75": "DINO-OPSTIJGER",
+    "100": "WOORDTOVENAAR!"
   },
-  "wrong": ["Au", "Hmm...", "Nee!", "Net mis", "Oef", "Zo dichtbij!", "Hè", "Opnieuw!", "Mis", "Bijna!", "Niet helemaal...", "Ernaast!", "Volgende keer!", "Die was gemeen"],
-  "idle": ["...hallo?", "zzz", "...", "Nog daar?", "*geeuw*", "Klop klop?", "Hallooo?", "*snurk*", "*rekt zich uit*", "Ik verveel me", "Zullen we spelen?", "Aarde aan mens!"]
+  "wrong": {
+    "soft": ["Hmm...", "Bijna", "Net niet", "Nog eens", "Au", "Zo dichtbij!", "Nope!", "Oeps", "Probeer nog", "Niet helemaal"],
+    "dino": ["*gromt*", "Staart hangt", "Au", "*droevige brul*", "Stekels slap", "Armpjes huilen", "*snuf*", "Trieste stamp"],
+    "dramatic": ["Verschrikking!", "Ramp!", "Asteroïde!", "Uitsterving!", "O neeee!", "*valt om*", "Mijn schubben!"]
+  },
+  "idle": {
+    "sleepy": ["zzz", "*geeuwt*", "*snurkt*", "...dutje?", "...mmh", "Dino slaapt", "*suft*"],
+    "bored": ["Verveel me", "Spelen?", "Klop klop?", "Hallooo?", "Nog daar?", "...hallo?", "*tikt*"],
+    "dino_life": ["*jaagt staart*", "Waar bladeren?", "*snuffelt steen*", "*rekt zich*", "Korte armpjes!", "*krabt zich*", "Stekel jeukt", "*ziet kever*", "Mooie steen"],
+    "dreams": ["Droomde van kometen", "Hagedis-vriend?", "Waren we groot?", "Mis varens", "Sterren zoet", "Maan-koe gezien", "Ik vloog gisteren"]
+  }
 }

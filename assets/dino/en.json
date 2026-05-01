@@ -1,13 +1,32 @@
 {
-  "correct": ["Nice!", "Yes!", "Nailed it!", "Yep!", "Easy!", "Bravo!", "Got it!", "Smooth!", "Boom!", "Perfect!", "Bingo!", "Sharp!", "Wow!", "Sweet!", "Crushed it!", "Right on!", "Too easy!", "Brilliant!", "On point!", "Chef's kiss!"],
+  "correct": {
+    "casual": ["Nice!", "Yes!", "Yep!", "Bingo!", "Sweet!", "Sharp!", "On point!", "Got it!", "Right on!", "Smooth!", "Easy!", "Bravo!", "Clean!", "Locked in!"],
+    "dino": ["Rawr!", "Stomp!", "Tail wag!", "Big chomp!", "Dino approves", "Tiny arms, big brain", "*happy roar*", "Thump thump!", "Spike shimmy!", "Tail high!", "Scaly five!", "Chomp chomp!"],
+    "food": ["Tasty!", "Crunchy!", "Yum!", "Buttery!", "Juicy!", "Tender!", "Sweet leaf!", "Fern-tastic!", "Mmmm fern", "Crispy!", "Nom nom!", "Snackable!"],
+    "epic": ["MAGNIFICENT!", "GLORIOUS!", "BEHOLD!", "MAJESTIC!", "ASCENDED!", "PREHISTORIC!", "TITANIC!", "JURASSIC!", "DINOMITE!", "EARTH-SHAKING!"],
+    "silly": ["Wibble!", "Honk!", "Bonk!", "Zoot!", "Bork!", "Yeet!", "Squee!", "Boop!", "Zip zap!", "Doot doot!", "Ker-pow!", "Ka-bonk!"]
+  },
   "streak": {
     "5": "On fire!",
     "10": "Unstoppable!",
     "15": "Machine!",
     "20": "Genius!",
     "25": "LEGENDARY",
-    "50": "ARE YOU HUMAN?!"
+    "30": "MYTHIC!",
+    "40": "TITAN MODE",
+    "50": "ARE YOU HUMAN?!",
+    "75": "DINO ASCENDANT",
+    "100": "WORD WIZARD!!"
   },
-  "wrong": ["Ouch", "Hmm...", "Nope!", "Not quite", "Oof", "So close!", "Yikes", "Try again!", "Whoops", "Almost!", "Nah...", "Swing and a miss", "Next time!", "Tricky one"],
-  "idle": ["...hello?", "zzz", "...", "Still there?", "*yawn*", "Tap tap?", "Hellooo?", "*snore*", "*stretches*", "I'm bored", "Wanna play?", "Earth to human!"]
+  "wrong": {
+    "soft": ["Hmm...", "Not quite", "So close!", "Almost!", "Tricky one", "Next time!", "Nope!", "Whoops", "Try again!", "Nah..."],
+    "dino": ["*grumble*", "Tail droop", "Ouch", "*sad roar*", "Spikes wilt", "Tiny arms cry", "*sniff*", "Lost the scent", "Foot stomp"],
+    "dramatic": ["The horror!", "Catastrophe!", "Asteroid!", "Extinction!", "Oh nooo!", "*faints*", "Woe! Woe!", "My scales!"]
+  },
+  "idle": {
+    "sleepy": ["zzz", "*yawn*", "*snore*", "...nap?", "...mmh", "Sleepy dino", "*dozes off*"],
+    "bored": ["I'm bored", "Wanna play?", "Tap tap?", "Hellooo?", "Earth to human!", "Still there?", "...hello?", "*taps foot*"],
+    "dino_life": ["*chases tail*", "Where leaves?", "*sniffs rock*", "*stretches*", "Tiny arms!", "*scratches ear*", "Itchy spike", "*spots bug*", "*flexes*", "Nice rock", "Big sky today"],
+    "dreams": ["I dreamt of comets", "Big lizard friend?", "Were we tall once?", "I miss ferns", "Stars taste sweet", "Met a moon-cow", "I flew last night"]
+  }
 }

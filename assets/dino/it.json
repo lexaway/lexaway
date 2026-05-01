@@ -1,13 +1,32 @@
 {
-  "correct": ["Bene!", "Sì!", "Esatto!", "Dai!", "Facile!", "Bravo!", "Perfetto!", "Giusto!", "Grande!", "Forte!", "Fantastico!", "Mitico!", "Bellissimo!", "Che classe!", "Fenomenale!", "Centro!", "Preciso!", "Wow!", "Pazzesco!", "Da applausi!"],
+  "correct": {
+    "casual": ["Bene!", "Sì!", "Forte!", "Ottimo!", "Esatto!", "Dai!", "Bingo!", "Pieno centro!", "Pulito!", "Bravo!", "Vai!", "Tac!", "Preso!", "Giusto!"],
+    "dino": ["Rawr!", "Pestone!", "*approva*", "Braccia corte!", "*ruggisce*", "Coda su!", "Batti zampa!", "Gnam!", "*trotta*", "*grugnisce felice*", "Crom crom!"],
+    "food": ["Buono!", "Croccante!", "Gnam!", "Burroso!", "Succoso!", "Bella foglia!", "Felce top!", "Mmm felce", "Croccantino!", "Saporito!", "Tenero!"],
+    "epic": ["MAGNIFICO!", "GLORIOSO!", "COLOSSALE!", "MAESTOSO!", "PREISTORICO!", "GIURASSICO!", "TITANICO!", "DINOMITE!"],
+    "silly": ["Bum!", "Boing!", "Zac!", "Plof!", "Patapùm!", "Bup!", "Pim pam!", "Tachìn!", "Doot doot!", "Cataplum!"]
+  },
   "streak": {
     "5": "In fiamme!",
     "10": "Inarrestabile!",
     "15": "Macchina!",
     "20": "Genio!",
     "25": "LEGGENDARIO",
-    "50": "SEI UMANO?!"
+    "30": "MITICO",
+    "40": "MODO TITANO",
+    "50": "SEI UMANO?!",
+    "75": "DINO ASCESO",
+    "100": "MAGO PAROLE!"
   },
-  "wrong": ["Ahi", "Hmm...", "No!", "Quasi", "Uffa", "Così vicino!", "Ops", "Riprova!", "Mancato", "Per poco!", "Non proprio...", "Sbagliato!", "La prossima!", "Tosta quella"],
-  "idle": ["...ciao?", "zzz", "...", "Ci sei?", "*sbadiglia*", "Toc toc?", "Ciaooo?", "*russa*", "*si stiracchia*", "Che noia", "Giochiamo?", "Terra chiama umano!"]
+  "wrong": {
+    "soft": ["Mmm...", "Quasi", "Per poco", "Ancora", "Ahi", "Vicino!", "No!", "Ops", "Riprova", "Quasi quasi"],
+    "dino": ["*brontola*", "Coda giù", "Ahia", "*ruggito triste*", "Spine tristi", "Braccia piangono", "*snif*", "Pestone triste"],
+    "dramatic": ["Orrore!", "Catastrofe!", "Asteroide!", "Estinzione!", "Oh noo!", "*sviene*", "Le mie scaglie!"]
+  },
+  "idle": {
+    "sleepy": ["zzz", "*sbadiglia*", "*russa*", "...pisolino?", "...mmh", "Dino dorme", "*sonnecchia*"],
+    "bored": ["Mi annoio", "Giochiamo?", "Toc toc?", "Ehilàà?", "Ci sei?", "...ciao?", "*tamburella*"],
+    "dino_life": ["*insegue coda*", "Dove foglie?", "*annusa roccia*", "*si stira*", "Bracci corti!", "*si gratta*", "Spina prude", "*vede insetto*", "Bella roccia"],
+    "dreams": ["Sognato comete", "Amico lucertola?", "Eravamo alti?", "Mi mancano felci", "Stelle dolci", "Visto mucca-luna", "Ho volato ieri"]
+  }
 }

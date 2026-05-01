@@ -1,13 +1,32 @@
 {
-  "correct": ["Gut!", "Ja!", "Genau!", "Super!", "Leicht!", "Bravo!", "Stimmt!", "Toll!", "Perfekt!", "Klasse!", "Hammer!", "Stark!", "Wow!", "Spitze!", "Sauber!", "Volltreffer!", "Richtig!", "Mega!", "Bombe!", "Erste Sahne!"],
+  "correct": {
+    "casual": ["Toll!", "Ja!", "Klar!", "Super!", "Genau!", "Stark!", "Spitze!", "Bingo!", "Treffer!", "Sauber!", "Bravo!", "Gut!", "Volltreffer!", "Mega!"],
+    "dino": ["Rawr!", "Stampf!", "*nickt*", "Kurze Arme!", "*brüllt*", "Schwanz hoch!", "Tatze hoch!", "Mampf!", "*trampelt*", "*grummelt froh*", "Krom krom!"],
+    "food": ["Lecker!", "Knusprig!", "Mhm!", "Butterig!", "Saftig!", "Gutes Blatt!", "Farn-tastisch!", "Mmm Farn", "Kross!", "Köstlich!", "Schmeckt!"],
+    "epic": ["GROSSARTIG!", "GLORREICH!", "KOLOSSAL!", "MAJESTÄTISCH!", "URZEITLICH!", "JURASSISCH!", "TITANENHAFT!", "DINOMITE!"],
+    "silly": ["Hopsa!", "Bumms!", "Schwupp!", "Plumps!", "Töröö!", "Bibba!", "Tschacka!", "Zack!", "Klack!", "Hoppla!"]
+  },
   "streak": {
-    "5": "Feuer!",
-    "10": "Unaufhaltbar!",
+    "5": "In Flammen!",
+    "10": "Unaufhaltsam!",
     "15": "Maschine!",
     "20": "Genie!",
     "25": "LEGENDÄR",
-    "50": "BIST DU ECHT?!"
+    "30": "MYTHISCH",
+    "40": "TITAN-MODUS",
+    "50": "BIST DU MENSCH?!",
+    "75": "DINO-AUFSTIEG",
+    "100": "WORTZAUBERER!"
   },
-  "wrong": ["Autsch", "Hmm...", "Nein!", "Knapp daneben", "Uff", "So nah!", "Huch", "Nochmal!", "Daneben", "Fast!", "Nicht ganz...", "Verfehlt!", "Nächstes Mal!", "Die war fies"],
-  "idle": ["...hallo?", "zzz", "...", "Noch da?", "*gähn*", "Klopf klopf?", "Hallooo?", "*schnarch*", "*streckt sich*", "Mir ist langweilig", "Spielen wir?", "Erde an Mensch!"]
+  "wrong": {
+    "soft": ["Hmm...", "Fast", "Knapp", "Nochmal", "Au", "So nah!", "Nö!", "Ups", "Versuch's nochmal", "Nicht ganz"],
+    "dino": ["*grummel*", "Schwanz hängt", "Autsch", "*traurig brüllt*", "Stacheln welk", "Ärmchen weinen", "*schnüffel*", "Trauriger Stampfer"],
+    "dramatic": ["Horror!", "Katastrophe!", "Asteroid!", "Aussterben!", "Oh neeein!", "*fällt um*", "Meine Schuppen!"]
+  },
+  "idle": {
+    "sleepy": ["zzz", "*gähnt*", "*schnarcht*", "...Nickerchen?", "...mmh", "Dino schläft", "*döst*"],
+    "bored": ["Langweilig", "Spielen?", "Klopf klopf?", "Halloo?", "Noch da?", "...hallo?", "*trommelt*"],
+    "dino_life": ["*jagt Schwanz*", "Wo sind Blätter?", "*schnüffelt Stein*", "*streckt sich*", "Kurze Arme!", "*kratzt sich*", "Stachel juckt", "*sieht Käfer*", "Schöner Stein"],
+    "dreams": ["Träumte von Kometen", "Echsen-Freund?", "Waren wir groß?", "Vermisse Farne", "Sterne süß", "Traf Mond-Kuh", "Bin geflogen"]
+  }
 }

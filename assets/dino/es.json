@@ -1,13 +1,32 @@
 {
-  "correct": ["Bien!", "Sí!", "Genial!", "Vamos!", "Fácil!", "Bravo!", "Olé!", "Eso es!", "Magnífico!", "Perfecto!", "Buenísimo!", "Guau!", "Crack!", "Toma ya!", "Increíble!", "Fenomenal!", "A la primera!", "De lujo!", "Así se hace!", "Bestial!"],
-  "streak": {
-    "5": "En llamas!",
-    "10": "Imparable!",
-    "15": "Máquina!",
-    "20": "Genio!",
-    "25": "LEGENDARIO",
-    "50": "ERES HUMANO?!"
+  "correct": {
+    "casual": ["¡Bien!", "¡Sí!", "¡Genial!", "¡Vale!", "¡Toma!", "¡Eso es!", "¡Justo!", "¡Olé!", "¡Bingo!", "¡Listo!", "¡Brutal!", "¡Tal cual!", "¡Bravo!"],
+    "dino": ["¡Rawr!", "¡Pisotón!", "*aprueba*", "¡Bracitos!", "*rugido*", "¡Cola arriba!", "¡Choca pata!", "¡Ñam ñam!", "*trota*", "*ruge feliz*", "¡Crom crom!"],
+    "food": ["¡Sabroso!", "¡Crujiente!", "¡Ñam!", "¡Mantequilla!", "¡Jugoso!", "¡Hojita rica!", "¡Helechazo!", "¡Mmm helecho!", "¡Crocante!", "¡Rico!", "¡Delicia!"],
+    "epic": ["¡MAGNÍFICO!", "¡GLORIOSO!", "¡COLOSAL!", "¡MAJESTUOSO!", "¡PREHISTÓRICO!", "¡JURÁSICO!", "¡TITÁNICO!", "¡DINOEXPLOSIVO!"],
+    "silly": ["¡Pum!", "¡Boing!", "¡Zas!", "¡Plof!", "¡Chimpún!", "¡Bup!", "¡Pim pam!", "¡Tachín!", "¡Doot doot!", "¡Cataplum!"]
   },
-  "wrong": ["Auch", "Hmm...", "No!", "Casi", "Uf", "Tan cerca!", "Ay", "Otra vez!", "Ups", "Por poco!", "Qué va...", "Fallaste!", "La próxima!", "Esa era difícil"],
-  "idle": ["...hola?", "zzz", "...", "Sigues ahí?", "*bostezo*", "Toc toc?", "Holaaaa?", "*ronquido*", "*se estira*", "Qué aburrido", "Jugamos?", "Tierra a humano!"]
+  "streak": {
+    "5": "¡En racha!",
+    "10": "¡Imparable!",
+    "15": "¡Máquina!",
+    "20": "¡Genio!",
+    "25": "LEGENDARIO",
+    "30": "MÍTICO",
+    "40": "MODO TITÁN",
+    "50": "¿ERES HUMANO?!",
+    "75": "DINO SUPREMO",
+    "100": "¡MAGO DE PALABRAS!"
+  },
+  "wrong": {
+    "soft": ["Mmm...", "Casi", "Por poco", "Otra vez", "Uy", "¡Casi casi!", "¡Nope!", "¡Vaya!", "Casi lo tienes", "Nah..."],
+    "dino": ["*gruñe*", "Cola triste", "Auch", "*ruge triste*", "Espinas tristes", "Bracitos lloran", "*snif*", "Pisotón triste"],
+    "dramatic": ["¡Horror!", "¡Catástrofe!", "¡Asteroide!", "¡Extinción!", "¡Ay nooo!", "*desmayo*", "¡Mis escamas!"]
+  },
+  "idle": {
+    "sleepy": ["zzz", "*bosteza*", "*ronca*", "¿siesta?", "...mmh", "Dino dormido", "*cabecea*"],
+    "bored": ["Aburrido", "¿Jugamos?", "¿Toc toc?", "¿Holaaa?", "¿Sigues ahí?", "...¿hola?", "*tamborilea*"],
+    "dino_life": ["*persigue cola*", "¿Y las hojas?", "*huele roca*", "*se estira*", "¡Bracitos!", "*se rasca*", "Espina pica", "*ve bicho*", "Bonita roca"],
+    "dreams": ["Soñé con cometas", "¿Amigo lagarto?", "¿Fuimos altos?", "Extraño helechos", "Estrellas dulces", "Conocí vaca-luna", "Volé anoche"]
+  }
 }
