@@ -319,6 +319,7 @@ class BiomeRegistry {
     clusterChance: 0.25,
     creatureWeights: [
       WeightedEntity('minibunny', 1),
+      WeightedEntity('fox', 1),
     ],
     creatureDefs: {
       'minibunny': CreatureSpriteDef(
@@ -327,6 +328,18 @@ class BiomeRegistry {
         frameHeight: 32,
         scale: LexawayGame.pixelScale,
         animConfig: CreatureAnimConfig(),
+        behaviors: [
+          GroundAnchorConfig(footPadding: 1),
+          FleeConfig(),
+          IdleHopConfig(),
+        ],
+      ),
+      'fox': CreatureSpriteDef(
+        sheetPath: 'creatures/fox.png',
+        frameWidth: 32,
+        frameHeight: 32,
+        scale: LexawayGame.pixelScale,
+        animConfig: CreatureAnimConfig(hitFrames: 3, deathRow: 5, deathFrames: 4),
         behaviors: [
           GroundAnchorConfig(footPadding: 1),
           FleeConfig(),
