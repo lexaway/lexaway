@@ -129,8 +129,7 @@ class GroupFeature extends Feature {
     required this.minGapTiles,
     required this.maxGapTiles,
     this.noiseSeedOffset = 0,
-  }) : assert(minGapTiles <= maxGapTiles),
-       assert(children.length > 0);
+  }) : assert(minGapTiles <= maxGapTiles);
 }
 
 class RegionChild {

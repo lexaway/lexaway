@@ -53,6 +53,21 @@
       "source": "entities/flowers.png",
       "widthTiles": 1, "heightTiles": 1,
       "src": [48, 0], "size": [16, 16]
+    },
+    "vending_machine": {
+      "source": "entities/rest_area.png",
+      "widthTiles": 2, "heightTiles": 2,
+      "src": [16, 16], "size": [32, 32]
+    },
+    "bench": {
+      "source": "entities/rest_area.png",
+      "widthTiles": 3, "heightTiles": 1,
+      "src": [48, 32], "size": [48, 16]
+    },
+    "trash_bin": {
+      "source": "entities/rest_area.png",
+      "widthTiles": 1, "heightTiles": 1,
+      "src": [96, 32], "size": [16, 16]
     }
   }
 }

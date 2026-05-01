@@ -104,6 +104,15 @@ class BiomeRegistry {
           RegionChild(entityName: 'flower_blue', weight: 0.20, minGapTiles: 1),
         ],
       ),
+      // Rest area — vending machine, bench, trash bin in a shuffled cluster.
+      // Whimsically out of place in a meadow, which is the whole charm.
+      GroupFeature(
+        kind: 'rest_area',
+        children: ['vending_machine', 'bench', 'trash_bin'],
+        minGapTiles: 60,
+        maxGapTiles: 140,
+        noiseSeedOffset: 3000,
+      ),
     ],
     minCoinGapTiles: 5,
     maxCoinGapTiles: 10,
@@ -238,6 +247,14 @@ class BiomeRegistry {
           RegionChild(entityName: 'flower_blue', weight: 0.20, minGapTiles: 1),
         ],
       ),
+      // Rest area — beach concession vibes between the palms.
+      GroupFeature(
+        kind: 'rest_area',
+        children: ['vending_machine', 'bench', 'trash_bin'],
+        minGapTiles: 60,
+        maxGapTiles: 140,
+        noiseSeedOffset: 3000,
+      ),
     ],
     minCoinGapTiles: 5,
     maxCoinGapTiles: 10,
@@ -311,6 +328,14 @@ class BiomeRegistry {
         minGapTiles: 20,
         maxGapTiles: 45,
         noiseSeedOffset: 500,
+      ),
+      // Rest area — a vending machine in the snow, because absurd is delightful.
+      GroupFeature(
+        kind: 'rest_area',
+        children: ['vending_machine', 'bench', 'trash_bin'],
+        minGapTiles: 60,
+        maxGapTiles: 140,
+        noiseSeedOffset: 3000,
       ),
     ],
     minCoinGapTiles: 5,

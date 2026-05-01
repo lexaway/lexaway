@@ -109,28 +109,12 @@ class WorldGenerator {
         }
       }
 
-      // Phase 2: scatters fill the gaps around regions.
-      for (final feature in def.features.whereType<ScatterFeature>()) {
-        final noise = Noise1D(seed + feature.noiseSeedOffset);
-        final positions = _noisePoissonDisk(
-          rng,
-          noise: noise,
-          feature: feature,
-          startPx: tile * _tilePx,
-          endPx: segEnd * _tilePx,
-        );
-        final widthTiles =
-            entityFootprints[biome]?[feature.entityName] ?? 1;
-        for (final x in positions) {
-          if (_overlapsExclusiveFootprint(x, widthTiles, footprints)) {
-            continue;
-          }
-          if (_collides(x, feature.entityName, biome, placements)) continue;
-          placements.add(_Placement(feature.entityName, x));
-        }
-      }
-
-      // Phase 3: groups place a shuffled mini-sequence at each anchor.
+      // Phase 2: groups claim their cluster footprints next, before the
+      // scatters flood the segment. If we ran scatters first, dense filler
+      // (bushes, signs) would carpet the segment and almost any 4-6-tile
+      // cluster anchor would land on something — every group would abort.
+      // Running groups first means scatters' own collision checks naturally
+      // route around the rest areas instead.
       for (final feature in def.features.whereType<GroupFeature>()) {
         final groupRng = Random(seed + feature.noiseSeedOffset);
         final anchors = _poissonDisk(
@@ -150,6 +134,27 @@ class WorldGenerator {
             placements: placements,
             footprints: footprints,
           );
+        }
+      }
+
+      // Phase 3: scatters fill the gaps around regions and groups.
+      for (final feature in def.features.whereType<ScatterFeature>()) {
+        final noise = Noise1D(seed + feature.noiseSeedOffset);
+        final positions = _noisePoissonDisk(
+          rng,
+          noise: noise,
+          feature: feature,
+          startPx: tile * _tilePx,
+          endPx: segEnd * _tilePx,
+        );
+        final widthTiles =
+            entityFootprints[biome]?[feature.entityName] ?? 1;
+        for (final x in positions) {
+          if (_overlapsExclusiveFootprint(x, widthTiles, footprints)) {
+            continue;
+          }
+          if (_collides(x, feature.entityName, biome, placements)) continue;
+          placements.add(_Placement(feature.entityName, x));
         }
       }
 
