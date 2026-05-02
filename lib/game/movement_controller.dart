@@ -1,10 +1,12 @@
 import 'package:flame/components.dart';
 
 import 'audio_manager.dart' show Terrain;
+import 'components/camera.dart';
 import 'events.dart';
 import 'lexaway_game.dart';
 import 'walk_state.dart';
 import 'world/biome_registry.dart';
+import 'world/world_map.dart';
 
 /// The walk state machine. Owns only the "is the dino moving, and how far
 /// until it stops" logic — animation, scrolling, audio, wind, and dialogue
@@ -13,8 +15,12 @@ import 'world/biome_registry.dart';
 ///
 /// Walks stack: answering while already walking extends the journey instead
 /// of being ignored.
-class MovementController extends Component with HasGameReference<LexawayGame> {
+class MovementController extends Component {
   final WalkState _state = WalkState();
+
+  final Camera _camera;
+  final WorldMap _worldMap;
+  final GameEvents _events;
 
   // Feeds daily-goal session-length labels; see `dailyGoalPresets` in
   // `lib/providers/daily_goal.dart` if you change this.
@@ -27,8 +33,16 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
 
   bool get isWalking => _state.walking;
 
+  MovementController({
+    required Camera camera,
+    required WorldMap worldMap,
+    required GameEvents events,
+  })  : _camera = camera,
+        _worldMap = worldMap,
+        _events = events;
+
   Terrain get _currentTerrain {
-    final biome = game.worldMap.biomeAt(game.ground.scrollOffset);
+    final biome = _worldMap.biomeAt(_camera.scrollOffset);
     return BiomeRegistry.get(biome).footstepTerrain;
   }
 
@@ -44,26 +58,26 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     if (shouldRun && !_state.running) {
       _state.running = true;
       if (wasAlreadyWalking) {
-        game.events.emit(const WalkSpeedChanged(running: true));
+        _events.emit(const WalkSpeedChanged(running: true));
       }
     }
 
     if (!_state.walking) {
       _state.walking = true;
       _state.stepTimer = _stepInterval; // first step fires immediately
-      game.events.emit(WalkStarted(running: _state.running));
+      _events.emit(WalkStarted(running: _state.running));
     }
 
-    game.events.emit(AnswerCorrect(streak, answer));
+    _events.emit(AnswerCorrect(streak, answer));
   }
 
   void wrongAnswer() {
     // Downgrade from run to walk if currently dashing.
     if (_state.running && _state.walking) {
       _state.running = false;
-      game.events.emit(const WalkSpeedChanged(running: false));
+      _events.emit(const WalkSpeedChanged(running: false));
     }
-    game.events.emit(const AnswerWrong());
+    _events.emit(const AnswerWrong());
   }
 
   @override
@@ -74,7 +88,7 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     _state.stepTimer += dt;
     if (_state.stepTimer >= _stepInterval) {
       _state.stepTimer -= _stepInterval;
-      game.events.emit(StepTaken(1, terrain: _currentTerrain));
+      _events.emit(StepTaken(1, terrain: _currentTerrain));
     }
     if (_state.remaining <= 0) {
       _state.remaining = 0;
@@ -89,7 +103,7 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     final skippedSteps =
         (skipDistance / (_state.currentSpeed * _stepInterval)).ceil();
     if (skippedSteps > 0) {
-      game.events.emit(StepTaken(skippedSteps, terrain: _currentTerrain));
+      _events.emit(StepTaken(skippedSteps, terrain: _currentTerrain));
     }
     _state.remaining = 0;
     _stop(skipDistance: skipDistance);
@@ -104,7 +118,7 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     _state.walking = false;
     _state.running = false;
     _state.stepTimer = 0;
-    game.events.emit(WalkStopped(skipDistance: skipDistance));
+    _events.emit(WalkStopped(skipDistance: skipDistance));
   }
 
   /// Toggle continuous debug walking. When enabled, the dino walks forward
@@ -115,7 +129,7 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
       _state.remaining = LexawayGame.walkTarget;
       _state.walking = true;
       _state.stepTimer = _stepInterval;
-      game.events.emit(const WalkStarted(running: false));
+      _events.emit(const WalkStarted(running: false));
     }
   }
 }

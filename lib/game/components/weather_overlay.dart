@@ -10,6 +10,7 @@ import '../world/biome_registry.dart';
 import '../world/noise.dart';
 import '../world/weather_def.dart';
 import '../world/world_map.dart';
+import 'camera.dart';
 
 /// Reusable "stuff falling from the sky" overlay. One instance handles every
 /// biome — each biome's [WeatherDef] (or `null`) is read from the registry
@@ -26,7 +27,16 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
   /// Picked from saved scroll so the right biome is active on cold start.
   final double initialScrollOffset;
 
-  WeatherOverlay({this.initialScrollOffset = 0});
+  final WorldMap worldMap;
+  final Camera camera;
+  final GameEvents _events;
+
+  WeatherOverlay({
+    required this.worldMap,
+    required this.camera,
+    required GameEvents events,
+    this.initialScrollOffset = 0,
+  }) : _events = events;
 
   /// 0.6s gives a snappy fade. `BiomeChanged` fires at *screen center*
   /// crossing (see `ScrollController.update`), so by the time we react the
@@ -60,12 +70,12 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
   Future<void> onLoad() async {
     // Preload atlases for every biome already in the world. Streamer-added
     // biomes are loaded lazily via [ensureBiomeLoaded] from `_loadNewBiomes`.
-    final biomes = game.worldMap.segments.map((s) => s.biome).toSet();
+    final biomes = worldMap.segments.map((s) => s.biome).toSet();
     for (final biome in biomes) {
       await _loadAtlas(biome);
     }
 
-    final initialBiome = game.worldMap.biomeAt(initialScrollOffset);
+    final initialBiome = worldMap.biomeAt(initialScrollOffset);
     final def = BiomeRegistry.get(initialBiome).weather;
     if (def != null) {
       _activate(def, _atlases[initialBiome]);
@@ -76,9 +86,9 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
       _currentOpacity = 1;
       _targetOpacity = 1;
     }
-    _lastScrollOffset = game.ground.scrollOffset;
+    _lastScrollOffset = camera.scrollOffset;
 
-    _sub = game.events.on<BiomeChanged>().listen(_onBiomeChanged);
+    _sub = _events.on<BiomeChanged>().listen(_onBiomeChanged);
   }
 
   Future<void> ensureBiomeLoaded(BiomeType biome) => _loadAtlas(biome);
@@ -113,7 +123,7 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
     _activeDef = def;
     _activeImage = image;
     _intensityNoise = def.intensityNoiseScale > 0
-        ? Noise1D(game.worldMap.seed + def.intensitySeedOffset)
+        ? Noise1D(worldMap.seed + def.intensitySeedOffset)
         : null;
     _resizePool(def.particleCount);
   }
@@ -217,7 +227,7 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
 
     // Track scroll delta so flakes drift with world space, not screen
     // space. Read once and reuse below.
-    final scrollOffset = game.ground.scrollOffset;
+    final scrollOffset = camera.scrollOffset;
     final scrollDelta = scrollOffset - _lastScrollOffset;
     _lastScrollOffset = scrollOffset;
 

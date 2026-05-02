@@ -1,10 +1,10 @@
 import 'dart:ui';
 
 import 'package:flame/components.dart';
-import 'package:flutter/foundation.dart';
 import '../lexaway_game.dart';
 import '../world/biome_registry.dart';
 import '../world/world_map.dart';
+import 'camera.dart';
 
 class _TerrainSprites {
   final Sprite surface;
@@ -57,14 +57,9 @@ class _PierSprites {
 
 class Ground extends Component with HasGameReference<LexawayGame> {
   final WorldMap worldMap;
+  final Camera camera;
 
-  final ValueNotifier<double> scrollNotifier = ValueNotifier(0.0);
-  double get scrollOffset => scrollNotifier.value;
-  set scrollOffset(double v) => scrollNotifier.value = v;
-
-  double _scrollSpeed = 0;
-
-  Ground({required this.worldMap});
+  Ground({required this.worldMap, required this.camera});
 
   final Map<BiomeType, _TerrainSprites> _sprites = {};
   _PierSprites? _pierSprites;
@@ -154,19 +149,12 @@ class Ground extends Component with HasGameReference<LexawayGame> {
     }
   }
 
-  void startScrolling(double speed) => _scrollSpeed = speed;
-  void stopScrolling() => _scrollSpeed = 0;
-
-  @override
-  void update(double dt) {
-    scrollOffset += _scrollSpeed * dt;
-  }
-
   @override
   void render(Canvas canvas) {
     final tileSize = 16.0 * LexawayGame.pixelScale;
     final groundTop = game.size.y * LexawayGame.groundLevel;
     final tilesAcross = (game.size.x / tileSize).ceil() + 2;
+    final scrollOffset = camera.scrollOffset;
     final pixelOffset = scrollOffset % tileSize;
 
     for (int i = 0; i < tilesAcross; i++) {

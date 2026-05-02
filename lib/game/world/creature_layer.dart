@@ -13,9 +13,8 @@ class CreatureLayer extends ScrollingItemLayer<Creature> {
   /// — the only real work [_ensureBiome] does is the PNG load.
   final Set<BiomeType> _loadedBiomes = {};
 
-  CreatureLayer(WorldMap worldMap)
+  CreatureLayer({required super.worldMap, required super.camera})
       : super(
-          worldMap: worldMap,
           category: ItemCategory.creature,
           spawnMarginPx: 640,
           cullMarginPx: 128,

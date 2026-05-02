@@ -22,7 +22,9 @@ class BiomeParallax extends PositionComponent
   /// player's actual location, not always the first segment.
   final double initialScrollOffset;
 
-  BiomeParallax({this.initialScrollOffset = 0});
+  final WorldMap worldMap;
+
+  BiomeParallax({required this.worldMap, this.initialScrollOffset = 0});
 
   final Map<BiomeType, Parallax> _cache = {};
   final Paint _fadePaint = Paint();
@@ -35,11 +37,11 @@ class BiomeParallax extends PositionComponent
 
   @override
   Future<void> onLoad() async {
-    final biomes = game.worldMap.segments.map((s) => s.biome).toSet();
+    final biomes = worldMap.segments.map((s) => s.biome).toSet();
     for (final biome in biomes) {
       await _loadBiome(biome);
     }
-    final initialBiome = game.worldMap.biomeAt(initialScrollOffset);
+    final initialBiome = worldMap.biomeAt(initialScrollOffset);
     _active = _cache[initialBiome];
   }
 

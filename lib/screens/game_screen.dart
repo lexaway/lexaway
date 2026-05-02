@@ -127,7 +127,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
     final game = _game;
     if (game == null) return;
     try {
-      game.movementController.finishMovement();
+      game.finishMovement();
     } catch (_) {
       // Components already detached; fall through to flush.
     }

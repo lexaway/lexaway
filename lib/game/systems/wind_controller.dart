@@ -4,19 +4,22 @@ import 'package:flame/components.dart';
 
 import '../components/wind_lines.dart';
 import '../events.dart';
-import '../lexaway_game.dart';
 
 /// Toggles [WindLines] on and off based on whether the dino is currently
 /// running. No `update()` — everything is event-driven.
-class WindController extends Component with HasGameReference<LexawayGame> {
+class WindController extends Component {
   StreamSubscription<GameEvent>? _sub;
-  late final WindLines _windLines;
+  final WindLines _windLines;
+  final GameEvents _events;
+
+  WindController({required WindLines windLines, required GameEvents events})
+      : _windLines = windLines,
+        _events = events;
 
   @override
   void onMount() {
     super.onMount();
-    _windLines = game.windLines;
-    _sub = game.events.on<GameEvent>().listen(_handle);
+    _sub = _events.on<GameEvent>().listen(_handle);
   }
 
   void _handle(GameEvent event) {

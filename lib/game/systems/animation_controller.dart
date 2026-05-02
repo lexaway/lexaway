@@ -5,13 +5,11 @@ import 'package:flame/components.dart';
 
 import '../components/player.dart';
 import '../events.dart';
-import '../lexaway_game.dart';
 
 /// Owns the dino's on-screen "personality": routing walk/run/idle animations,
 /// scheduling random fidget jumps while standing still, and firing idle
 /// chatter after a minute of silence.
-class AnimationController extends Component
-    with HasGameReference<LexawayGame> {
+class AnimationController extends Component {
   static const double _idleTimeout = 60.0;
   static const double _fidgetMin = 8.0;
   static const double _fidgetMax = 20.0;
@@ -21,18 +19,22 @@ class AnimationController extends Component
       _fidgetMin + _rng.nextDouble() * (_fidgetMax - _fidgetMin);
 
   StreamSubscription<GameEvent>? _sub;
-  late final Player _player;
+  final Player _player;
+  final GameEvents _events;
 
   bool _walking = false;
   double _idleTimer = 0;
   double _fidgetTimer = 0;
   double _nextFidgetAt = _rollFidgetDelay();
 
+  AnimationController({required Player player, required GameEvents events})
+      : _player = player,
+        _events = events;
+
   @override
   void onMount() {
     super.onMount();
-    _player = game.player;
-    _sub = game.events.on<GameEvent>().listen(_handle);
+    _sub = _events.on<GameEvent>().listen(_handle);
   }
 
   void _handle(GameEvent event) {
@@ -77,7 +79,7 @@ class AnimationController extends Component
     _idleTimer += clamped;
     if (_idleTimer >= _idleTimeout) {
       _idleTimer = 0;
-      game.events.emit(const IdleChatterTriggered());
+      _events.emit(const IdleChatterTriggered());
     }
 
     // Random fidget jumps while standing still and not mid-one-shot.

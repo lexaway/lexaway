@@ -2,10 +2,12 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
 
 import '../data/world_state_repository.dart';
 import 'audio_manager.dart';
 import 'components/biome_parallax.dart';
+import 'components/camera.dart';
 import 'components/coin_manager.dart';
 import 'components/ground.dart';
 import 'components/player.dart';
@@ -47,14 +49,15 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   String _locale;
 
   /// The currently-rendered font family for in-game text. Updating this
-  /// forwards the change to [speechBubble] so a Settings change is picked up
-  /// while the game is running. If [onLoad] hasn't completed yet, the new
-  /// value is stored and picked up when [speechBubble] is constructed there.
+  /// forwards the change to the speech bubble so a Settings change is
+  /// picked up while the game is running. If [onLoad] hasn't completed
+  /// yet, the new value is stored and picked up when the bubble is
+  /// constructed there.
   String get fontFamily => _fontFamily;
   set fontFamily(String value) {
     if (value == _fontFamily) return;
     _fontFamily = value;
-    if (isLoaded) speechBubble.fontFamily = value;
+    if (isLoaded) _speechBubble.fontFamily = value;
   }
 
   LexawayGame({
@@ -77,19 +80,31 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   /// surprises.
   final GameEvents events = GameEvents();
 
-  late WorldMap worldMap;
-  late WorldRenderer worldRenderer;
-  late CreatureLayer creatureLayer;
-  late Player player;
-  late Ground ground;
-  late BiomeParallax biomeParallax;
-  late SpeechBubble speechBubble;
-  late CoinManager coinManager;
-  late WindLines windLines;
-  late WeatherOverlay weatherOverlay;
-  late MovementController movementController;
-  late WorldStreamer worldStreamer;
-  late WorldStatePersister worldStatePersister;
+  late final WorldMap _worldMap;
+  late final Camera _camera;
+  late final WorldStreamer _worldStreamer;
+  late final WorldStatePersister _worldStatePersister;
+  late final BiomeParallax _biomeParallax;
+  late final Ground _ground;
+  late final WorldRenderer _worldRenderer;
+  late final CreatureLayer _creatureLayer;
+  late final CoinManager _coinManager;
+  late final Player _player;
+  late final WindLines _windLines;
+  late final WeatherOverlay _weatherOverlay;
+  late final SpeechBubble _speechBubble;
+  late final MovementController _movementController;
+
+  /// World map, exposed for read-only UI access (the minimap renders from
+  /// it). Sibling systems should take a [WorldMap] in their constructor
+  /// instead of reaching through here.
+  WorldMap get worldMap => _worldMap;
+
+  /// Live scroll offset. Exposed for UI bindings (minimap) and for
+  /// downstream creature behaviors that don't fit the constructor-injection
+  /// pattern. Sibling systems should take a [Camera] in their constructor.
+  double get scrollOffset => _camera.scrollOffset;
+  ValueNotifier<double> get scrollNotifier => _camera.scrollNotifier;
 
   @override
   Color backgroundColor() => const Color(0xFF50BBFF);
@@ -98,89 +113,118 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   Future<void> onLoad() async {
     final saved = worldStateRepository.load();
     final seed = saved?.seed ?? Random().nextInt(1 << 32);
+    final initialOffset = saved?.scrollOffset ?? 0.0;
 
     final entityFootprints = await loadEntityFootprints();
-    worldMap = WorldGenerator(entityFootprints: entityFootprints)
+    _worldMap = WorldGenerator(entityFootprints: entityFootprints)
         .generate(seed);
+
+    _camera = Camera(initialOffset: initialOffset);
+    add(_camera);
+
     // Replay previously-persisted extensions at their original seeds so
-    // worldMap.segments matches the saved scroll offset before any
+    // _worldMap.segments matches the saved scroll offset before any
     // components that read the map come online. [WorldStreamer.extend]
     // is a no-op on the event bus while unmounted, so replay doesn't
     // spuriously dirty the persister.
-    worldStreamer = WorldStreamer(
-      worldMap: worldMap,
+    _worldStreamer = WorldStreamer(
+      worldMap: _worldMap,
+      camera: _camera,
+      events: events,
       entityFootprints: entityFootprints,
     );
     for (var i = 0; i < (saved?.extensions ?? 0); i++) {
-      worldStreamer.extend();
+      _worldStreamer.extend();
     }
 
-    worldStatePersister = WorldStatePersister(
+    _worldStatePersister = WorldStatePersister(
       repository: worldStateRepository,
+      camera: _camera,
+      worldMap: _worldMap,
+      worldStreamer: _worldStreamer,
+      events: events,
       initialCollectedCoins: saved?.collectedCoins ?? const [],
     );
 
     final parallaxHeight = size.y * groundLevel + 16 * pixelScale - 40;
-    biomeParallax = BiomeParallax(
-      initialScrollOffset: saved?.scrollOffset ?? 0,
+    _biomeParallax = BiomeParallax(
+      worldMap: _worldMap,
+      initialScrollOffset: initialOffset,
     )..size = Vector2(size.x, parallaxHeight);
-    await add(biomeParallax);
+    await add(_biomeParallax);
 
-    ground = Ground(worldMap: worldMap)..priority = 1;
-    if (saved != null) {
-      ground.scrollOffset = saved.scrollOffset;
-    }
-    add(ground);
+    _ground = Ground(worldMap: _worldMap, camera: _camera)..priority = 1;
+    add(_ground);
 
-    worldRenderer = WorldRenderer(worldMap)..priority = 1;
-    add(worldRenderer);
+    _worldRenderer = WorldRenderer(worldMap: _worldMap, camera: _camera)
+      ..priority = 1;
+    add(_worldRenderer);
 
-    creatureLayer = CreatureLayer(worldMap)..priority = 1;
-    add(creatureLayer);
+    _creatureLayer = CreatureLayer(worldMap: _worldMap, camera: _camera)
+      ..priority = 1;
+    add(_creatureLayer);
 
     // CoinManager shares the collectedCoins Set with the persister so its
     // spawn loop can dedup against saved pickups; the persister owns the
     // mutation lifecycle via its CoinCollected subscription.
-    coinManager = CoinManager(
-      worldMap: worldMap,
-      collectedCoins: worldStatePersister.collectedCoins,
+    _coinManager = CoinManager(
+      worldMap: _worldMap,
+      camera: _camera,
+      events: events,
+      collectedCoins: _worldStatePersister.collectedCoins,
     )..priority = 1;
-    add(coinManager);
+    add(_coinManager);
 
-    player = Player(spritePath: characterPath)..priority = 2;
-    await add(player);
-    player.play(DinoAnim.scan);
+    _player = Player(spritePath: characterPath)..priority = 2;
+    await add(_player);
+    _player.play(DinoAnim.scan);
 
-    windLines = WindLines()..priority = 2;
-    add(windLines);
+    _windLines = WindLines()..priority = 2;
+    add(_windLines);
 
     // Weather sits between player/wind (priority 2) and speech bubble — snow
     // falls in front of the dino but never obscures dialogue.
-    weatherOverlay = WeatherOverlay(
-      initialScrollOffset: saved?.scrollOffset ?? 0,
+    _weatherOverlay = WeatherOverlay(
+      worldMap: _worldMap,
+      camera: _camera,
+      events: events,
+      initialScrollOffset: initialOffset,
     )..priority = 3;
-    await add(weatherOverlay);
+    await add(_weatherOverlay);
 
-    speechBubble = SpeechBubble(follow: player, fontFamily: _fontFamily)
+    _speechBubble = SpeechBubble(follow: _player, fontFamily: _fontFamily)
       ..priority = 4;
-    add(speechBubble);
+    add(_speechBubble);
 
-    movementController = MovementController();
-    add(movementController);
+    _movementController = MovementController(
+      camera: _camera,
+      worldMap: _worldMap,
+      events: events,
+    );
+    add(_movementController);
 
-    add(AudioCueController());
-    add(ScrollController());
-    add(WindController());
-    add(AnimationController());
-    add(DialogueController());
-    add(worldStreamer);
+    add(AudioCueController(events: events));
+    add(ScrollController(
+      camera: _camera,
+      biomeParallax: _biomeParallax,
+      worldMap: _worldMap,
+      events: events,
+    ));
+    add(WindController(windLines: _windLines, events: events));
+    add(AnimationController(player: _player, events: events));
+    add(DialogueController(
+      bubble: _speechBubble,
+      events: events,
+      localeGetter: () => _locale,
+    ));
+    add(_worldStreamer);
     // Persister is added AFTER coinManager so its CoinCollected handler
     // runs second. CoinManager's handler reads the still-alive Coin's
     // sprite state to spawn the fly effect; the persister then mutates
     // collectedCoins. Reordering would still work today (sync emit, both
     // handlers run before the next frame), but the trajectory would be
     // first-frame race-prone — keep them in this order.
-    add(worldStatePersister);
+    add(_worldStatePersister);
 
     events.on<WorldExtended>().listen((_) => _loadNewBiomes());
 
@@ -190,41 +234,45 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
     // Persist the seed on first run. The persister isn't mounted yet so
     // its per-frame dirty drain hasn't started — flush() writes directly.
-    if (saved == null) worldStatePersister.flush();
+    if (saved == null) _worldStatePersister.flush();
   }
 
   void _loadNewBiomes() {
-    for (final seg in worldMap.segments) {
-      ground.ensureBiomeLoaded(seg.biome);
-      worldRenderer.ensureBiomeLoaded(seg.biome);
-      creatureLayer.ensureBiomeLoaded(seg.biome);
-      biomeParallax.ensureBiomeLoaded(seg.biome);
-      weatherOverlay.ensureBiomeLoaded(seg.biome);
+    for (final seg in _worldMap.segments) {
+      _ground.ensureBiomeLoaded(seg.biome);
+      _worldRenderer.ensureBiomeLoaded(seg.biome);
+      _creatureLayer.ensureBiomeLoaded(seg.biome);
+      _biomeParallax.ensureBiomeLoaded(seg.biome);
+      _weatherOverlay.ensureBiomeLoaded(seg.biome);
     }
   }
 
   void correctAnswer({required int streak, required String answer}) {
-    movementController.correctAnswer(streak: streak, answer: answer);
+    _movementController.correctAnswer(streak: streak, answer: answer);
   }
 
   void wrongAnswer() {
-    movementController.wrongAnswer();
+    _movementController.wrongAnswer();
   }
 
   /// Toggle debug mode: dino walks continuously without answering.
-  void toggleDebugWalk() => movementController.toggleDebugWalk();
-  bool get debugWalk => movementController.debugWalk;
+  void toggleDebugWalk() => _movementController.toggleDebugWalk();
+  bool get debugWalk => _movementController.debugWalk;
+
+  /// Finish any in-progress walk immediately (no animation). Called from
+  /// app-lifecycle teardown so the dino doesn't get caught mid-stride.
+  void finishMovement() => _movementController.finishMovement();
 
   /// Force an immediate synchronous write, bypassing the per-frame
   /// coalesce in [WorldStatePersister]. Use this from lifecycle hooks
   /// (pause, dispose) where the next tick may never run.
   ///
-  /// No-ops if [onLoad] hasn't finished yet — [worldStatePersister] is a
-  /// late field and the `late` access would throw if the boot-failure
-  /// dispose path calls this after a partial `onLoad`.
+  /// No-ops if [onLoad] hasn't finished yet — the persister is a `late`
+  /// field and the access would throw if the boot-failure dispose path
+  /// calls this after a partial `onLoad`.
   void flushWorldState() {
     if (!isLoaded) return;
-    worldStatePersister.flush();
+    _worldStatePersister.flush();
   }
 
   @override

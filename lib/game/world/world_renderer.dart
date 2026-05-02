@@ -15,9 +15,8 @@ class WorldRenderer extends ScrollingItemLayer<Entity> {
   /// Sprite definitions keyed by biome, then entity name.
   final Map<BiomeType, Map<String, _EntityDef>> _defs = {};
 
-  WorldRenderer(WorldMap worldMap)
+  WorldRenderer({required super.worldMap, required super.camera})
       : super(
-          worldMap: worldMap,
           category: ItemCategory.entity,
           spawnMarginPx: 128,
           cullMarginPx: 128,

@@ -19,11 +19,17 @@ class CoinManager extends ScrollingItemLayer<Coin> {
   static final Vector2 _hudCounterOffset = Vector2(-60, 50);
 
   final Set<int> collectedCoins;
+  final GameEvents _events;
 
   StreamSubscription<GameEvent>? _sub;
 
-  CoinManager({required super.worldMap, required this.collectedCoins})
-      : super(
+  CoinManager({
+    required super.worldMap,
+    required super.camera,
+    required GameEvents events,
+    required this.collectedCoins,
+  })  : _events = events,
+        super(
           category: ItemCategory.coin,
           spawnMarginPx: 64,
           cullMarginPx: 64,
@@ -40,7 +46,7 @@ class CoinManager extends ScrollingItemLayer<Coin> {
   @override
   void onMount() {
     super.onMount();
-    _sub = game.events.on<GameEvent>().listen(_handle);
+    _sub = _events.on<GameEvent>().listen(_handle);
   }
 
   void _handle(GameEvent event) {

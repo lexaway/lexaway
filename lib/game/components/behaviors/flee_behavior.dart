@@ -32,7 +32,7 @@ class FleeBehavior extends CreatureBehaviorComponent {
     }
 
     final game = parent.game;
-    final scrollOffset = game.ground.scrollOffset;
+    final scrollOffset = game.scrollOffset;
     final playerScreenX = game.size.x * 0.25;
     final myScreenX = parent.worldX - scrollOffset;
     final gap = myScreenX - playerScreenX;

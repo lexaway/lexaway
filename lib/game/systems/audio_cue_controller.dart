@@ -5,21 +5,22 @@ import 'package:flame/components.dart';
 import '../audio_manager.dart';
 import '../components/coin.dart' show CoinType;
 import '../events.dart';
-import '../lexaway_game.dart';
 
 /// Listens to gameplay events and plays the matching SFX.
 ///
 /// Pure event consumer — no `game.*` reach-through, no `update()`.
 /// `AudioManager` is a singleton so this system doesn't even need a
 /// reference to it, just the events stream.
-class AudioCueController extends Component
-    with HasGameReference<LexawayGame> {
+class AudioCueController extends Component {
   StreamSubscription<GameEvent>? _sub;
+  final GameEvents _events;
+
+  AudioCueController({required GameEvents events}) : _events = events;
 
   @override
   void onMount() {
     super.onMount();
-    _sub = game.events.on<GameEvent>().listen(_handle);
+    _sub = _events.on<GameEvent>().listen(_handle);
   }
 
   void _handle(GameEvent event) {

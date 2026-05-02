@@ -1,5 +1,6 @@
 import 'package:flame/components.dart';
 
+import '../components/camera.dart';
 import '../events.dart';
 import '../lexaway_game.dart';
 import '../world/entity_footprints.dart';
@@ -18,7 +19,7 @@ import '../world/world_map.dart';
 /// On boot, [LexawayGame] replays previously-persisted extensions by calling
 /// [extend] in a loop before adding this component to the tree, which keeps
 /// worldMap.segments consistent with the saved scroll offset.
-class WorldStreamer extends Component with HasGameReference<LexawayGame> {
+class WorldStreamer extends Component {
   /// How close (in tiles) to the end of the generated world before we
   /// trigger another extension.
   static const int _lookaheadTiles = 200;
@@ -27,14 +28,20 @@ class WorldStreamer extends Component with HasGameReference<LexawayGame> {
   static const int _extensionTiles = 1000;
 
   final WorldMap worldMap;
-  final EntityFootprints entityFootprints;
+  final EntityFootprints _entityFootprints;
+  final Camera _camera;
+  final GameEvents _events;
 
   int _extensions = 0;
 
   WorldStreamer({
     required this.worldMap,
-    this.entityFootprints = const {},
-  });
+    required Camera camera,
+    required GameEvents events,
+    EntityFootprints entityFootprints = const {},
+  })  : _camera = camera,
+        _events = events,
+        _entityFootprints = entityFootprints;
 
   /// How many extension batches have been appended so far. Read by the
   /// world-state snapshot so reboots can replay the same sequence.
@@ -49,7 +56,7 @@ class WorldStreamer extends Component with HasGameReference<LexawayGame> {
   void extend() {
     _extensions++;
     final extensionSeed = worldMap.seed + _extensions;
-    final extension = WorldGenerator(entityFootprints: entityFootprints)
+    final extension = WorldGenerator(entityFootprints: _entityFootprints)
         .generate(
       extensionSeed,
       totalTiles: _extensionTiles,
@@ -60,14 +67,14 @@ class WorldStreamer extends Component with HasGameReference<LexawayGame> {
     worldMap.nextItemIndex = extension.nextItemIndex;
 
     if (isMounted) {
-      game.events.emit(const WorldExtended());
+      _events.emit(const WorldExtended());
     }
   }
 
   @override
   void update(double dt) {
     final tilePx = 16.0 * LexawayGame.pixelScale;
-    if (game.ground.scrollOffset + _lookaheadTiles * tilePx >
+    if (_camera.scrollOffset + _lookaheadTiles * tilePx >
         worldMap.totalLengthPx) {
       extend();
     }

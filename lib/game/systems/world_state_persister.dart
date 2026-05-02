@@ -4,8 +4,10 @@ import 'package:flame/components.dart';
 
 import '../../data/world_state.dart';
 import '../../data/world_state_repository.dart';
+import '../components/camera.dart';
 import '../events.dart';
-import '../lexaway_game.dart';
+import '../world/world_map.dart';
+import 'world_streamer.dart';
 
 /// Owns persistable world state: collected coin indices, the dirty flag,
 /// and the writer. Subscribes to the events that mutate persistable
@@ -17,7 +19,7 @@ import '../lexaway_game.dart';
 /// sink for persistence state. [CoinManager] still holds a reference to
 /// [collectedCoins] (shared mutable Set) so its spawn loop can skip items
 /// that have already been collected.
-class WorldStatePersister extends Component with HasGameReference<LexawayGame> {
+class WorldStatePersister extends Component {
   final WorldStateRepository repository;
 
   /// Collected coin item indices. Shared with [CoinManager] — it reads
@@ -25,19 +27,32 @@ class WorldStatePersister extends Component with HasGameReference<LexawayGame> {
   /// it here in the [CoinCollected] handler.
   final Set<int> collectedCoins;
 
+  final Camera _camera;
+  final WorldMap _worldMap;
+  final WorldStreamer _worldStreamer;
+  final GameEvents _events;
+
   bool _dirty = false;
 
   StreamSubscription<GameEvent>? _sub;
 
   WorldStatePersister({
     required this.repository,
+    required Camera camera,
+    required WorldMap worldMap,
+    required WorldStreamer worldStreamer,
+    required GameEvents events,
     Iterable<int> initialCollectedCoins = const [],
-  }) : collectedCoins = {...initialCollectedCoins};
+  })  : _camera = camera,
+        _worldMap = worldMap,
+        _worldStreamer = worldStreamer,
+        _events = events,
+        collectedCoins = {...initialCollectedCoins};
 
   @override
   void onMount() {
     super.onMount();
-    _sub = game.events.on<GameEvent>().listen(_handle);
+    _sub = _events.on<GameEvent>().listen(_handle);
   }
 
   void _handle(GameEvent event) {
@@ -62,15 +77,9 @@ class WorldStatePersister extends Component with HasGameReference<LexawayGame> {
   /// dispose) where [update] may never run again before the process is
   /// torn down, or from boot to persist initial state.
   ///
-  /// Callers must ensure the game's late fields ([worldMap], [ground],
-  /// [worldStreamer]) are initialized — during `onLoad`, this means
-  /// calling after those are set up.
-  ///
-  /// Safe to call before this component has been mounted: Flame's
-  /// `add()` wires up the parent pointer synchronously, so `findGame()`
-  /// (used by `HasGameReference.game`) resolves even pre-mount. The
-  /// boot-time first-run save in `LexawayGame.onLoad` relies on this —
-  /// don't "fix" it by deferring the call until after onLoad returns.
+  /// Safe to call before this component has been mounted — all
+  /// collaborators are passed in at construction, so the snapshot doesn't
+  /// depend on any `late` field being initialized first.
   void flush() {
     _write();
   }
@@ -81,9 +90,9 @@ class WorldStatePersister extends Component with HasGameReference<LexawayGame> {
   }
 
   WorldState _snapshot() => WorldState(
-        seed: game.worldMap.seed,
-        extensions: game.worldStreamer.extensions,
-        scrollOffset: game.ground.scrollOffset,
+        seed: _worldMap.seed,
+        extensions: _worldStreamer.extensions,
+        scrollOffset: _camera.scrollOffset,
         collectedCoins: collectedCoins.toList(),
       );
 

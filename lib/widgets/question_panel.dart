@@ -270,7 +270,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                 child: widget.game.isLoaded
                     ? MiniMap(
                         worldMap: widget.game.worldMap,
-                        scrollOffset: widget.game.ground.scrollNotifier,
+                        scrollOffset: widget.game.scrollNotifier,
                       )
                     : const SizedBox(height: AppSpacing.md),
               ),

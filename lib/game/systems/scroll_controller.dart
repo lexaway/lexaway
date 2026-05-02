@@ -3,34 +3,45 @@ import 'dart:async';
 import 'package:flame/components.dart';
 
 import '../components/biome_parallax.dart';
-import '../components/ground.dart';
+import '../components/camera.dart';
 import '../events.dart';
 import '../lexaway_game.dart';
 import '../walk_state.dart';
 import '../world/world_map.dart';
 
-/// Owns anything that scrolls: parallax velocity, ground scroll speed, and
+/// Owns anything that scrolls: parallax velocity, camera scroll speed, and
 /// gentle cloud drift. Subscribes to walk events and translates them into
-/// parallax base-velocity + ground scroll speed changes.
+/// parallax base-velocity + camera scroll-speed changes.
 ///
 /// Also detects biome boundaries and triggers parallax crossfades via
 /// [BiomeParallax.transitionTo].
 class ScrollController extends Component with HasGameReference<LexawayGame> {
   StreamSubscription<GameEvent>? _sub;
 
-  late final BiomeParallax _biomeParallax;
-  late final Ground _ground;
+  final Camera _camera;
+  final BiomeParallax _biomeParallax;
+  final WorldMap _worldMap;
+  final GameEvents _events;
+
   late BiomeType _currentBiome;
+
+  ScrollController({
+    required Camera camera,
+    required BiomeParallax biomeParallax,
+    required WorldMap worldMap,
+    required GameEvents events,
+  })  : _camera = camera,
+        _biomeParallax = biomeParallax,
+        _worldMap = worldMap,
+        _events = events;
 
   @override
   void onMount() {
     super.onMount();
-    _biomeParallax = game.biomeParallax;
-    _ground = game.ground;
-    _currentBiome = game.worldMap.biomeAt(
-      _ground.scrollOffset + game.size.x / 2,
+    _currentBiome = _worldMap.biomeAt(
+      _camera.scrollOffset + game.size.x / 2,
     );
-    _sub = game.events.on<GameEvent>().listen(_handle);
+    _sub = _events.on<GameEvent>().listen(_handle);
   }
 
   void _handle(GameEvent event) {
@@ -40,9 +51,9 @@ class ScrollController extends Component with HasGameReference<LexawayGame> {
       case WalkSpeedChanged(:final running):
         _applySpeed(running: running);
       case WalkStopped(:final skipDistance):
-        if (skipDistance > 0) _ground.scrollOffset += skipDistance;
+        if (skipDistance > 0) _camera.scrollOffset += skipDistance;
         _biomeParallax.setBaseVelocity(Vector2.zero());
-        _ground.stopScrolling();
+        _camera.stopScrolling();
       default:
         break;
     }
@@ -53,7 +64,7 @@ class ScrollController extends Component with HasGameReference<LexawayGame> {
         ? LexawayGame.walkSpeed * WalkState.runSpeedMultiplier
         : LexawayGame.walkSpeed;
     _biomeParallax.setBaseVelocity(Vector2(speed * 0.1, 0));
-    _ground.startScrolling(speed);
+    _camera.startScrolling(speed);
   }
 
   @override
@@ -61,14 +72,14 @@ class ScrollController extends Component with HasGameReference<LexawayGame> {
     _biomeParallax.applyCloudDrift(dt);
 
     // Detect biome boundary crossings at screen centre.
-    final biome = game.worldMap.biomeAt(
-      _ground.scrollOffset + game.size.x / 2,
+    final biome = _worldMap.biomeAt(
+      _camera.scrollOffset + game.size.x / 2,
     );
     if (biome != _currentBiome) {
       final previous = _currentBiome;
       _currentBiome = biome;
       _biomeParallax.transitionTo(biome);
-      game.events.emit(BiomeChanged(previous: previous, current: biome));
+      _events.emit(BiomeChanged(previous: previous, current: biome));
     }
   }
 
