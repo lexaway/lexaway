@@ -1,4 +1,25 @@
 ### 🇬🇧 English
+**1.8.0** — An optional Towball's Crossing music pack adds a different theme to each biome. Your dino now flares with a power-up aura at a 3-streak and bursts into sparkles every 10.
+
+### 🇫🇷 Français
+**1.8.0** — Un pack musical optionnel, Towball's Crossing, ajoute un thème différent à chaque biome. Votre dino s'embrase d'une aura de power-up dès 3 bonnes réponses d'affilée et fait jaillir des étincelles tous les 10.
+
+### 🇪🇸 Español
+**1.8.0** — Un pack de música opcional, Towball's Crossing, añade un tema distinto a cada bioma. Tu dino ahora se enciende con un aura de poder a las 3 respuestas seguidas y lanza chispas cada 10.
+
+### 🇩🇪 Deutsch
+**1.8.0** — Ein optionales Musikpaket, Towball's Crossing, bringt jedem Biom ein eigenes Thema. Dein Dino entflammt jetzt bei drei richtigen Antworten in Folge mit einer Power-up-Aura und sprüht alle 10 in Funken.
+
+### 🇮🇹 Italiano
+**1.8.0** — Un pacchetto musicale opzionale, Towball's Crossing, dà a ogni bioma un tema diverso. Ora il tuo dino si accende con un'aura di power-up alla terza risposta corretta consecutiva e sprizza scintille ogni 10.
+
+### 🇵🇹 Português
+**1.8.0** — Um pacote musical opcional, Towball's Crossing, dá um tema diferente a cada bioma. Seu dino agora se acende com uma aura de power-up a cada 3 respostas corretas seguidas e solta faíscas a cada 10.
+
+### 🇳🇱 Nederlands
+**1.8.0** — Een optioneel muziekpakket, Towball's Crossing, geeft elk biome een eigen thema. Je dino vlamt nu op met een power-up-aura bij 3 goede antwoorden op rij en sprankelt in vonkjes om de 10.
+
+### 🇬🇧 English
 **1.7.0** — Snow drifts through the winter biome — sometimes a light flurry, sometimes a thick squall.
 
 ### 🇫🇷 Français
