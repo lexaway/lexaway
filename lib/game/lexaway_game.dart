@@ -21,6 +21,7 @@ import 'systems/animation_controller.dart';
 import 'systems/audio_cue_controller.dart';
 import 'systems/dialogue_controller.dart';
 import 'systems/scroll_controller.dart';
+import 'systems/streak_vfx_controller.dart';
 import 'systems/wind_controller.dart';
 import 'systems/world_state_persister.dart';
 import 'systems/world_streamer.dart';
@@ -204,6 +205,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     add(_movementController);
 
     add(AudioCueController(events: events));
+    add(StreakVfxController(events: events, player: _player));
     add(ScrollController(
       camera: _camera,
       biomeParallax: _biomeParallax,

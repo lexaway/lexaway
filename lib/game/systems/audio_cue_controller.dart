@@ -27,7 +27,11 @@ class AudioCueController extends Component {
     final audio = AudioManager.instance;
     switch (event) {
       case AnswerCorrect(:final streak):
-        if (streak == 5 || streak == 10 || streak == 25) {
+        if (streak == 3) {
+          audio.playPowerUp();
+        } else if (streak >= 10 && streak % 10 == 0) {
+          audio.playMilestone();
+        } else if (streak == 5 || streak == 25) {
           audio.playStreak();
         } else {
           audio.playCorrect();

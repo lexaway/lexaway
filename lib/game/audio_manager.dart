@@ -52,6 +52,8 @@ class AudioManager {
       for (final t in Terrain.values)
         for (var i = 1; i <= 3; i++) 'step_${t.name}_$i.wav',
       'streak.wav',
+      'powerup.wav',
+      'milestone.wav',
       'coin.wav',
       'gem.wav',
       'crunch_crunchy.wav',
@@ -71,6 +73,10 @@ class AudioManager {
   }
 
   void playStreak() => FlameAudio.play('streak.wav', volume: _feedbackVol);
+
+  void playPowerUp() => FlameAudio.play('powerup.wav', volume: _feedbackVol);
+
+  void playMilestone() => FlameAudio.play('milestone.wav', volume: _feedbackVol);
 
   void playCoin() => FlameAudio.play('coin.wav', volume: _feedbackVol);
 
