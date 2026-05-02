@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/music_manager.dart';
+import 'bgm.dart';
 import 'bootstrap.dart';
 import 'packs.dart';
 
@@ -66,6 +67,9 @@ class InstalledMusicNotifier extends AsyncNotifier<Set<String>> {
   Future<void> delete(String packId) async {
     final mm = ref.read(musicManagerProvider);
     await mm.deletePack(packId);
+    // Drop cached playback positions for this pack so a later reinstall
+    // doesn't seek into a stale offset from the now-deleted file.
+    ref.read(bgmServiceProvider).forgetPositionsWithPrefix('$packId/');
     state = AsyncData(_readInstalled(mm));
   }
 

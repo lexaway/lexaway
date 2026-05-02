@@ -34,13 +34,23 @@ class BgmService {
 
   /// Last known playback position per track id, captured whenever we
   /// crossfade away. Lets users hop into Settings and back without losing
-  /// their place.
+  /// their place. Capped at [_positionsCap] entries with FIFO eviction so
+  /// long sessions across many tracks don't accumulate forever; identifiers
+  /// belonging to an uninstalled pack are explicitly dropped via
+  /// [forgetPositionsWithPrefix].
+  static const int _positionsCap = 128;
   final Map<String, Duration> _positions = {};
 
   /// Serializes [playLoop] calls. Without this, two rapid invocations could
   /// both pass the same-id early-return and race through the swap/play
   /// dance with the dual-player invariant broken.
   Future<void>? _transitionLock;
+
+  /// True between an unmute kick being scheduled and its [playLoop]
+  /// completing. Suppresses redundant kicks during mute/unmute thrash —
+  /// the in-flight playLoop will read the latest [_userVolume] when it
+  /// dequeues, so a second kick is just wasted swap-and-play work.
+  bool _unmutePending = false;
 
   int _transitionId = 0;
   Timer? _rampTimer;
@@ -87,7 +97,7 @@ class BgmService {
       final outgoingId = _currentId;
       if (outgoingId != null) {
         final pos = await _current.getCurrentPosition();
-        if (pos != null) _positions[outgoingId] = pos;
+        if (pos != null) _rememberPosition(outgoingId, pos);
       }
 
       _currentId = identifier;
@@ -202,10 +212,20 @@ class BgmService {
     if (!isZero && wasZero) {
       final id = _currentId;
       final source = _currentSource;
-      if (id != null && source != null && !_paused) {
+      if (id != null && source != null && !_paused && !_unmutePending) {
+        // Coalesce against slider thrash: a single kick will pick up the
+        // latest _userVolume when its playLoop dequeues, so additional
+        // mute→unmute cycles don't need to stack their own playLoops.
+        _unmutePending = true;
         final wasLoop = _currentLoop;
         _currentId = null; // force playLoop's same-id guard to relent
-        unawaited(playLoop(id, source, loop: wasLoop));
+        unawaited(() async {
+          try {
+            await playLoop(id, source, loop: wasLoop);
+          } finally {
+            _unmutePending = false;
+          }
+        }());
       }
       return;
     }
@@ -243,6 +263,21 @@ class BgmService {
     _previousVol = 0;
     await _current.stop();
     await _previous.stop();
+  }
+
+  /// Drop saved positions for any track id starting with [prefix]. Called
+  /// when a music pack is uninstalled so a future reinstall doesn't seek
+  /// into a stale position from a now-replaced file.
+  void forgetPositionsWithPrefix(String prefix) {
+    _positions.removeWhere((id, _) => id.startsWith(prefix));
+  }
+
+  void _rememberPosition(String id, Duration pos) {
+    _positions.remove(id);
+    _positions[id] = pos;
+    while (_positions.length > _positionsCap) {
+      _positions.remove(_positions.keys.first);
+    }
   }
 
   /// Pause both players. Idempotent. Used on app backgrounding.

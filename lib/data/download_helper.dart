@@ -50,6 +50,10 @@ Future<void> downloadToFile(
 
 /// Decompress + extract a tar.bz2 archive in a background isolate so the UI
 /// doesn't hitch on bzip2 decode and peak memory stays off the main isolate.
+///
+/// Entries with absolute paths, `..` segments, or symlinks are rejected to
+/// prevent a malicious or corrupted archive from writing outside
+/// [destinationDir] (zip-slip / tar-slip).
 Future<void> extractTarBz2InIsolate(
   String archivePath,
   String destinationDir,
@@ -60,7 +64,13 @@ Future<void> extractTarBz2InIsolate(
     final archive = TarDecoder().decodeBytes(decompressed);
 
     for (final file in archive) {
-      final path = '$destinationDir/${file.name}';
+      if (file.isSymbolicLink) {
+        throw FormatException(
+          'Refusing symlink entry in archive: ${file.name}',
+        );
+      }
+      final safeName = _safeArchiveEntryName(file.name);
+      final path = '$destinationDir/$safeName';
       if (file.isFile) {
         final outFile = File(path);
         outFile.createSync(recursive: true);
@@ -70,4 +80,23 @@ Future<void> extractTarBz2InIsolate(
       }
     }
   });
+}
+
+/// Reject archive entry names that could escape the destination directory.
+/// Throws [FormatException] on any unsafe input. Returns the cleaned name
+/// (leading `./` stripped) on success.
+String _safeArchiveEntryName(String name) {
+  if (name.isEmpty) {
+    throw const FormatException('Empty archive entry name');
+  }
+  if (name.startsWith('/') || name.contains(':') || name.startsWith(r'\')) {
+    throw FormatException('Absolute path in archive entry: $name');
+  }
+  final segments = name.split(RegExp(r'[/\\]'));
+  for (final seg in segments) {
+    if (seg == '..') {
+      throw FormatException('Parent traversal in archive entry: $name');
+    }
+  }
+  return name.startsWith('./') ? name.substring(2) : name;
 }

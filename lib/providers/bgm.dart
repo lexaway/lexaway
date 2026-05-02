@@ -10,6 +10,14 @@ import 'settings.dart';
 /// Singleton crossfading BGM player. Listens to both the music slider and the
 /// master slider so the player tracks user changes live, and music ducks
 /// proportionally with everything else when master is pulled down.
+///
+/// Lifecycle invariant: this provider must outlive [bgmSchedulerProvider].
+/// The scheduler caches the service via `ref.watch` and listens to its
+/// completion stream — if the service is rebuilt without rebuilding the
+/// scheduler, the old service keeps playing while the new one stays silent.
+/// Today neither provider has rebuildable dependencies, so they're stable
+/// for the app's lifetime; keep it that way unless you also coordinate
+/// disposal.
 final bgmServiceProvider = Provider<BgmService>((ref) {
   final service = BgmService();
   double effective() =>
