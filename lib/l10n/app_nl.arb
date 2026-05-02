@@ -27,6 +27,13 @@
   "settingsGameplay": "Gameplay",
   "settingsHaptics": "Trillingen",
   "settingsAutoPlayVoice": "Stem automatisch afspelen",
+  "settingsMusicPack": "Muziekpakket",
+  "musicTrackCount": "{count} nummers",
+  "@musicTrackCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "settingsAbout": "Over",
   "settingsFont": "Lettertype",
   "attributions": "Vermeldingen",

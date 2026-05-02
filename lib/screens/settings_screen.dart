@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_font.dart';
 import '../data/app_urls.dart';
+import '../data/music_manager.dart';
 import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../services/reminder_service.dart';
@@ -117,6 +118,10 @@ class SettingsScreen extends ConsumerWidget {
                         onChanged: (v) =>
                             ref.read(autoPlayTtsProvider.notifier).set(v),
                       ),
+                      const SizedBox(height: AppSpacing.lg),
+                      _SectionHeader(label: l10n.settingsMusicPack),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _MusicPackSection(),
                       const SizedBox(height: AppSpacing.lg),
                       _SectionHeader(label: l10n.settingsDailyGoal),
                       const SizedBox(height: AppSpacing.sm),
@@ -372,6 +377,200 @@ class _RadioRow extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MusicPackSection extends ConsumerWidget {
+  const _MusicPackSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final catalog = ref.watch(musicCatalogProvider);
+    final installedAsync = ref.watch(installedMusicProvider);
+    final installed = installedAsync.valueOrNull ?? const <String>{};
+
+    if (catalog.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final pack in catalog)
+          _MusicPackRow(
+            pack: pack,
+            downloaded: installed.contains(pack.id),
+            progress: ref.watch(musicDownloadProgressProvider(pack.id)),
+            extractingLabel: l10n.extracting,
+            optionalLabel: l10n.optional,
+            trackCountLabel: l10n.musicTrackCount(pack.tracks.length),
+            onDownload: () =>
+                ref.read(installedMusicProvider.notifier).download(pack.id),
+            onDelete: () =>
+                ref.read(installedMusicProvider.notifier).delete(pack.id),
+          ),
+      ],
+    );
+  }
+}
+
+class _MusicPackRow extends StatelessWidget {
+  final MusicPackInfo pack;
+  final bool downloaded;
+  final double? progress;
+  final String extractingLabel;
+  final String optionalLabel;
+  final String trackCountLabel;
+  final VoidCallback onDownload;
+  final VoidCallback onDelete;
+
+  const _MusicPackRow({
+    required this.pack,
+    required this.downloaded,
+    required this.progress,
+    required this.extractingLabel,
+    required this.optionalLabel,
+    required this.trackCountLabel,
+    required this.onDownload,
+    required this.onDelete,
+  });
+
+  bool get _isDownloading => progress != null;
+
+  @override
+  Widget build(BuildContext context) {
+    final isExtracting = _isDownloading && progress! < 0;
+    final trackCount = pack.tracks.length;
+    // Empty `tracks` only happens with the bundled baseline before the
+    // remote manifest has loaded. Downloading then would leave the catalog
+    // unable to resolve any tracks, so block the action until manifest
+    // arrives — UI still shows the tile so users know the pack exists.
+    final manifestLoaded = trackCount > 0;
+    final subtitle = isExtracting
+        ? extractingLabel
+        : downloaded
+            ? (trackCount > 0 ? trackCountLabel : null)
+            : optionalLabel;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: Center(
+                  child: _isDownloading
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            value: progress! > 0 ? progress : null,
+                            color: AppColors.accent,
+                            backgroundColor:
+                                AppColors.textPrimary.withValues(alpha: 0.12),
+                          ),
+                        )
+                      : downloaded
+                          ? const Icon(
+                              Icons.check_circle,
+                              color: AppColors.success,
+                              size: 22,
+                            )
+                          : Icon(
+                              Icons.music_note,
+                              color: AppColors.textSecondary,
+                              size: 22,
+                            ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            pack.displayName,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Text(
+                          '~${pack.approximateSizeMB} MB',
+                          style: const TextStyle(
+                            color: AppColors.textTertiary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (subtitle != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          subtitle,
+                          style: const TextStyle(
+                            color: AppColors.textTertiary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              if (_isDownloading)
+                const SizedBox(width: AppSpacing.xl)
+              else if (downloaded)
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onDelete,
+                )
+              else
+                IconButton(
+                  icon: Icon(
+                    Icons.download_rounded,
+                    color: manifestLoaded
+                        ? AppColors.accent
+                        : AppColors.textFaint,
+                    size: 24,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: manifestLoaded ? onDownload : null,
+                ),
+            ],
+          ),
+          if (_isDownloading) ...[
+            const SizedBox(height: AppSpacing.sm),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: progress! > 0 ? progress : null,
+                backgroundColor:
+                    AppColors.textPrimary.withValues(alpha: 0.12),
+                valueColor: AlwaysStoppedAnimation(AppColors.accent),
+                minHeight: 4,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

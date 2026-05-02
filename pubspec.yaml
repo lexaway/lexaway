@@ -74,7 +74,10 @@ flutter:
     - assets/images/fx/
     - assets/images/ui/
     - assets/audio/
-    - assets/bgm/
+    # Only the bundled main theme. Every other track lives in the optional
+    # downloadable music pack (see lib/data/music_manager.dart). Listed
+    # explicitly to avoid silently bundling stray .m4a files.
+    - assets/bgm/bgm_main_theme.m4a
     - assets/dino/
     # Female characters (all 12 complete)
     - assets/images/characters/female/cole/base/

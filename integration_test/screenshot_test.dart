@@ -62,6 +62,7 @@ void main() {
           hiveBoxProvider.overrideWithValue(box),
           packsDirProvider.overrideWithValue('${tmpDir.path}/packs'),
           modelsDirProvider.overrideWithValue('${tmpDir.path}/models'),
+          musicDirProvider.overrideWithValue('${tmpDir.path}/music'),
           tmpDirProvider.overrideWithValue('${tmpDir.path}/tmp'),
           activePackProvider.overrideWith(FakeActivePackNotifier.new),
           localPacksProvider.overrideWith(FakeLocalPacksNotifier.new),

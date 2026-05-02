@@ -95,6 +95,14 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsAutoPlayVoice => 'Reproduzir voz automaticamente';
 
   @override
+  String get settingsMusicPack => 'Pacote de música';
+
+  @override
+  String musicTrackCount(int count) {
+    return '$count faixas';
+  }
+
+  @override
   String get settingsAbout => 'Sobre';
 
   @override

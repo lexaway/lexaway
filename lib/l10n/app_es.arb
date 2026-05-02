@@ -27,6 +27,13 @@
   "settingsGameplay": "Juego",
   "settingsHaptics": "Vibración",
   "settingsAutoPlayVoice": "Reproducir voz automáticamente",
+  "settingsMusicPack": "Pack de música",
+  "musicTrackCount": "{count} pistas",
+  "@musicTrackCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "settingsAbout": "Acerca de",
   "settingsFont": "Fuente",
   "attributions": "Atribuciones",

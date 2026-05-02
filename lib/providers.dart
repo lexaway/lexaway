@@ -7,6 +7,7 @@ export 'providers/bootstrap.dart';
 export 'providers/character.dart';
 export 'providers/daily_goal.dart';
 export 'providers/locale.dart';
+export 'providers/music.dart';
 export 'providers/packs.dart';
 export 'providers/settings.dart';
 export 'providers/stats.dart';

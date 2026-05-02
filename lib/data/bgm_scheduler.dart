@@ -1,48 +1,26 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:audioplayers/audioplayers.dart';
 
+import '../game/world/world_map.dart';
 import 'bgm_service.dart';
+import 'music_manager.dart';
 
-/// Decides which background track plays right now. Main theme on menus;
-/// during gameplay we pick a random one-shot track from the pool, reroll
-/// when the player crosses a biome boundary, and otherwise let the song
-/// finish naturally before swapping to the next random pick. [BgmService]
-/// handles the actual crossfade.
+/// Decides which background track plays right now.
+///
+/// On menus we loop the bundled main theme. During gameplay we maintain a
+/// runtime catalog of [ResolvedTrack]s sourced from whichever music packs
+/// the user has downloaded — picking biome-matched tracks for the current
+/// biome, falling back to "filler" tracks (empty `biomes` list) when no
+/// match is available. When the catalog is empty (no music pack installed),
+/// gameplay is silent — the main theme is reserved for menus.
 class BgmScheduler {
-  static const String _mainTheme = 'bgm/bgm_main_theme.m4a';
-
-  /// Pool of gameplay tracks. Originally mapped 1:1 to hours of the day —
-  /// the file names persist, but the hour mapping is gone; they're just
-  /// 24 ambient loops we shuffle through.
-  static const List<String> _gameplayTracks = [
-    'bgm/bgm_hour_00.m4a',
-    'bgm/bgm_hour_01.m4a',
-    'bgm/bgm_hour_02.m4a',
-    'bgm/bgm_hour_03.m4a',
-    'bgm/bgm_hour_04.m4a',
-    'bgm/bgm_hour_05.m4a',
-    'bgm/bgm_hour_06.m4a',
-    'bgm/bgm_hour_07.m4a',
-    'bgm/bgm_hour_08.m4a',
-    'bgm/bgm_hour_09.m4a',
-    'bgm/bgm_hour_10.m4a',
-    'bgm/bgm_hour_11.m4a',
-    'bgm/bgm_hour_12.m4a',
-    'bgm/bgm_hour_13.m4a',
-    'bgm/bgm_hour_14.m4a',
-    'bgm/bgm_hour_15.m4a',
-    'bgm/bgm_hour_16.m4a',
-    'bgm/bgm_hour_17.m4a',
-    'bgm/bgm_hour_18.m4a',
-    'bgm/bgm_hour_19.m4a',
-    'bgm/bgm_hour_20.m4a',
-    'bgm/bgm_hour_21.m4a',
-    'bgm/bgm_hour_22.m4a',
-    'bgm/bgm_hour_23.m4a',
-  ];
+  /// Bundled main-theme identifier and source. Always playable, no download
+  /// required. Plays on menus only — gameplay without a music pack installed
+  /// stays silent.
+  static const String mainThemeId = 'bgm/bgm_main_theme.m4a';
+  static final Source _mainThemeSource = AssetSource(mainThemeId);
 
   /// Minimum time between biome-driven rerolls. Without this, logging in a
   /// few steps from a biome edge — or crossing two narrow zones back to
@@ -52,30 +30,61 @@ class BgmScheduler {
   final BgmService service;
   final Random _random;
   StreamSubscription<String>? _completeSub;
-  String? _currentGameplayTrack;
+
+  List<ResolvedTrack> _catalog = const [];
+  ResolvedTrack? _currentGameplayTrack;
+  BiomeType? _currentBiome;
   DateTime? _lastSwapAt;
   bool _inGameplay = false;
 
   BgmScheduler({required this.service, Random? random})
       : _random = random ?? Random() {
-    if (kDebugMode) unawaited(_verifyAssets());
     _completeSub = service.onTrackComplete.listen((_) {
       if (_inGameplay) _rollNextTrack();
     });
   }
 
+  /// Replace the gameplay catalog. Called by the Riverpod wiring whenever
+  /// the installed music packs change.
+  ///
+  /// In gameplay we're conservative about yanking the playing track — letting
+  /// it finish naturally feels less disruptive than a hard cut on every pack
+  /// swap. But two cases force a reroll:
+  ///   1. The currently-playing track was just removed (pack uninstalled
+  ///      mid-gameplay) — its file is gone from disk, so anything that
+  ///      retries playback (volume unmute, app resume) would fail silently.
+  ///   2. We were previously stuck on the main-theme fallback because the
+  ///      catalog was empty and now it isn't — the user just installed a
+  ///      pack mid-gameplay and would expect to hear it.
+  void setCatalog(List<ResolvedTrack> tracks) {
+    final wasEmpty = _catalog.isEmpty;
+    _catalog = tracks;
+    if (!_inGameplay) return;
+
+    final cur = _currentGameplayTrack;
+    if (cur != null) {
+      final stillPresent =
+          tracks.any((t) => t.identifier == cur.identifier);
+      if (!stillPresent) _rollNextTrack();
+      return;
+    }
+    // No gameplay track was active (we were on the main-theme fallback) —
+    // if a pack just appeared, kick off a real gameplay roll.
+    if (wasEmpty && tracks.isNotEmpty) _rollNextTrack();
+  }
+
   /// Play the menu/title theme (looping). Clears the gameplay track so the
-  /// next /game entry picks fresh — keeps "fresh session" semantics if the
-  /// user uninstalled the active pack and is starting over.
+  /// next `/game` entry picks fresh — keeps "fresh session" semantics if the
+  /// user uninstalled a music pack and is starting over.
   void startMain() {
     _inGameplay = false;
     _currentGameplayTrack = null;
-    service.playLoop(_mainTheme);
+    service.playLoop(mainThemeId, _mainThemeSource);
   }
 
-  /// Enter gameplay mode and pick a fresh random track to play once through.
-  /// When it ends naturally, [BgmService.onTrackComplete] fires and we roll
-  /// the next pick. Biome changes preempt this and reroll immediately.
+  /// Enter gameplay mode and pick a fresh track. With a populated catalog,
+  /// picks a one-shot from the biome-appropriate pool. With an empty catalog
+  /// (no music pack installed), gameplay is silent.
   void startGameplay() {
     _inGameplay = true;
     _rollNextTrack();
@@ -83,9 +92,13 @@ class BgmScheduler {
 
   /// Player crossed a biome boundary — reroll, the boundary is the cue.
   /// Suppressed if we just swapped within [_biomeRerollCooldown] so a fresh
-  /// track gets time to breathe before another boundary preempts it.
-  void onBiomeChanged() {
+  /// track gets time to breathe before another boundary preempts it. Also a
+  /// no-op when no music pack is installed (catalog empty) — the main theme
+  /// is already a single looping track.
+  void onBiomeChanged(BiomeType current) {
+    _currentBiome = current;
     if (!_inGameplay) return;
+    if (_catalog.isEmpty) return;
     final last = _lastSwapAt;
     if (last != null &&
         DateTime.now().difference(last) < _biomeRerollCooldown) {
@@ -99,41 +112,54 @@ class BgmScheduler {
   }
 
   void _rollNextTrack() {
+    if (_catalog.isEmpty) {
+      // No pack installed — gameplay is silent. Stop whatever was playing
+      // (likely the main theme that carried over from the menu).
+      _currentGameplayTrack = null;
+      service.stop();
+      return;
+    }
+
     final next = _pickNext();
     _currentGameplayTrack = next;
     _lastSwapAt = DateTime.now();
     service.playLoop(
-      next,
+      next.identifier,
+      next.source,
       crossfade: const Duration(seconds: 4),
       loop: false,
     );
   }
 
-  String _pickNext() {
-    if (_gameplayTracks.length == 1) return _gameplayTracks.first;
-    final pool = _currentGameplayTrack == null
-        ? _gameplayTracks
-        : _gameplayTracks.where((t) => t != _currentGameplayTrack).toList();
-    return pool[_random.nextInt(pool.length)];
-  }
+  /// Build a pool of candidates for the current biome and pick one at random,
+  /// avoiding the currently-playing track when possible. Biome-matched tracks
+  /// share the pool with fillers — abundance favors biome matches naturally
+  /// (more tagged tracks → higher pick odds), without forcing exclusivity in
+  /// biomes that have only a track or two of their own.
+  ResolvedTrack _pickNext() {
+    final biome = _currentBiome;
+    final matched = biome == null
+        ? const <ResolvedTrack>[]
+        : _catalog
+            .where((t) => t.info.biomes.contains(biome.name))
+            .toList(growable: false);
+    final fillers = _catalog
+        .where((t) => t.info.biomes.isEmpty)
+        .toList(growable: false);
 
-  /// Debug-only sanity check that every track path in this file is actually
-  /// declared in pubspec.yaml and present on disk. The `_gameplayTracks`
-  /// list and the asset bundle have to stay in sync by hand; without this,
-  /// a typo or missing file only surfaces as silent runtime audio failure.
-  Future<void> _verifyAssets() async {
-    try {
-      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-      final assets = manifest.listAssets().toSet();
-      for (final track in [..._gameplayTracks, _mainTheme]) {
-        final path = 'assets/$track';
-        if (!assets.contains(path)) {
-          debugPrint('[BgmScheduler] MISSING ASSET: $path');
-          assert(false, 'BgmScheduler missing asset: $path');
-        }
-      }
-    } catch (e, s) {
-      debugPrint('[BgmScheduler] asset verification failed: $e\n$s');
-    }
+    final pool = [...matched, ...fillers];
+    // Fall back to the full catalog if both buckets are empty (e.g. every
+    // installed track is biome-tagged and none match the current biome).
+    final effective = pool.isNotEmpty ? pool : _catalog;
+
+    if (effective.length == 1) return effective.first;
+
+    final filtered = _currentGameplayTrack == null
+        ? effective
+        : effective
+            .where((t) => t.identifier != _currentGameplayTrack!.identifier)
+            .toList(growable: false);
+    final source = filtered.isEmpty ? effective : filtered;
+    return source[_random.nextInt(source.length)];
   }
 }

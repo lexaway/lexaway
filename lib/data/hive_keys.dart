@@ -55,4 +55,7 @@ abstract final class HiveKeys {
   // TTS
   static const ttsEspeakNgData = 'tts_espeak_ng_data';
   static const ttsModels = 'tts_models';
+
+  // Music packs
+  static const musicPacks = 'music_packs';
 }

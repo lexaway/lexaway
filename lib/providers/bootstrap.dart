@@ -28,6 +28,9 @@ final packsDirProvider = Provider<String>((ref) {
 final modelsDirProvider = Provider<String>((ref) {
   throw UnimplementedError('modelsDirProvider must be overridden');
 });
+final musicDirProvider = Provider<String>((ref) {
+  throw UnimplementedError('musicDirProvider must be overridden');
+});
 final tmpDirProvider = Provider<String>((ref) {
   throw UnimplementedError('tmpDirProvider must be overridden');
 });

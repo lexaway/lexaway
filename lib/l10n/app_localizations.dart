@@ -270,6 +270,18 @@ abstract class AppLocalizations {
   /// **'Auto-play voice'**
   String get settingsAutoPlayVoice;
 
+  /// No description provided for @settingsMusicPack.
+  ///
+  /// In en, this message translates to:
+  /// **'Music Pack'**
+  String get settingsMusicPack;
+
+  /// No description provided for @musicTrackCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tracks'**
+  String musicTrackCount(int count);
+
   /// No description provided for @settingsAbout.
   ///
   /// In en, this message translates to:

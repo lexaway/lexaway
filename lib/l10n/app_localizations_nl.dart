@@ -95,6 +95,14 @@ class AppLocalizationsNl extends AppLocalizations {
   String get settingsAutoPlayVoice => 'Stem automatisch afspelen';
 
   @override
+  String get settingsMusicPack => 'Muziekpakket';
+
+  @override
+  String musicTrackCount(int count) {
+    return '$count nummers';
+  }
+
+  @override
   String get settingsAbout => 'Over';
 
   @override

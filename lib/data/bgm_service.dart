@@ -9,6 +9,12 @@ import 'package:flutter/foundation.dart';
 /// transitions can fade out the old track while the new one fades in. Volume
 /// is the product of [setVolume] (user slider) and a duck multiplier driven
 /// by [setDucking] (TTS overlay).
+///
+/// Tracks are addressed by an opaque [identifier] string plus a [Source] —
+/// the identifier is the stable key for position caching and completion
+/// events, while the Source is what audioplayers actually plays. This split
+/// lets bundled assets ([AssetSource]) and downloaded files
+/// ([DeviceFileSource]) flow through the same playback pipeline.
 class BgmService {
   static const double _duckMultiplier = 0.3;
   static const Duration _rampInterval = Duration(milliseconds: 50);
@@ -16,7 +22,8 @@ class BgmService {
   AudioPlayer _current = AudioPlayer(playerId: 'bgm_a');
   AudioPlayer _previous = AudioPlayer(playerId: 'bgm_b');
 
-  String? _currentAsset;
+  String? _currentId;
+  Source? _currentSource;
   bool _currentLoop = true;
   double _userVolume = 1.0;
   bool _ducking = false;
@@ -25,13 +32,13 @@ class BgmService {
   double _currentVol = 0;
   double _previousVol = 0;
 
-  /// Last known playback position per asset, captured whenever we crossfade
-  /// away. Lets users hop into Settings and back without losing their place
-  /// in the hourly track.
+  /// Last known playback position per track id, captured whenever we
+  /// crossfade away. Lets users hop into Settings and back without losing
+  /// their place.
   final Map<String, Duration> _positions = {};
 
   /// Serializes [playLoop] calls. Without this, two rapid invocations could
-  /// both pass the same-asset early-return and race through the swap/play
+  /// both pass the same-id early-return and race through the swap/play
   /// dance with the dual-player invariant broken.
   Future<void>? _transitionLock;
 
@@ -39,7 +46,7 @@ class BgmService {
   Timer? _rampTimer;
   Timer? _duckRampTimer;
 
-  /// Fires the asset path of a non-looping track when it reaches its natural
+  /// Fires the identifier of a non-looping track when it reaches its natural
   /// end. The scheduler uses this to pick the next gameplay track only at
   /// song boundaries, instead of cutting in mid-phrase on a timer.
   final StreamController<String> _completeCtrl =
@@ -56,15 +63,16 @@ class BgmService {
   double _effectiveVolume() =>
       (_userVolume * (_ducking ? _duckMultiplier : 1.0)).clamp(0.0, 1.0);
 
-  /// Crossfade to [asset] (relative to `assets/`, e.g. `bgm/bgm_main_theme.m4a`).
-  /// No-op if it's already the active asset. If the asset has been played
-  /// before, resumes from the saved position.
+  /// Crossfade to the track keyed by [identifier], played from [source].
+  /// No-op if it's already the active id. If the id has been played before,
+  /// resumes from the saved position.
   ///
   /// When [loop] is false, the track plays once through and emits on
   /// [onTrackComplete] when finished — letting callers chain to a follow-up
-  /// asset only at the natural end. Defaults to true for menu loops.
+  /// track only at the natural end. Defaults to true for menu loops.
   Future<void> playLoop(
-    String asset, {
+    String identifier,
+    Source source, {
     Duration crossfade = const Duration(milliseconds: 1500),
     bool loop = true,
   }) async {
@@ -74,15 +82,16 @@ class BgmService {
 
     try {
       await prev;
-      if (asset == _currentAsset) return;
+      if (identifier == _currentId) return;
 
-      final outgoingAsset = _currentAsset;
-      if (outgoingAsset != null) {
+      final outgoingId = _currentId;
+      if (outgoingId != null) {
         final pos = await _current.getCurrentPosition();
-        if (pos != null) _positions[outgoingAsset] = pos;
+        if (pos != null) _positions[outgoingId] = pos;
       }
 
-      _currentAsset = asset;
+      _currentId = identifier;
+      _currentSource = source;
       _currentLoop = loop;
       // _paused: app backgrounded — resume() will start it.
       // _userVolume == 0: user opted out of music — setVolume() will start it.
@@ -117,7 +126,7 @@ class BgmService {
       // 30s and surface as an unhandled TimeoutException. Wrap with our own
       // 5s timeout, throw the stuck player away, and retry once with a fresh
       // instance.
-      if (!await _tryPlay(_current, asset)) {
+      if (!await _tryPlay(_current, source)) {
         final stuck = _current;
         unawaited(() async {
           // stop() first so a late-arriving prepared event doesn't briefly
@@ -136,10 +145,10 @@ class BgmService {
         // bail without starting audio if so. resume()/setVolume() will
         // redo this leg.
         if (_paused || _userVolume == 0) return;
-        await _tryPlay(_current, asset);
+        await _tryPlay(_current, source);
       }
 
-      final savedPos = _positions[asset];
+      final savedPos = _positions[identifier];
       if (savedPos != null) {
         try {
           await _current
@@ -156,10 +165,10 @@ class BgmService {
       _completeSub?.cancel();
       _completeSub = null;
       if (!loop) {
-        final completedAsset = asset;
+        final completedId = identifier;
         _completeSub = _current.onPlayerComplete.listen((_) {
-          if (_currentAsset == completedAsset) {
-            _completeCtrl.add(completedAsset);
+          if (_currentId == completedId) {
+            _completeCtrl.add(completedId);
           }
         });
       }
@@ -173,7 +182,7 @@ class BgmService {
 
   /// User-facing volume (0..1). Updated live as the slider moves. A drop to
   /// zero pauses playback so we're not decoding silent audio; rising back
-  /// up off zero kicks the deferred asset back into play.
+  /// up off zero kicks the deferred track back into play.
   void setVolume(double v) {
     final newVol = v.clamp(0.0, 1.0);
     final wasZero = _userVolume == 0;
@@ -184,18 +193,19 @@ class BgmService {
       _duckRampTimer?.cancel();
       _currentVol = 0;
       _previousVol = 0;
-      if (_currentAsset != null) {
+      if (_currentId != null) {
         unawaited(_current.pause());
         unawaited(_previous.pause());
       }
       return;
     }
     if (!isZero && wasZero) {
-      final asset = _currentAsset;
-      if (asset != null && !_paused) {
+      final id = _currentId;
+      final source = _currentSource;
+      if (id != null && source != null && !_paused) {
         final wasLoop = _currentLoop;
-        _currentAsset = null; // force playLoop's same-asset guard to relent
-        unawaited(playLoop(asset, loop: wasLoop));
+        _currentId = null; // force playLoop's same-id guard to relent
+        unawaited(playLoop(id, source, loop: wasLoop));
       }
       return;
     }
@@ -208,7 +218,7 @@ class BgmService {
   void setDucking(bool ducking) {
     if (_ducking == ducking) return;
     _ducking = ducking;
-    if (_currentAsset == null || _paused || _userVolume == 0) return;
+    if (_currentId == null || _paused || _userVolume == 0) return;
     if (_rampTimer != null && _rampTimer!.isActive) return;
     if (ducking) {
       _duckRampTimer?.cancel();
@@ -217,6 +227,22 @@ class BgmService {
     } else {
       _runDuckRamp();
     }
+  }
+
+  /// Stop playback and clear the active track. Unlike [pause], this forgets
+  /// what was playing so [resume] won't restart it — used when the scheduler
+  /// wants gameplay to be silent (no music pack installed).
+  Future<void> stop() async {
+    _rampTimer?.cancel();
+    _duckRampTimer?.cancel();
+    await _completeSub?.cancel();
+    _completeSub = null;
+    _currentId = null;
+    _currentSource = null;
+    _currentVol = 0;
+    _previousVol = 0;
+    await _current.stop();
+    await _previous.stop();
   }
 
   /// Pause both players. Idempotent. Used on app backgrounding.
@@ -229,22 +255,23 @@ class BgmService {
     await _previous.pause();
   }
 
-  /// Resume the active asset. If `playLoop` was called while paused, this
+  /// Resume the active track. If `playLoop` was called while paused, this
   /// kicks off the deferred play instead. A pause taken mid-crossfade won't
   /// resume the outgoing track — it stays silent and gets cleaned up on the
   /// next [playLoop].
   Future<void> resume() async {
     if (!_paused) return;
     _paused = false;
-    final asset = _currentAsset;
-    if (asset == null) return;
+    final id = _currentId;
+    final source = _currentSource;
+    if (id == null || source == null) return;
     if (_userVolume == 0) return; // setVolume() will start it on unmute
 
     if (_currentVol == 0 && _previousVol == 0) {
       // We never actually started — playLoop deferred during pause.
       final wasLoop = _currentLoop;
-      _currentAsset = null; // force playLoop to do its thing
-      await playLoop(asset, loop: wasLoop);
+      _currentId = null; // force playLoop to do its thing
+      await playLoop(id, source, loop: wasLoop);
     } else {
       _currentVol = _effectiveVolume();
       await _current.setVolume(_currentVol);
@@ -261,16 +288,14 @@ class BgmService {
     await _previous.dispose();
   }
 
-  Future<bool> _tryPlay(AudioPlayer player, String asset) async {
+  Future<bool> _tryPlay(AudioPlayer player, Source source) async {
     try {
-      await player
-          .play(AssetSource(asset))
-          .timeout(const Duration(seconds: 5));
+      await player.play(source).timeout(const Duration(seconds: 5));
       return true;
     } on TimeoutException {
       return false;
     } catch (e, s) {
-      debugPrint('[BgmService] play("$asset") failed: $e\n$s');
+      debugPrint('[BgmService] play failed: $e\n$s');
       return false;
     }
   }
@@ -305,7 +330,7 @@ class BgmService {
   }
 
   Future<void> _pushVolumeIfIdle() async {
-    if (_currentAsset == null || _paused) return;
+    if (_currentId == null || _paused) return;
     if (_rampTimer != null && _rampTimer!.isActive) return;
     if (_duckRampTimer != null && _duckRampTimer!.isActive) return;
     _currentVol = _effectiveVolume();

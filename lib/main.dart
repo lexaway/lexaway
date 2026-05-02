@@ -95,6 +95,7 @@ void main() async {
         hiveBoxProvider.overrideWithValue(box),
         packsDirProvider.overrideWithValue('${docsDir.path}/packs'),
         modelsDirProvider.overrideWithValue('${supportDir.path}/tts_models'),
+        musicDirProvider.overrideWithValue('${docsDir.path}/music'),
         tmpDirProvider.overrideWithValue(tmpDir.path),
       ],
       child: const LexawayApp(),

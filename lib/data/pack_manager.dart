@@ -9,6 +9,7 @@ import 'package:sqlite_async/sqlite_async.dart';
 import 'content_urls.dart';
 import 'download_helper.dart';
 import 'hive_keys.dart';
+import 'music_manager.dart';
 import 'tts_manager.dart';
 
 /// Pack IDs are `<fromLang>-<lang>`. Both halves are ISO 639-3 codes today
@@ -157,10 +158,17 @@ class Manifest {
   /// fall back to the baseline. Empty list = "this lang has no voices."
   final Map<String, List<TtsModelInfo>> voices;
 
+  /// Optional remote-driven music pack catalog. Each entry is one downloadable
+  /// pack with per-track biome metadata. Overrides [kBaselineMusicCatalog]
+  /// wholesale when present (no per-pack merge — manifest is the source of
+  /// truth once it loads).
+  final List<MusicPackInfo> music;
+
   const Manifest({
     required this.schemaVersion,
     required this.packs,
     this.voices = const {},
+    this.music = const [],
   });
 
   List<PackInfo> packsFor(String fromLang) =>
@@ -172,6 +180,7 @@ class Manifest {
         .map((p) => PackInfo.fromJson(p as Map<String, dynamic>))
         .toList(),
     voices: _parseVoices(json['voices']),
+    music: _parseMusic(json['music']),
   );
 
   static Map<String, List<TtsModelInfo>> _parseVoices(Object? raw) {
@@ -197,6 +206,24 @@ class Manifest {
       }
       out[lang] = voices;
     });
+    return out;
+  }
+
+  static List<MusicPackInfo> _parseMusic(Object? raw) {
+    if (raw is! List) return const [];
+    final out = <MusicPackInfo>[];
+    for (final p in raw) {
+      if (p is! Map) {
+        if (kDebugMode) debugPrint('Manifest music: non-map entry $p');
+        continue;
+      }
+      final info = MusicPackInfo.tryFromJson(Map<String, dynamic>.from(p));
+      if (info == null) {
+        if (kDebugMode) debugPrint('Manifest music: malformed $p');
+        continue;
+      }
+      out.add(info);
+    }
     return out;
   }
 }

@@ -27,6 +27,13 @@
   "settingsGameplay": "Jeu",
   "settingsHaptics": "Haptique",
   "settingsAutoPlayVoice": "Lecture vocale automatique",
+  "settingsMusicPack": "Pack de musique",
+  "musicTrackCount": "{count} pistes",
+  "@musicTrackCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "settingsAbout": "À propos",
   "settingsFont": "Police",
   "attributions": "Attributions",

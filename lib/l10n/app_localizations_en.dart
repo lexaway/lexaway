@@ -95,6 +95,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAutoPlayVoice => 'Auto-play voice';
 
   @override
+  String get settingsMusicPack => 'Music Pack';
+
+  @override
+  String musicTrackCount(int count) {
+    return '$count tracks';
+  }
+
+  @override
   String get settingsAbout => 'About';
 
   @override
