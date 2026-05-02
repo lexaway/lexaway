@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 
-import 'package:archive/archive.dart';
 import 'package:hive_ce/hive_ce.dart';
 
 import 'content_urls.dart';
@@ -145,7 +143,7 @@ class TtsManager {
       final tmpPath = '$dir/espeak-ng-data.tar.bz2.tmp';
       final url = await ttsUrl('espeak-ng-data.tar.bz2');
       await downloadToFile(url, tmpPath);
-      await _extractInIsolate(tmpPath, dir);
+      await extractTarBz2InIsolate(tmpPath, dir);
       await File(tmpPath).delete();
 
       _box.put(HiveKeys.ttsEspeakNgData, true);
@@ -244,7 +242,7 @@ class TtsManager {
       final url = await ttsUrl('${info.archiveName}.tar.bz2');
       await downloadToFile(url, tmpPath, onProgress: onProgress);
       onExtracting?.call();
-      await _extractInIsolate(tmpPath, dir);
+      await extractTarBz2InIsolate(tmpPath, dir);
       await File(tmpPath).delete();
     } catch (_) {
       // Clean up partial extraction
@@ -330,27 +328,4 @@ class TtsManager {
     return Map<String, dynamic>.from(raw as Map);
   }
 
-  /// Decompress + extract tar.bz2 in a background isolate to avoid
-  /// blocking the UI and to keep peak memory off the main isolate.
-  static Future<void> _extractInIsolate(
-    String archivePath,
-    String destinationDir,
-  ) {
-    return Isolate.run(() {
-      final bytes = File(archivePath).readAsBytesSync();
-      final decompressed = BZip2Decoder().decodeBytes(bytes);
-      final archive = TarDecoder().decodeBytes(decompressed);
-
-      for (final file in archive) {
-        final path = '$destinationDir/${file.name}';
-        if (file.isFile) {
-          final outFile = File(path);
-          outFile.createSync(recursive: true);
-          outFile.writeAsBytesSync(file.content as List<int>);
-        } else {
-          Directory(path).createSync(recursive: true);
-        }
-      }
-    });
-  }
 }

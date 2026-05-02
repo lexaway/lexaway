@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 
-import 'package:archive/archive.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive_ce.dart';
@@ -191,7 +189,7 @@ class MusicManager {
       onExtracting?.call();
       // Tarball entries are flat (top-level slug.m4a); extract into the
       // pack-specific directory so [packDir]/[installedTracks] can find them.
-      await _extractInIsolate(tmpPath, '$musicDir/${info.archiveName}');
+      await extractTarBz2InIsolate(tmpPath, '$musicDir/${info.archiveName}');
       await File(tmpPath).delete();
     } catch (_) {
       final partial = Directory('$musicDir/${info.archiveName}');
@@ -258,27 +256,4 @@ class MusicManager {
     return Map<String, dynamic>.from(raw as Map);
   }
 
-  /// Decompress + extract tar.bz2 in a background isolate so the UI doesn't
-  /// hitch on the bzip2 decode (a music pack is tens of MB).
-  static Future<void> _extractInIsolate(
-    String archivePath,
-    String destinationDir,
-  ) {
-    return Isolate.run(() {
-      final bytes = File(archivePath).readAsBytesSync();
-      final decompressed = BZip2Decoder().decodeBytes(bytes);
-      final archive = TarDecoder().decodeBytes(decompressed);
-
-      for (final file in archive) {
-        final path = '$destinationDir/${file.name}';
-        if (file.isFile) {
-          final outFile = File(path);
-          outFile.createSync(recursive: true);
-          outFile.writeAsBytesSync(file.content as List<int>);
-        } else {
-          Directory(path).createSync(recursive: true);
-        }
-      }
-    });
-  }
 }

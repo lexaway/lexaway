@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:isolate';
 
+import 'package:archive/archive.dart';
 import 'package:http/http.dart' as http;
 
 /// Stream an HTTP response directly to a file on disk, with optional
@@ -44,4 +46,28 @@ Future<void> downloadToFile(
   } finally {
     client.close();
   }
+}
+
+/// Decompress + extract a tar.bz2 archive in a background isolate so the UI
+/// doesn't hitch on bzip2 decode and peak memory stays off the main isolate.
+Future<void> extractTarBz2InIsolate(
+  String archivePath,
+  String destinationDir,
+) {
+  return Isolate.run(() {
+    final bytes = File(archivePath).readAsBytesSync();
+    final decompressed = BZip2Decoder().decodeBytes(bytes);
+    final archive = TarDecoder().decodeBytes(decompressed);
+
+    for (final file in archive) {
+      final path = '$destinationDir/${file.name}';
+      if (file.isFile) {
+        final outFile = File(path);
+        outFile.createSync(recursive: true);
+        outFile.writeAsBytesSync(file.content as List<int>);
+      } else {
+        Directory(path).createSync(recursive: true);
+      }
+    }
+  });
 }
