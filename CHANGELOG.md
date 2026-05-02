@@ -1,4 +1,25 @@
 ### 🇬🇧 English
+**1.7.0** — Snow drifts through the winter biome — sometimes a light flurry, sometimes a thick squall.
+
+### 🇫🇷 Français
+**1.7.0** — La neige tombe maintenant dans le biome hivernal — parfois quelques flocons, parfois une tempête dense.
+
+### 🇪🇸 Español
+**1.7.0** — Ahora cae nieve en el bioma invernal — a veces una ligera nevada, a veces una espesa tormenta.
+
+### 🇩🇪 Deutsch
+**1.7.0** — Im Winterbiom rieselt jetzt Schnee — mal ein leichtes Gestöber, mal ein dichter Schneesturm.
+
+### 🇮🇹 Italiano
+**1.7.0** — Ora la neve cade nel bioma invernale — a volte qualche fiocco, a volte una fitta bufera.
+
+### 🇵🇹 Português
+**1.7.0** — Agora cai neve pelo bioma invernal — às vezes uns flocos leves, às vezes uma nevasca densa.
+
+### 🇳🇱 Nederlands
+**1.7.0** — Sneeuw dwarrelt nu door het winterbiome — soms een lichte vlaag, soms een dichte storm.
+
+### 🇬🇧 English
 **1.6.0** — Dutch is now available.
 
 ### 🇫🇷 Français
