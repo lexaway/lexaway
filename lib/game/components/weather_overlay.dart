@@ -7,6 +7,7 @@ import 'package:flame/components.dart';
 import '../events.dart';
 import '../lexaway_game.dart';
 import '../world/biome_registry.dart';
+import '../world/noise.dart';
 import '../world/weather_def.dart';
 import '../world/world_map.dart';
 
@@ -41,11 +42,17 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
 
   WeatherDef? _activeDef;
   ui.Image? _activeImage;
+  Noise1D? _intensityNoise;
   double _currentOpacity = 0;
   double _targetOpacity = 0;
   double _frameTimer = 0;
   int _sharedFrame = 0;
   double _driftClock = 0;
+  double _intensity = 1;
+  // Last-seen world scroll, so each frame we can shift particles by the
+  // delta — keeps flakes anchored to world space (they slide leftward as the
+  // dino runs forward), not to the screen.
+  double _lastScrollOffset = 0;
 
   StreamSubscription<GameEvent>? _sub;
 
@@ -63,9 +70,13 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
     if (def != null) {
       _activate(def, _atlases[initialBiome]);
       _seedPrewarmed();
-      // Cold-start with weather visible immediately — skip the fade.
+      // Cold-start with weather visible immediately — skip the fade. Both
+      // current and target must be set; otherwise the fade tick in update()
+      // would immediately walk opacity down toward the default-zero target.
       _currentOpacity = 1;
+      _targetOpacity = 1;
     }
+    _lastScrollOffset = game.ground.scrollOffset;
 
     _sub = game.events.on<BiomeChanged>().listen(_onBiomeChanged);
   }
@@ -101,6 +112,9 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
   void _activate(WeatherDef def, ui.Image? image) {
     _activeDef = def;
     _activeImage = image;
+    _intensityNoise = def.intensityNoiseScale > 0
+        ? Noise1D(game.worldMap.seed + def.intensitySeedOffset)
+        : null;
     _resizePool(def.particleCount);
   }
 
@@ -110,7 +124,17 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
       _particles.removeRange(count, _particles.length);
     } else {
       while (_particles.length < count) {
-        _particles.add(_Particle());
+        // Stable random visibility threshold per particle. Intensity gates
+        // which flakes render — low thresholds appear even in light flurries,
+        // high-threshold ones only in heavy squalls.
+        //
+        // Skewed toward zero with `pow(u, 1.8)` because value noise rarely
+        // peaks near 1.0 — uniform thresholds would leave a long tail of
+        // particles that never render. Skewing keeps the pool actually
+        // useful while preserving the rare-flake feel for the high tail.
+        final u = _rng.nextDouble();
+        _particles
+            .add(_Particle()..visibilityThreshold = pow(u, 1.8).toDouble());
       }
     }
   }
@@ -137,7 +161,13 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
     final def = _activeDef!;
     p.x = _rng.nextDouble() * size.x;
     if (fullHeight) {
-      p.y = _rng.nextDouble() * size.y;
+      // Spread across the *full* lifecycle — from staged above the screen
+      // all the way down to ground level. If we only seeded the visible
+      // range, every flake would land within a few seconds and then there'd
+      // be a gap until the next wave fell back in from above.
+      final groundTop = size.y * LexawayGame.groundLevel;
+      final spawnTop = -size.y * 0.5;
+      p.y = spawnTop + _rng.nextDouble() * (groundTop - spawnTop);
     } else {
       // Stagger above the top edge so they don't all enter at the same instant.
       p.y = -_rng.nextDouble() * size.y * 0.5 - def.frameHeight * def.scale;
@@ -172,6 +202,10 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
     final scale = LexawayGame.pixelScale;
     final size = game.size;
     final spriteH = def.frameHeight * def.scale * scale;
+    // Snow lands on top of the platform — recycle the moment a flake's
+    // bottom edge crosses ground level, so nothing renders below the dino's
+    // feet line.
+    final landY = size.y * LexawayGame.groundLevel - spriteH;
 
     _driftClock += dt;
     _frameTimer += dt;
@@ -181,21 +215,39 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
       _frameTimer -= advance * def.frameDuration;
     }
 
+    // Track scroll delta so flakes drift with world space, not screen
+    // space. Read once and reuse below.
+    final scrollOffset = game.ground.scrollOffset;
+    final scrollDelta = scrollOffset - _lastScrollOffset;
+    _lastScrollOffset = scrollOffset;
+
+    // Sample intensity from world position so weather varies as you walk.
+    // Sample is stable per scroll offset — pause anywhere and it sits still.
+    if (_intensityNoise != null) {
+      final tileX = scrollOffset / (16 * scale);
+      final n = _intensityNoise!.sample(tileX, scale: def.intensityNoiseScale);
+      _intensity = def.minIntensity + n * (def.maxIntensity - def.minIntensity);
+    } else {
+      _intensity = def.maxIntensity;
+    }
+
     for (final p in _particles) {
       p.y += p.fallSpeed * scale * dt;
-      // Pure sin-wave horizontal sway. Multiplied by dt so amplitude reads as
-      // px/sec at peak — feels gentle at small values.
-      p.x += sin(_driftClock * def.driftFrequency + p.phase) * p.drift * dt;
+      // Pure sin-wave horizontal sway plus the world-scroll delta so flakes
+      // appear to live in world coordinates and slide past as the dino runs.
+      p.x += sin(_driftClock * def.driftFrequency + p.phase) * p.drift * dt
+          - scrollDelta;
 
-      if (p.y > size.y) {
+      if (p.y > landY) {
         _respawn(p, size, fullHeight: false);
+        continue;
       }
 
-      // Wrap horizontally so wind-blown flakes don't permanently leave the screen.
-      if (p.x < -spriteH) {
-        p.x += size.x + spriteH * 2;
-      } else if (p.x > size.x + spriteH) {
-        p.x -= size.x + spriteH * 2;
+      // Recycle off-screen flakes from the top — wrapping horizontally would
+      // teleport them across at the same Y, which reads as a glitch when
+      // scroll is fast. A fresh spawn looks like the next flake drifting in.
+      if (p.x < -spriteH || p.x > size.x + spriteH) {
+        _respawn(p, size, fullHeight: false);
       }
     }
   }
@@ -212,6 +264,12 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
     final spriteH = def.frameHeight * def.scale * scale;
 
     for (final p in _particles) {
+      // Smooth visibility fade across the threshold — no hard pop-in as
+      // intensity rises through a particle's threshold.
+      final visibility = ((_intensity - p.visibilityThreshold) * 4)
+          .clamp(0.0, 1.0);
+      if (visibility <= 0) continue;
+
       final frame = (p.frameOffset + _sharedFrame) % def.frameCount;
       final src = ui.Rect.fromLTWH(
         frame * def.frameWidth,
@@ -223,7 +281,8 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
       final px = (p.x / scale).round() * scale;
       final py = (p.y / scale).round() * scale;
       final dst = ui.Rect.fromLTWH(px, py, spriteW, spriteH);
-      final alpha = (p.opacity * _currentOpacity * 255).round();
+      final alpha =
+          (p.opacity * _currentOpacity * visibility * 255).round();
       _paint.color = ui.Color.fromARGB(alpha, 255, 255, 255);
       canvas.drawImageRect(image, src, dst, _paint);
     }
@@ -244,4 +303,5 @@ class _Particle {
   double phase = 0;
   double opacity = 1;
   int frameOffset = 0;
+  double visibilityThreshold = 0;
 }
