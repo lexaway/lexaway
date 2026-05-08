@@ -277,7 +277,11 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
             ),
             if (_answerState == _AnswerState.wrong)
               Positioned(
-                bottom: AppSpacing.sm,
+                // The panel deliberately bleeds 24px below the screen edge for
+                // the decorative frame, and on gesture-nav devices Android adds
+                // another inset on top of that. Lift the FAB by both so it
+                // clears the system handle.
+                bottom: AppSpacing.sm + MediaQuery.of(context).padding.bottom,
                 right: 0,
                 child: GestureDetector(
                   onTap: _advance,

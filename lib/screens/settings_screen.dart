@@ -52,7 +52,12 @@ class SettingsScreen extends ConsumerWidget {
               ),
               Expanded(
                 child: Container(
-                  margin: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
+                  margin: EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.md,
+                    AppSpacing.lg,
+                    AppSpacing.lg + MediaQuery.of(context).padding.bottom,
+                  ),
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
                     vertical: AppSpacing.md,
