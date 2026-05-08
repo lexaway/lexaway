@@ -2,6 +2,7 @@
   "@@locale": "de",
   "packManagerTitle": "Sprachpakete",
   "packManagerSubtitle": "Lade ein Paket herunter, um loszulegen",
+  "manifestUnavailable": "Der Paketserver ist nicht erreichbar. Prüfe deine Verbindung und versuch es erneut.",
   "retry": "Erneut versuchen",
   "downloadFailed": "Download fehlgeschlagen: {error}",
   "sizeMB": "{size} MB",

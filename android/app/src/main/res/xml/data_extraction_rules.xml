@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Backup config for Android 12+ (cloud-backup) and device-to-device transfer.
+  We let auto-backup carry small things (Hive box with progress, settings,
+  shared prefs) but exclude big re-downloadable assets — pack DBs, TTS voice
+  models, and music — so users don't burn Drive quota and restores stay fast.
+
+  Path layout on Android:
+    file domain = getFilesDir() = /data/data/<pkg>/files
+      ├── app_flutter/                 (getApplicationDocumentsDirectory)
+      │   ├── packs/                   ← excluded, redownloadable
+      │   ├── music/                   ← excluded, redownloadable
+      │   └── app.hive*                ← BACKED UP (small, has progress)
+      └── tts_models/                  ← excluded, redownloadable
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="app_flutter/packs/" />
+        <exclude domain="file" path="app_flutter/music/" />
+        <exclude domain="file" path="tts_models/" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="app_flutter/packs/" />
+        <exclude domain="file" path="app_flutter/music/" />
+        <exclude domain="file" path="tts_models/" />
+    </device-transfer>
+</data-extraction-rules>

@@ -228,6 +228,15 @@ class Manifest {
   }
 }
 
+/// Thrown by [PackManager.fetchManifest] when both network and cache are
+/// unavailable. Surfaced to the UI so it can show a localized message rather
+/// than the raw exception text.
+class ManifestUnavailableException implements Exception {
+  const ManifestUnavailableException();
+  @override
+  String toString() => 'ManifestUnavailableException';
+}
+
 class PackManager {
   final Box _box;
   final String packsDir;
@@ -257,7 +266,7 @@ class PackManager {
       }
     }
 
-    throw Exception('No manifest available (network failed, no cache)');
+    throw const ManifestUnavailableException();
   }
 
   Future<void> downloadPack(

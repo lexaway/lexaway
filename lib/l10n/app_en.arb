@@ -2,6 +2,7 @@
   "@@locale": "en",
   "packManagerTitle": "Language Packs",
   "packManagerSubtitle": "Download a pack to start learning",
+  "manifestUnavailable": "Couldn't reach the pack server. Check your connection and try again.",
   "retry": "Retry",
   "downloadFailed": "Download failed: {error}",
   "@downloadFailed": {

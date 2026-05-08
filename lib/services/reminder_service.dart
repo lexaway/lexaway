@@ -53,7 +53,7 @@ class ReminderService {
       // would be nice if we wire one up.
     }
 
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidInit = AndroidInitializationSettings('@drawable/ic_notification');
     const iosInit = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -138,6 +138,7 @@ class ReminderService {
       channelDescription: _androidChannelDescription,
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
+      icon: '@drawable/ic_notification',
     );
     const ios = DarwinNotificationDetails();
 

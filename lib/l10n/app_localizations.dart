@@ -120,6 +120,12 @@ abstract class AppLocalizations {
   /// **'Download a pack to start learning'**
   String get packManagerSubtitle;
 
+  /// No description provided for @manifestUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach the pack server. Check your connection and try again.'**
+  String get manifestUnavailable;
+
   /// No description provided for @retry.
   ///
   /// In en, this message translates to:

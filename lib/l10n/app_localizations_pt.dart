@@ -15,6 +15,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get packManagerSubtitle => 'Baixe um pacote para começar a aprender';
 
   @override
+  String get manifestUnavailable =>
+      'Não foi possível conectar ao servidor de pacotes. Verifique sua conexão e tente novamente.';
+
+  @override
   String get retry => 'Tentar novamente';
 
   @override

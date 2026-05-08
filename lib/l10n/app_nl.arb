@@ -2,6 +2,7 @@
   "@@locale": "nl",
   "packManagerTitle": "Taalpakketten",
   "packManagerSubtitle": "Download een pakket om te beginnen",
+  "manifestUnavailable": "Kan de pakketserver niet bereiken. Controleer je verbinding en probeer het opnieuw.",
   "retry": "Opnieuw proberen",
   "downloadFailed": "Download mislukt: {error}",
   "sizeMB": "{size} MB",

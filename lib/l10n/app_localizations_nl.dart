@@ -15,6 +15,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get packManagerSubtitle => 'Download een pakket om te beginnen';
 
   @override
+  String get manifestUnavailable =>
+      'Kan de pakketserver niet bereiken. Controleer je verbinding en probeer het opnieuw.';
+
+  @override
   String get retry => 'Opnieuw proberen';
 
   @override

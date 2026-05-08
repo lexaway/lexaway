@@ -15,6 +15,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get packManagerSubtitle => 'Download a pack to start learning';
 
   @override
+  String get manifestUnavailable =>
+      'Couldn\'t reach the pack server. Check your connection and try again.';
+
+  @override
   String get retry => 'Retry';
 
   @override

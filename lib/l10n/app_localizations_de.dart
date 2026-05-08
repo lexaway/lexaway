@@ -15,6 +15,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get packManagerSubtitle => 'Lade ein Paket herunter, um loszulegen';
 
   @override
+  String get manifestUnavailable =>
+      'Der Paketserver ist nicht erreichbar. Prüfe deine Verbindung und versuch es erneut.';
+
+  @override
   String get retry => 'Erneut versuchen';
 
   @override

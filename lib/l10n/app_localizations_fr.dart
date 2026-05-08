@@ -16,6 +16,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Télécharge un paquet pour commencer à apprendre';
 
   @override
+  String get manifestUnavailable =>
+      'Impossible de joindre le serveur de paquets. Vérifie ta connexion et réessaie.';
+
+  @override
   String get retry => 'Réessayer';
 
   @override

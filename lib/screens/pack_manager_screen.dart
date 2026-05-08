@@ -176,8 +176,12 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     super.initState();
     ref.listenManual(manifestProvider, (_, next) {
       if (next.hasError && mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        final message = next.error is ManifestUnavailableException
+            ? l10n.manifestUnavailable
+            : '${next.error}';
         _showError(
-          '${next.error}',
+          message,
           onRetry: () => ref.invalidate(manifestProvider),
         );
       }
@@ -255,7 +259,13 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                       color: AppColors.textTertiary,
                     ),
                   ),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (err, __) => _ManifestErrorView(
+                    message: err is ManifestUnavailableException
+                        ? AppLocalizations.of(context)!.manifestUnavailable
+                        : '$err',
+                    retryLabel: AppLocalizations.of(context)!.retry,
+                    onRetry: () => ref.invalidate(manifestProvider),
+                  ),
                   data: (m) {
                     // Sort: active pack first, then other downloaded packs,
                     // then undownloaded. Tie-break on the manifest index so
@@ -353,6 +363,49 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ManifestErrorView extends StatelessWidget {
+  const _ManifestErrorView({
+    required this.message,
+    required this.retryLabel,
+    required this.onRetry,
+  });
+
+  final String message;
+  final String retryLabel;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.cloud_off,
+              size: 48,
+              color: AppColors.textTertiary,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: Text(retryLabel),
+            ),
+          ],
+        ),
       ),
     );
   }

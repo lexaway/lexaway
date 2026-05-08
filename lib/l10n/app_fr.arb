@@ -2,6 +2,7 @@
   "@@locale": "fr",
   "packManagerTitle": "Paquets de langues",
   "packManagerSubtitle": "Télécharge un paquet pour commencer à apprendre",
+  "manifestUnavailable": "Impossible de joindre le serveur de paquets. Vérifie ta connexion et réessaie.",
   "retry": "Réessayer",
   "downloadFailed": "Échec du téléchargement : {error}",
   "sizeMB": "{size} Mo",
