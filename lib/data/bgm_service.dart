@@ -41,9 +41,10 @@ class BgmService {
   static const int _positionsCap = 128;
   final Map<String, Duration> _positions = {};
 
-  /// Serializes [playLoop] calls. Without this, two rapid invocations could
-  /// both pass the same-id early-return and race through the swap/play
-  /// dance with the dual-player invariant broken.
+  /// Serializes [playLoop] and [stop] calls. Without this, an in-flight
+  /// stop() — which awaits stop() on the same AudioPlayer instances that
+  /// playLoop() is about to swap and play on — can race a follow-up
+  /// playLoop() and leave the new player muted/stuck.
   Future<void>? _transitionLock;
 
   /// True between an unmute kick being scheduled and its [playLoop]
@@ -253,16 +254,25 @@ class BgmService {
   /// what was playing so [resume] won't restart it — used when the scheduler
   /// wants gameplay to be silent (no music pack installed).
   Future<void> stop() async {
-    _rampTimer?.cancel();
-    _duckRampTimer?.cancel();
-    await _completeSub?.cancel();
-    _completeSub = null;
-    _currentId = null;
-    _currentSource = null;
-    _currentVol = 0;
-    _previousVol = 0;
-    await _current.stop();
-    await _previous.stop();
+    final prev = _transitionLock;
+    final completer = Completer<void>();
+    _transitionLock = completer.future;
+    try {
+      await prev;
+      _rampTimer?.cancel();
+      _duckRampTimer?.cancel();
+      await _completeSub?.cancel();
+      _completeSub = null;
+      _currentId = null;
+      _currentSource = null;
+      _currentVol = 0;
+      _previousVol = 0;
+      await _current.stop();
+      await _previous.stop();
+    } finally {
+      completer.complete();
+      if (_transitionLock == completer.future) _transitionLock = null;
+    }
   }
 
   /// Drop saved positions for any track id starting with [prefix]. Called

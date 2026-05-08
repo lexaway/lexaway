@@ -53,11 +53,10 @@ class BgmScheduler {
   ///   1. The currently-playing track was just removed (pack uninstalled
   ///      mid-gameplay) — its file is gone from disk, so anything that
   ///      retries playback (volume unmute, app resume) would fail silently.
-  ///   2. We were previously stuck on the main-theme fallback because the
-  ///      catalog was empty and now it isn't — the user just installed a
-  ///      pack mid-gameplay and would expect to hear it.
+  ///   2. Nothing is currently playing in gameplay and the catalog is now
+  ///      non-empty — covers the user just installed a pack mid-gameplay,
+  ///      and any other "no track + tracks available" state self-heals.
   void setCatalog(List<ResolvedTrack> tracks) {
-    final wasEmpty = _catalog.isEmpty;
     _catalog = tracks;
     if (!_inGameplay) return;
 
@@ -68,9 +67,7 @@ class BgmScheduler {
       if (!stillPresent) _rollNextTrack();
       return;
     }
-    // No gameplay track was active (we were on the main-theme fallback) —
-    // if a pack just appeared, kick off a real gameplay roll.
-    if (wasEmpty && tracks.isNotEmpty) _rollNextTrack();
+    if (tracks.isNotEmpty) _rollNextTrack();
   }
 
   /// Play the menu/title theme (looping). Clears the gameplay track so the
