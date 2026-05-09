@@ -7,12 +7,14 @@ class WorldState {
   final int extensions;
   final double scrollOffset;
   final List<int> collectedCoins;
+  final List<int> usedClawMachines;
 
   const WorldState({
     required this.seed,
     required this.extensions,
     required this.scrollOffset,
     required this.collectedCoins,
+    this.usedClawMachines = const [],
   });
 
   Map<String, dynamic> toMap() => {
@@ -20,6 +22,7 @@ class WorldState {
         'extensions': extensions,
         'scroll_offset': scrollOffset,
         'collected_coins': collectedCoins,
+        'used_claw_machines': usedClawMachines,
       };
 
   /// Parse a raw Hive map. Returns null if [raw] is null or any field has an
@@ -35,12 +38,16 @@ class WorldState {
     if (scrollOffset != null && scrollOffset is! num) return null;
     final collectedCoins = raw['collected_coins'];
     if (collectedCoins != null && collectedCoins is! List) return null;
+    final usedClawMachines = raw['used_claw_machines'];
+    if (usedClawMachines != null && usedClawMachines is! List) return null;
     return WorldState(
       seed: seed,
       extensions: (extensions as int?) ?? 0,
       scrollOffset: (scrollOffset as num?)?.toDouble() ?? 0,
       collectedCoins:
           (collectedCoins as List?)?.cast<int>() ?? const [],
+      usedClawMachines:
+          (usedClawMachines as List?)?.cast<int>() ?? const [],
     );
   }
 }

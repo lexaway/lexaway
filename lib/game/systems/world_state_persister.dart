@@ -27,6 +27,10 @@ class WorldStatePersister extends Component {
   /// it here in the [CoinCollected] handler.
   final Set<int> collectedCoins;
 
+  /// Used claw machine item indices. Shared with [ClawMachineManager],
+  /// same shape as [collectedCoins].
+  final Set<int> usedClawMachines;
+
   final Camera _camera;
   final WorldMap _worldMap;
   final WorldStreamer _worldStreamer;
@@ -43,11 +47,13 @@ class WorldStatePersister extends Component {
     required WorldStreamer worldStreamer,
     required GameEvents events,
     Iterable<int> initialCollectedCoins = const [],
+    Iterable<int> initialUsedClawMachines = const [],
   })  : _camera = camera,
         _worldMap = worldMap,
         _worldStreamer = worldStreamer,
         _events = events,
-        collectedCoins = {...initialCollectedCoins};
+        collectedCoins = {...initialCollectedCoins},
+        usedClawMachines = {...initialUsedClawMachines};
 
   @override
   void onMount() {
@@ -59,6 +65,9 @@ class WorldStatePersister extends Component {
     switch (event) {
       case CoinCollected(:final itemIndex):
         collectedCoins.add(itemIndex);
+        _dirty = true;
+      case ClawMachineCompleted(:final itemIndex):
+        usedClawMachines.add(itemIndex);
         _dirty = true;
       case WalkStopped():
       case WorldExtended():
@@ -94,6 +103,7 @@ class WorldStatePersister extends Component {
         extensions: _worldStreamer.extensions,
         scrollOffset: _camera.scrollOffset,
         collectedCoins: collectedCoins.toList(),
+        usedClawMachines: usedClawMachines.toList(),
       );
 
   @override

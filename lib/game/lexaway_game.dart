@@ -8,6 +8,7 @@ import '../data/world_state_repository.dart';
 import 'audio_manager.dart';
 import 'components/biome_parallax.dart';
 import 'components/camera.dart';
+import 'components/claw_machine_manager.dart';
 import 'components/coin_manager.dart';
 import 'components/ground.dart';
 import 'components/player.dart';
@@ -90,6 +91,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   late final WorldRenderer _worldRenderer;
   late final CreatureLayer _creatureLayer;
   late final CoinManager _coinManager;
+  late final ClawMachineManager _clawMachineManager;
   late final Player _player;
   late final WindLines _windLines;
   late final WeatherOverlay _weatherOverlay;
@@ -145,6 +147,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       worldStreamer: _worldStreamer,
       events: events,
       initialCollectedCoins: saved?.collectedCoins ?? const [],
+      initialUsedClawMachines: saved?.usedClawMachines ?? const [],
     );
 
     final parallaxHeight = size.y * groundLevel + 16 * pixelScale - 40;
@@ -175,6 +178,16 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       collectedCoins: _worldStatePersister.collectedCoins,
     )..priority = 1;
     add(_coinManager);
+
+    // Same shared-Set pattern as CoinManager — the persister owns mutation,
+    // the manager reads to dedup spawns.
+    _clawMachineManager = ClawMachineManager(
+      worldMap: _worldMap,
+      camera: _camera,
+      events: events,
+      usedClawMachines: _worldStatePersister.usedClawMachines,
+    )..priority = 1;
+    add(_clawMachineManager);
 
     _player = Player(spritePath: characterPath)..priority = 2;
     await add(_player);
@@ -260,6 +273,11 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   /// Toggle debug mode: dino walks continuously without answering.
   void toggleDebugWalk() => _movementController.toggleDebugWalk();
   bool get debugWalk => _movementController.debugWalk;
+
+  /// Pause the walk for an encounter (claw machine, etc.) without losing
+  /// in-flight distance. Resume restores it.
+  void pauseMovement() => _movementController.pause();
+  void resumeMovement() => _movementController.resume();
 
   /// Finish any in-progress walk immediately (no animation). Called from
   /// app-lifecycle teardown so the dino doesn't get caught mid-stride.

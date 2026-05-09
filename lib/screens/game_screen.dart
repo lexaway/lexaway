@@ -14,6 +14,8 @@ import '../game/events.dart';
 import '../game/lexaway_game.dart';
 import '../models/character.dart';
 import '../providers.dart';
+import '../widgets/claw_machine_overlay.dart';
+import '../widgets/claw_prompt.dart';
 import '../widgets/goal_met_banner.dart';
 import '../widgets/question_panel.dart';
 import '../widgets/hud_bar.dart';
@@ -25,6 +27,10 @@ class GameScreen extends ConsumerStatefulWidget {
   ConsumerState<GameScreen> createState() => _GameScreenState();
 }
 
+enum _ClawEncounterPhase { none, prompt, miniGame }
+
+const int _clawMachineCoinCost = 1;
+
 class _GameScreenState extends ConsumerState<GameScreen>
     with WidgetsBindingObserver {
   LexawayGame? _game;
@@ -35,6 +41,13 @@ class _GameScreenState extends ConsumerState<GameScreen>
   String? _activeLang;
   StreamSubscription<GameEvent>? _eventSub;
   bool _goalMetBannerVisible = false;
+
+  // Claw machine encounter state. The flow is: dino bumps cabinet →
+  // ClawMachineEntered fires → walk pauses, prompt appears → on accept,
+  // coin is debited and the mini-game opens → mini-game emits result via
+  // [onClose] → ClawMachineCompleted is dispatched and the walk resumes.
+  _ClawEncounterPhase _clawPhase = _ClawEncounterPhase.none;
+  int? _activeClawMachineIndex;
 
   void _maybeShowGoalMetBanner() {
     if (_goalMetBannerVisible) return;
@@ -95,9 +108,68 @@ class _GameScreenState extends ConsumerState<GameScreen>
           ref.read(langStepsProvider(_activeLang!).notifier).add(count);
         case BiomeChanged(:final current):
           ref.read(bgmSchedulerProvider).onBiomeChanged(current);
+        case ClawMachineEntered(:final itemIndex):
+          _onClawMachineEntered(itemIndex);
         default:
           break;
       }
+    });
+  }
+
+  void _onClawMachineEntered(int itemIndex) {
+    if (_clawPhase != _ClawEncounterPhase.none) return;
+    // Defer to a microtask: the event bus is a sync broadcast controller,
+    // and pauseMovement() emits WalkStopped — re-entering emit() inside
+    // its own listener throws "Controller is already firing an event".
+    // Bouncing through a microtask lets the original dispatch unwind first.
+    scheduleMicrotask(() {
+      if (!mounted || _clawPhase != _ClawEncounterPhase.none) return;
+      _game?.pauseMovement();
+      setState(() {
+        _activeClawMachineIndex = itemIndex;
+        _clawPhase = _ClawEncounterPhase.prompt;
+      });
+    });
+  }
+
+  void _onClawDecline() {
+    final index = _activeClawMachineIndex;
+    if (index == null) return;
+    _game?.events.emit(ClawMachineCompleted(
+      itemIndex: index,
+      won: false,
+      spheresWon: 0,
+      coinsSpent: 0,
+    ));
+    _game?.resumeMovement();
+    setState(() {
+      _activeClawMachineIndex = null;
+      _clawPhase = _ClawEncounterPhase.none;
+    });
+  }
+
+  void _onClawAccept() {
+    final balance = ref.read(coinProvider);
+    if (balance < _clawMachineCoinCost) return;
+    ref.read(coinProvider.notifier).add(-_clawMachineCoinCost);
+    setState(() {
+      _clawPhase = _ClawEncounterPhase.miniGame;
+    });
+  }
+
+  void _onClawClose(ClawResult result) {
+    final index = _activeClawMachineIndex;
+    if (index == null) return;
+    _game?.events.emit(ClawMachineCompleted(
+      itemIndex: index,
+      won: result.won,
+      spheresWon: result.spheresWon,
+      coinsSpent: result.coinsSpent,
+    ));
+    _game?.resumeMovement();
+    setState(() {
+      _activeClawMachineIndex = null;
+      _clawPhase = _ClawEncounterPhase.none;
     });
   }
 
@@ -209,6 +281,22 @@ class _GameScreenState extends ConsumerState<GameScreen>
               onDismissed: () {
                 if (mounted) setState(() => _goalMetBannerVisible = false);
               },
+            ),
+          if (_clawPhase == _ClawEncounterPhase.prompt)
+            Positioned.fill(
+              child: ClawPrompt(
+                coinCost: _clawMachineCoinCost,
+                currentCoins: ref.watch(coinProvider),
+                onAccept: _onClawAccept,
+                onDecline: _onClawDecline,
+              ),
+            ),
+          if (_clawPhase == _ClawEncounterPhase.miniGame)
+            Positioned.fill(
+              child: ClawMachineOverlay(
+                coinsSpent: _clawMachineCoinCost,
+                onClose: _onClawClose,
+              ),
             ),
         ],
       ),

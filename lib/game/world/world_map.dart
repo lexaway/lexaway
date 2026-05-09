@@ -2,7 +2,7 @@ import '../lexaway_game.dart';
 
 enum BiomeType { grassland, tropics, winter }
 
-enum ItemCategory { entity, coin, creature }
+enum ItemCategory { entity, coin, creature, clawMachine }
 
 class PlacedItem {
   final String name;

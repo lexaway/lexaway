@@ -16,6 +16,13 @@ class WorldGenerator {
   /// many tiles of breathing room so sprites don't visually kiss.
   static const int _bufferTiles = 1;
 
+  /// Claw machine cabinet footprint and spacing. Hardcoded here (rather than
+  /// piped through entity manifests) since claw machines aren't a per-biome
+  /// scatter — they're a global, sparse encounter category.
+  static const int _clawMachineWidthTiles = 5;
+  static const int _clawMachineMinGapTiles = 18;
+  static const int _clawMachineMaxGapTiles = 36;
+
   /// widthTiles for every placeable entity, per biome. Drives size-aware
   /// collision — a 3-tile palm tree needs more room than a 1-tile flower.
   final EntityFootprints entityFootprints;
@@ -185,6 +192,41 @@ class WorldGenerator {
           name: cp.name,
           category: ItemCategory.coin,
           worldX: cp.worldX,
+          index: itemIndex++,
+        ));
+      }
+
+      // Claw machine encounters — sparse, biome-agnostic. Placed before
+      // creatures so creatures route around them, and respecting exclusive
+      // footprints so a cabinet doesn't materialize on a pier.
+      final clawMachineRng = Random(seed ^ 0xC1A47);
+      final clawMachinePositions = _poissonDisk(
+        clawMachineRng,
+        startPx: tile * _tilePx,
+        endPx: segEnd * _tilePx,
+        minGapPx: _clawMachineMinGapTiles * _tilePx,
+        maxGapPx: _clawMachineMaxGapTiles * _tilePx,
+      );
+      for (final x in clawMachinePositions) {
+        if (_overlapsExclusiveFootprint(
+          x,
+          _clawMachineWidthTiles,
+          footprints,
+        )) {
+          continue;
+        }
+        if (_collidesWithWidth(
+          x,
+          _clawMachineWidthTiles,
+          biome,
+          placements,
+        )) {
+          continue;
+        }
+        items.add(PlacedItem(
+          name: 'claw_machine',
+          category: ItemCategory.clawMachine,
+          worldX: x,
           index: itemIndex++,
         ));
       }
@@ -374,6 +416,24 @@ class WorldGenerator {
     for (final p in placements) {
       final gap = (worldX - p.worldX).abs();
       if (gap < _requiredGapPx(name, p.name, biome)) return true;
+    }
+    return false;
+  }
+
+  /// Variant of [_collides] for placements whose width isn't in any biome's
+  /// entity manifest — the caller passes the widthTiles directly. Used by
+  /// claw machine placement, which lives outside the biome scatter system.
+  bool _collidesWithWidth(
+    double worldX,
+    int widthTiles,
+    BiomeType biome,
+    List<_Placement> placements,
+  ) {
+    for (final p in placements) {
+      final widthOther = entityFootprints[biome]?[p.name] ?? 1;
+      final requiredGapPx =
+          (widthTiles + widthOther + 2 * _bufferTiles) * _tilePx * 0.5;
+      if ((worldX - p.worldX).abs() < requiredGapPx) return true;
     }
     return false;
   }

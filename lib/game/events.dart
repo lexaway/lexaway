@@ -86,6 +86,30 @@ class WorldExtended extends GameEvent {
   const WorldExtended();
 }
 
+/// The dino bumped into a claw machine. Carries the world-item index so
+/// downstream listeners (the persister) can dedup, and so the screen-side
+/// flow can confirm the same machine on completion.
+class ClawMachineEntered extends GameEvent {
+  final int itemIndex;
+  final double worldX;
+  const ClawMachineEntered({required this.itemIndex, required this.worldX});
+}
+
+/// The claw machine encounter finished, win or lose. Marks the machine as
+/// used (one-shot per session) regardless of outcome.
+class ClawMachineCompleted extends GameEvent {
+  final int itemIndex;
+  final bool won;
+  final int spheresWon;
+  final int coinsSpent;
+  const ClawMachineCompleted({
+    required this.itemIndex,
+    required this.won,
+    required this.spheresWon,
+    required this.coinsSpent,
+  });
+}
+
 /// Thin broadcast wrapper. Use [on] to get a filtered stream of a specific
 /// event subtype; use [emit] to publish.
 class GameEvents {

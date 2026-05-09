@@ -31,6 +31,14 @@ class MovementController extends Component {
   /// Debug mode: dino walks forever without needing correct answers.
   bool debugWalk = false;
 
+  /// Paused walks save their remaining distance and running state here, so
+  /// `resume()` can pick up exactly where the dino left off without losing
+  /// in-flight progress earned from prior correct answers.
+  double _pausedRemaining = 0;
+  bool _pausedRunning = false;
+  bool _isPaused = false;
+
+  bool get isPaused => _isPaused;
   bool get isWalking => _state.walking;
 
   MovementController({
@@ -51,6 +59,15 @@ class MovementController extends Component {
     final distance = shouldRun
         ? LexawayGame.walkTarget * _runDistanceMultiplier
         : LexawayGame.walkTarget;
+    if (_isPaused) {
+      // Buffer the distance so [resume] picks it up — the dino shouldn't
+      // start walking through the claw cabinet just because the user kept
+      // answering vocab in the background.
+      _pausedRemaining += distance;
+      if (shouldRun) _pausedRunning = true;
+      _events.emit(AnswerCorrect(streak, answer));
+      return;
+    }
     _state.remaining += distance;
 
     // Upgrade to run mid-walk if streak crosses the threshold.
@@ -119,6 +136,47 @@ class MovementController extends Component {
     _state.running = false;
     _state.stepTimer = 0;
     _events.emit(WalkStopped(skipDistance: skipDistance));
+  }
+
+  /// Halt the walk cleanly for an encounter (claw machine etc.) without
+  /// losing accrued distance. Emits [WalkStopped] so audio/animation/scroll
+  /// subscribers sync to a stopped state — [resume] later re-emits
+  /// [WalkStarted] with the saved running flag, and the saved distance is
+  /// restored to `_state.remaining`.
+  ///
+  /// Idempotent. No-op if not currently walking.
+  void pause() {
+    if (_isPaused) return;
+    if (!_state.walking) {
+      // Still mark paused so [resume] is a clean no-op and so further
+      // correctAnswer() calls during the encounter accumulate into
+      // [_pausedRemaining] rather than restarting the walk mid-encounter.
+      _isPaused = true;
+      return;
+    }
+    _pausedRemaining = _state.remaining;
+    _pausedRunning = _state.running;
+    _isPaused = true;
+    _state.walking = false;
+    _state.running = false;
+    _state.remaining = 0;
+    _state.stepTimer = 0;
+    _events.emit(const WalkStopped());
+  }
+
+  /// Resume after [pause]. Re-emits [WalkStarted] if there's distance to
+  /// cover. Safe to call when not paused (no-op).
+  void resume() {
+    if (!_isPaused) return;
+    _isPaused = false;
+    if (_pausedRemaining <= 0) return;
+    _state.remaining = _pausedRemaining;
+    _state.running = _pausedRunning;
+    _state.walking = true;
+    _state.stepTimer = _stepInterval;
+    _pausedRemaining = 0;
+    _pausedRunning = false;
+    _events.emit(WalkStarted(running: _state.running));
   }
 
   /// Toggle continuous debug walking. When enabled, the dino walks forward
