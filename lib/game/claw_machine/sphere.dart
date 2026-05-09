@@ -5,8 +5,15 @@ import 'package:flame/components.dart';
 /// A single colored ball on the floor of the cabinet, or carried under the
 /// claw. Drawn as a filled circle with a thin black outline — matches the
 /// `_SphereDot` decoration the previous Flutter overlay used.
+///
+/// `position` is the visual center (Anchor.center) and the physics center —
+/// `physicsRadius` is slightly under the visual radius so the colored fills
+/// touch a hair before the strokes overlap.
 class SphereComponent extends PositionComponent {
+  static const double physicsRadius = 4.5;
+
   Color color;
+  final Vector2 velocity = Vector2.zero();
 
   SphereComponent({
     required this.color,
