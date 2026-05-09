@@ -1,11 +1,16 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:flame/components.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/animation.dart' show Curves;
 import 'package:flutter/foundation.dart';
 
 import '../data/world_state_repository.dart';
 import 'audio_manager.dart';
+import 'claw_machine/cabinet.dart';
+import 'claw_machine/claw_session.dart';
 import 'components/biome_parallax.dart';
 import 'components/camera.dart';
 import 'components/claw_machine_manager.dart';
@@ -98,6 +103,13 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   late final SpeechBubble _speechBubble;
   late final MovementController _movementController;
 
+  /// Visual world subtree. Everything that renders sits under this so the
+  /// camera's zoom can be applied as a single scale-around-focus transform
+  /// (used by the in-world claw machine encounter — see [startClawEncounter]).
+  /// Logic-only controllers (event subscribers, persister, streamer) live on
+  /// the game directly so they aren't affected by the transform.
+  late final PositionComponent _worldRoot;
+
   /// World map, exposed for read-only UI access (the minimap renders from
   /// it). Sibling systems should take a [WorldMap] in their constructor
   /// instead of reaching through here.
@@ -124,6 +136,9 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
     _camera = Camera(initialOffset: initialOffset);
     add(_camera);
+
+    _worldRoot = PositionComponent();
+    add(_worldRoot);
 
     // Replay previously-persisted extensions at their original seeds so
     // _worldMap.segments matches the saved scroll offset before any
@@ -155,18 +170,18 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       worldMap: _worldMap,
       initialScrollOffset: initialOffset,
     )..size = Vector2(size.x, parallaxHeight);
-    await add(_biomeParallax);
+    await _worldRoot.add(_biomeParallax);
 
     _ground = Ground(worldMap: _worldMap, camera: _camera)..priority = 1;
-    add(_ground);
+    _worldRoot.add(_ground);
 
     _worldRenderer = WorldRenderer(worldMap: _worldMap, camera: _camera)
       ..priority = 1;
-    add(_worldRenderer);
+    _worldRoot.add(_worldRenderer);
 
     _creatureLayer = CreatureLayer(worldMap: _worldMap, camera: _camera)
       ..priority = 1;
-    add(_creatureLayer);
+    _worldRoot.add(_creatureLayer);
 
     // CoinManager shares the collectedCoins Set with the persister so its
     // spawn loop can dedup against saved pickups; the persister owns the
@@ -177,7 +192,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       events: events,
       collectedCoins: _worldStatePersister.collectedCoins,
     )..priority = 1;
-    add(_coinManager);
+    _worldRoot.add(_coinManager);
 
     // Same shared-Set pattern as CoinManager — the persister owns mutation,
     // the manager reads to dedup spawns.
@@ -187,14 +202,14 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       events: events,
       usedClawMachines: _worldStatePersister.usedClawMachines,
     )..priority = 1;
-    add(_clawMachineManager);
+    _worldRoot.add(_clawMachineManager);
 
     _player = Player(spritePath: characterPath)..priority = 2;
-    await add(_player);
+    await _worldRoot.add(_player);
     _player.play(DinoAnim.scan);
 
     _windLines = WindLines()..priority = 2;
-    add(_windLines);
+    _worldRoot.add(_windLines);
 
     // Weather sits between player/wind (priority 2) and speech bubble — snow
     // falls in front of the dino but never obscures dialogue.
@@ -204,11 +219,11 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       events: events,
       initialScrollOffset: initialOffset,
     )..priority = 3;
-    await add(_weatherOverlay);
+    await _worldRoot.add(_weatherOverlay);
 
     _speechBubble = SpeechBubble(follow: _player, fontFamily: _fontFamily)
       ..priority = 4;
-    add(_speechBubble);
+    _worldRoot.add(_speechBubble);
 
     _movementController = MovementController(
       camera: _camera,
@@ -252,6 +267,24 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     if (saved == null) _worldStatePersister.flush();
   }
 
+  @override
+  void update(double dt) {
+    super.update(dt);
+    // Apply the camera zoom as a scale-about-focus transform on the world
+    // root. At zoom == 1 this is identity (offset zero, scale 1) — bit-
+    // identical to pre-refactor rendering.
+    final z = _camera.zoom;
+    if (z == 1.0) {
+      _worldRoot.scale.setAll(1.0);
+      _worldRoot.position.setZero();
+    } else {
+      _worldRoot.scale.setAll(z);
+      _worldRoot.position
+        ..x = _camera.zoomFocus.x * (1 - z)
+        ..y = _camera.zoomFocus.y * (1 - z);
+    }
+  }
+
   void _loadNewBiomes() {
     for (final seg in _worldMap.segments) {
       _ground.ensureBiomeLoaded(seg.biome);
@@ -293,6 +326,111 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   void flushWorldState() {
     if (!isLoaded) return;
     _worldStatePersister.flush();
+  }
+
+  // ─── Claw machine encounter ────────────────────────────────────────
+
+  /// Begin an in-world encounter with the cabinet at [itemIndex]. The
+  /// camera zooms into the cabinet, a [ClawSessionComponent] is mounted
+  /// onto it, and this future resolves once the player's attempt has
+  /// played out. The session components remain on-screen (zoomed in) so
+  /// the result splash can sit over them — call [endClawEncounter] to
+  /// zoom back out and tear the session down.
+  Future<({bool won, int spheresWon})> startClawEncounter(
+    int itemIndex, {
+    double safeBottomInset = 0,
+  }) async {
+    final cabinet = _clawMachineManager.activeItems[itemIndex];
+    if (cabinet == null) {
+      // Cabinet scrolled off or was already culled — surface a benign
+      // result so the screen flow can finish without hanging.
+      return (won: false, spheresWon: 0);
+    }
+
+    _speechBubble.muted = true;
+
+    final completer = Completer<({bool won, int spheresWon})>();
+    cabinet.startSession(
+      onResultReady: ({required bool won, required int spheresWon}) {
+        if (!completer.isCompleted) {
+          completer.complete((won: won, spheresWon: spheresWon));
+        }
+      },
+    );
+
+    // Fit zoom: cabinet fills ~85% of the smaller viewport dimension.
+    final targetZoom = min(
+          size.x / ClawCabinet.cabW,
+          size.y / ClawCabinet.cabH,
+        ) *
+        0.85;
+    // Frame the cabinet so its bottom sits just above the bottom of the
+    // viewport (cabinet sky/parallax shows above; ground hides below).
+    // The world transform is `screen = focus + (world - focus) * z`, so
+    // for a desired screen anchor S of a world point P at zoom z:
+    //   focus = (S - P * z) / (1 - z)
+    // Anchor x: cabinet.center.x → screen center. Anchor y: cabinet
+    // bottom → screen bottom minus a small margin, plus an extra lift so
+    // the cabinet clears the home indicator / gesture bar (capped at 64px
+    // so larger safe areas don't push the cabinet too high).
+    const bottomMargin = 16.0;
+    final extraLift = min(safeBottomInset, 64.0);
+    final cabCenterX = cabinet.position.x + cabinet.size.x / 2;
+    final cabBottomY = cabinet.position.y + cabinet.size.y;
+    final focus = Vector2(
+      (size.x / 2 - cabCenterX * targetZoom) / (1 - targetZoom),
+      (size.y - bottomMargin - extraLift - cabBottomY * targetZoom) /
+          (1 - targetZoom),
+    );
+    await _camera.zoomTo(
+      target: targetZoom,
+      focus: focus,
+      duration: 0.6,
+      curve: Curves.easeInOut,
+    );
+
+    return completer.future;
+  }
+
+  /// Tear down the current session and start a fresh one on the same
+  /// cabinet without touching the camera. Used by the result dialog's
+  /// "Try again" button so a retry feels instant — no zoom-out/in flash.
+  Future<({bool won, int spheresWon})> restartClawSession(
+    int itemIndex,
+  ) async {
+    final cabinet = _clawMachineManager.activeItems[itemIndex];
+    if (cabinet == null) {
+      return (won: false, spheresWon: 0);
+    }
+    cabinet.endSession();
+    final completer = Completer<({bool won, int spheresWon})>();
+    cabinet.startSession(
+      onResultReady: ({required bool won, required int spheresWon}) {
+        if (!completer.isCompleted) {
+          completer.complete((won: won, spheresWon: spheresWon));
+        }
+      },
+    );
+    return completer.future;
+  }
+
+  /// Tear down the active encounter and zoom back out to 1.0. Safe to
+  /// call even if the session is already gone.
+  Future<void> endClawEncounter() async {
+    await _camera.zoomTo(
+      target: 1.0,
+      focus: _camera.zoomFocus,
+      duration: 0.6,
+      curve: Curves.easeInOut,
+    );
+    // Find any cabinet that still has a live session and shut it down.
+    for (final cabinet in _clawMachineManager.activeItems.values) {
+      if (cabinet.session != null) {
+        cabinet.endSession();
+        break;
+      }
+    }
+    _speechBubble.muted = false;
   }
 
   @override

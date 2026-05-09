@@ -3,7 +3,9 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 
-import '../claw_machine_game.dart';
+import '../lexaway_game.dart';
+import 'cabinet.dart';
+import 'claw_session.dart';
 
 enum _StickPose { center, right, left }
 
@@ -12,7 +14,8 @@ enum _StickPose { center, right, left }
 /// threshold (0.4 / 0.6) and the three-pose look match the previous
 /// Flutter overlay exactly.
 class ClawJoystickComponent extends PositionComponent
-    with HasGameReference<ClawMachineGame>, DragCallbacks {
+    with HasGameReference<LexawayGame>, DragCallbacks {
+  final ClawSessionComponent session;
   late final Image _sheet;
   late final Paint _paint;
   _StickPose _pose = _StickPose.center;
@@ -22,15 +25,15 @@ class ClawJoystickComponent extends PositionComponent
   static const double _cellW = 24;
   static const double _cellH = 27;
 
-  ClawJoystickComponent()
+  ClawJoystickComponent({required this.session})
       : super(
           position: Vector2(
-            ClawMachineGame.stickX,
-            ClawMachineGame.stickY,
+            ClawCabinet.stickX,
+            ClawCabinet.stickY,
           ),
           size: Vector2(
-            ClawMachineGame.stickW,
-            ClawMachineGame.stickH,
+            ClawCabinet.stickW,
+            ClawCabinet.stickH,
           ),
           priority: 9,
         );
@@ -43,7 +46,7 @@ class ClawJoystickComponent extends PositionComponent
       ..isAntiAlias = false;
   }
 
-  bool get _enabled => game.phase == ClawPhase.aiming;
+  bool get _enabled => session.phase == ClawPhase.aiming;
 
   @override
   void onDragStart(DragStartEvent event) {
@@ -78,14 +81,14 @@ class ClawJoystickComponent extends PositionComponent
         : f < 0.4
             ? -1
             : 0;
-    game.setStickDir(dir);
+    session.setStickDir(dir);
     _pose = dir > 0
         ? _StickPose.right
         : (dir < 0 ? _StickPose.left : _StickPose.center);
   }
 
   void _release() {
-    game.setStickDir(0);
+    session.setStickDir(0);
     _pose = _StickPose.center;
   }
 

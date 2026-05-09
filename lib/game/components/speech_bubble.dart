@@ -38,6 +38,16 @@ class SpeechBubble extends PositionComponent {
   double _timer = 0;
   bool _visible = false;
   bool _loaded = false;
+  bool _muted = false;
+
+  /// When muted, [show] is a no-op and any visible bubble is hidden — used
+  /// during the in-world claw encounter so bubbles don't obscure the cabinet.
+  bool get muted => _muted;
+  set muted(bool value) {
+    if (_muted == value) return;
+    _muted = value;
+    if (_muted) hide();
+  }
 
   late ui.Paragraph _paragraph;
 
@@ -64,7 +74,7 @@ class SpeechBubble extends PositionComponent {
   }
 
   void show(String text) {
-    if (!_loaded) return;
+    if (!_loaded || _muted) return;
     _text = text;
     _visible = true;
     _timer = _showDuration;

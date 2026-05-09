@@ -2,64 +2,36 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flame/components.dart';
-import 'package:flame/game.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/foundation.dart';
 
-import 'claw_machine/action_button.dart';
-import 'claw_machine/cabinet.dart';
-import 'claw_machine/claw.dart';
-import 'claw_machine/joystick.dart';
-import 'claw_machine/prize_door.dart';
-import 'claw_machine/sphere.dart';
+import '../components/claw_machine.dart';
+import 'action_button.dart';
+import 'cabinet.dart';
+import 'claw.dart';
+import 'joystick.dart';
+import 'prize_door.dart';
+import 'sphere.dart';
 
-/// Phases of a single attempt. The state machine matches the previous
-/// pure-Flutter overlay so feel is preserved.
+/// Phases of a single attempt. Same enum the standalone game used —
+/// preserves feel across the in-world refactor.
 enum ClawPhase { aiming, dropping, grabbing, retracting, delivering, result }
 
-/// Callback signature for [ClawMachineGame.onResultReady]. The game
-/// surfaces only the gameplay outcome; the overlay layers `coinsSpent`
-/// on when it forwards the public [ClawResult].
+/// Surface only the gameplay outcome; the screen layers `coinsSpent`
+/// onto the public [ClawMachineCompleted] event.
 typedef ClawAttemptCallback = void Function({
   required bool won,
   required int spheresWon,
 });
 
-/// Self-contained mini-game: a 80×128 cabinet-local coordinate space,
-/// rendered into whatever viewport the hosting `GameWidget` provides.
-/// All input (joystick + button) is handled by Flame components, so the
-/// hosting overlay only has to wire up the result splash.
-class ClawMachineGame extends FlameGame {
-  // Cabinet-local geometry. Lifted unchanged from the previous overlay so
-  // the game looks pixel-for-pixel the same.
-  static const double cabW = 80;
-  static const double cabH = 128;
-  static const double glassTop = 12;
-  static const double glassLeft = 8;
-  static const double glassRight = 72;
-  static const double glassFloorY = 72;
-  static const double glassCenterX = (glassLeft + glassRight) / 2;
-  static const double headW = 24;
-  static const double headH = 16;
-  static const double armOverlap = 10;
-  static const double armW = 18;
-  static const double armH = 22;
-  static const double clawRestY = glassTop + 2;
-  static const double clawDropY =
-      glassFloorY - (headH - armOverlap) - armH;
-  static const double captureRadius = 10;
-  static const double prizeDoorX = 18;
-  static const double prizeDoorY = 105;
-  static const double prizeDoorW = 24;
-  static const double prizeDoorH = 20;
-  static const double stickX = 48;
-  static const double stickY = 70;
-  static const double stickW = 24;
-  static const double stickH = 27;
-  static const double buttonX = 16;
-  static const double buttonY = 80;
-  static const double buttonW = 16;
-  static const double buttonH = 16;
+/// Logic holder for a single in-world claw encounter. Mounted as a child
+/// of the [ClawMachine] cabinet — its play subcomponents are added as
+/// siblings of the session (also under the cabinet) so they can use
+/// priorities to interleave with the cabinet's exterior sprite.
+///
+/// Renders nothing itself. Drives clawX/Y/closed, sphere physics, and
+/// the drop-grab-retract-deliver sequence.
+class ClawSessionComponent extends PositionComponent {
   // Old overlay used 0.8 px per ~16 ms tick. In continuous time that's
   // ~50 px/s — keep the same on-screen feel.
   static const double stickSpeedPerSec = 50.0;
@@ -73,16 +45,13 @@ class ClawMachineGame extends FlameGame {
   static const double restSpeed = 1.5;
   static const double armHalfWidth = 3.0;
 
-  /// Fired once when the attempt has resolved and the result splash should
-  /// open in Flutter land. Mirrors `EggPreviewGame.onAllPhasesComplete`.
   final ClawAttemptCallback onResultReady;
+  ClawSessionComponent({required this.onResultReady}) : super(priority: 0);
 
-  ClawMachineGame({required this.onResultReady});
-
-  // Public state — components read these every frame and self-position.
+  // Public state — sibling components read these every frame and self-position.
   ClawPhase phase = ClawPhase.aiming;
-  double clawX = glassCenterX;
-  double clawY = clawRestY;
+  double clawX = ClawCabinet.glassCenterX;
+  double clawY = ClawCabinet.clawRestY;
   bool clawClosed = false;
   bool doorOpen = false;
   int stickDir = 0;
@@ -92,8 +61,8 @@ class ClawMachineGame extends FlameGame {
   int _spheresWon = 0;
   bool _resultDispatched = false;
 
-  late final PositionComponent root;
   final List<SphereComponent> _floorSpheres = [];
+  final List<Component> _ownedSiblings = [];
 
   _Anim? _xAnim;
   _Anim? _yAnim;
@@ -103,20 +72,15 @@ class ClawMachineGame extends FlameGame {
   _Anim? _dropAnim;
   SphereComponent? _droppedSphere;
 
-  @override
-  Color backgroundColor() => const Color(0x00000000);
+  ClawMachine get _cabinet => parent! as ClawMachine;
 
   @override
   Future<void> onLoad() async {
-    final scale = _fitScale(size);
-    root = PositionComponent(
-      size: Vector2(cabW, cabH),
-      scale: Vector2.all(scale),
-      position: _rootPosition(size, scale),
-    );
-    add(root);
+    final cabinet = _cabinet;
 
-    // Five spheres on the floor of the glass, lightly jittered.
+    // Five spheres on the floor of the glass, lightly jittered. Drop them
+    // from a few px above the floor with a tiny random velocity so the
+    // opening jostle feels lively.
     final colors = <Color>[
       const Color(0xFFFF4081),
       const Color(0xFFFFCA28),
@@ -125,49 +89,46 @@ class ClawMachineGame extends FlameGame {
       const Color(0xFFAB47BC),
     ];
     final rng = math.Random();
-    final spacing = (glassRight - glassLeft) / (colors.length + 1);
+    final spacing =
+        (ClawCabinet.glassRight - ClawCabinet.glassLeft) / (colors.length + 1);
     for (var i = 0; i < colors.length; i++) {
-      // Drop them in from a few px above the floor with a tiny random
-      // velocity so the opening jostle feels lively.
       final s = SphereComponent(
         color: colors[i],
         position: Vector2(
-          glassLeft + spacing * (i + 1) + (rng.nextDouble() - 0.5) * 6,
-          glassFloorY - 30 + rng.nextDouble() * 8,
+          ClawCabinet.glassLeft +
+              spacing * (i + 1) +
+              (rng.nextDouble() - 0.5) * 6,
+          ClawCabinet.glassFloorY - 30 + rng.nextDouble() * 8,
         ),
       );
       s.velocity.x = (rng.nextDouble() - 0.5) * 20;
       _floorSpheres.add(s);
-      root.add(s);
+      _addSibling(cabinet, s);
     }
 
-    root.add(CableComponent());
-    root.add(ClawArmComponent(isLeft: true));
-    root.add(ClawArmComponent(isLeft: false));
-    root.add(ClawHeadComponent());
-    root.add(ExteriorComponent());
-    root.add(GlassShineComponent());
-    root.add(PrizeDoorComponent());
-    root.add(ClawJoystickComponent());
-    root.add(ActionButtonComponent());
+    _addSibling(cabinet, CableComponent(session: this));
+    _addSibling(cabinet, ClawArmComponent(session: this, isLeft: true));
+    _addSibling(cabinet, ClawArmComponent(session: this, isLeft: false));
+    _addSibling(cabinet, ClawHeadComponent(session: this));
+    _addSibling(cabinet, GlassShineComponent());
+    _addSibling(cabinet, PrizeDoorComponent(session: this));
+    _addSibling(cabinet, ClawJoystickComponent(session: this));
+    _addSibling(cabinet, ActionButtonComponent(session: this));
+  }
+
+  void _addSibling(ClawMachine cabinet, Component c) {
+    cabinet.add(c);
+    _ownedSiblings.add(c);
   }
 
   @override
-  void onGameResize(Vector2 size) {
-    super.onGameResize(size);
-    if (!isMounted) return;
-    final scale = _fitScale(size);
-    root.scale = Vector2.all(scale);
-    root.position = _rootPosition(size, scale);
+  void onRemove() {
+    for (final c in _ownedSiblings) {
+      c.removeFromParent();
+    }
+    _ownedSiblings.clear();
+    super.onRemove();
   }
-
-  static double _fitScale(Vector2 viewport) =>
-      math.min(viewport.x / cabW, viewport.y / cabH);
-
-  static Vector2 _rootPosition(Vector2 viewport, double scale) => Vector2(
-        (viewport.x - cabW * scale) / 2,
-        (viewport.y - cabH * scale) / 2,
-      );
 
   @override
   void update(double dt) {
@@ -182,7 +143,7 @@ class ClawMachineGame extends FlameGame {
 
     if (phase == ClawPhase.aiming && stickDir != 0) {
       clawX = (clawX + stickDir * stickSpeedPerSec * dt)
-          .clamp(glassLeft, glassRight);
+          .clamp(ClawCabinet.glassLeft, ClawCabinet.glassRight);
     }
 
     _stepPhysics(dt);
@@ -190,7 +151,11 @@ class ClawMachineGame extends FlameGame {
     if (capturedSphere != null) {
       capturedSphere!.position = Vector2(
         clawX,
-        clawY + (headH - armOverlap) + armH - 14 + 5,
+        clawY +
+            (ClawCabinet.headH - ClawCabinet.armOverlap) +
+            ClawCabinet.armH -
+            14 +
+            5,
       );
     }
   }
@@ -219,15 +184,15 @@ class ClawMachineGame extends FlameGame {
     _resolveClawArms();
 
     for (final s in _floorSpheres) {
-      if (s.position.x < glassLeft + r) {
-        s.position.x = glassLeft + r;
+      if (s.position.x < ClawCabinet.glassLeft + r) {
+        s.position.x = ClawCabinet.glassLeft + r;
         if (s.velocity.x < 0) s.velocity.x = -s.velocity.x * wallRestitution;
-      } else if (s.position.x > glassRight - r) {
-        s.position.x = glassRight - r;
+      } else if (s.position.x > ClawCabinet.glassRight - r) {
+        s.position.x = ClawCabinet.glassRight - r;
         if (s.velocity.x > 0) s.velocity.x = -s.velocity.x * wallRestitution;
       }
-      if (s.position.y > glassFloorY - r) {
-        s.position.y = glassFloorY - r;
+      if (s.position.y > ClawCabinet.glassFloorY - r) {
+        s.position.y = ClawCabinet.glassFloorY - r;
         if (s.velocity.y > 0) {
           s.velocity.y = s.velocity.y.abs() < restSpeed
               ? 0
@@ -236,8 +201,8 @@ class ClawMachineGame extends FlameGame {
         // Friction on the floor — exponential decay toward zero.
         s.velocity.x -= s.velocity.x * (1 - math.exp(-groundFriction * dt));
         if (s.velocity.x.abs() < 0.5) s.velocity.x = 0;
-      } else if (s.position.y < glassTop + r) {
-        s.position.y = glassTop + r;
+      } else if (s.position.y < ClawCabinet.glassTop + r) {
+        s.position.y = ClawCabinet.glassTop + r;
         if (s.velocity.y < 0) s.velocity.y = -s.velocity.y * wallRestitution;
       }
     }
@@ -276,7 +241,7 @@ class ClawMachineGame extends FlameGame {
   }
 
   void _resolveClawArms() {
-    final shoulderY = clawY + headH - armOverlap;
+    final shoulderY = clawY + ClawCabinet.headH - ClawCabinet.armOverlap;
     for (final isLeft in [true, false]) {
       final shoulderX = clawX + (isLeft ? -2.0 : 2.0);
       final angle = clawClosed
@@ -285,8 +250,8 @@ class ClawMachineGame extends FlameGame {
       // Arm hangs from anchor topCenter and rotates by `angle`. In Flame's
       // y-down coords positive angle is visual CW, so the local-down axis
       // (0, 1) rotates to (-sin, cos).
-      final tipX = shoulderX - math.sin(angle) * armH;
-      final tipY = shoulderY + math.cos(angle) * armH;
+      final tipX = shoulderX - math.sin(angle) * ClawCabinet.armH;
+      final tipY = shoulderY + math.cos(angle) * ClawCabinet.armH;
       for (final s in _floorSpheres) {
         _resolveSphereSegment(s, shoulderX, shoulderY, tipX, tipY);
       }
@@ -345,7 +310,7 @@ class ClawMachineGame extends FlameGame {
   Future<void> _runDropSequence() async {
     phase = ClawPhase.dropping;
     await _animateClawY(
-      to: clawDropY,
+      to: ClawCabinet.clawDropY,
       curve: Curves.easeIn,
       duration: 0.6,
     );
@@ -356,18 +321,20 @@ class ClawMachineGame extends FlameGame {
     if (caught != null) {
       _floorSpheres.remove(caught);
       caught.removeFromParent();
-      capturedSphere = SphereComponent(
+      final captured = SphereComponent(
         color: caught.color,
         position: Vector2(clawX, clawY),
         priority: 5,
       );
-      root.add(capturedSphere!);
+      capturedSphere = captured;
+      _cabinet.add(captured);
+      _ownedSiblings.add(captured);
     }
     await Future<void>.delayed(const Duration(milliseconds: 350));
 
     phase = ClawPhase.retracting;
     await _animateClawY(
-      to: clawRestY,
+      to: ClawCabinet.clawRestY,
       curve: Curves.easeOut,
       duration: 0.6,
     );
@@ -381,7 +348,7 @@ class ClawMachineGame extends FlameGame {
 
     phase = ClawPhase.delivering;
     await _animateClawX(
-      to: prizeDoorX + prizeDoorW / 2,
+      to: ClawCabinet.prizeDoorX + ClawCabinet.prizeDoorW / 2,
       curve: Curves.easeInOut,
       duration: 0.7,
     );
@@ -399,28 +366,31 @@ class ClawMachineGame extends FlameGame {
     _droppedSphere = ball;
     await _animateDroppedSphereY(
       from: ball.position.y,
-      to: glassFloorY + 14,
+      to: ClawCabinet.glassFloorY + 14,
       duration: 0.32,
     );
     _droppedSphere = null;
     ball.removeFromParent();
+    _ownedSiblings.remove(ball);
 
     await Future<void>.delayed(const Duration(milliseconds: 120));
     final settled = SphereComponent(
       color: ballColor,
       position: Vector2(
-        prizeDoorX + prizeDoorW / 2,
-        prizeDoorY + prizeDoorH - 6,
+        ClawCabinet.prizeDoorX + ClawCabinet.prizeDoorW / 2,
+        ClawCabinet.prizeDoorY + ClawCabinet.prizeDoorH - 6,
       ),
       priority: 9,
     );
-    root.add(settled);
+    _cabinet.add(settled);
+    _ownedSiblings.add(settled);
     doorOpen = true;
     _won = true;
     _spheresWon = 1;
     await Future<void>.delayed(const Duration(milliseconds: 550));
     doorOpen = false;
     settled.removeFromParent();
+    _ownedSiblings.remove(settled);
     await Future<void>.delayed(const Duration(milliseconds: 200));
     phase = ClawPhase.result;
     _dispatchResult();
@@ -448,9 +418,12 @@ class ClawMachineGame extends FlameGame {
     // caught. Using a 2-D distance keeps airborne (jostled) spheres
     // catchable, not just the row sitting on the floor.
     final mouthX = clawX;
-    final mouthY = clawY + headH - armOverlap + armH * 0.7;
+    final mouthY = clawY +
+        ClawCabinet.headH -
+        ClawCabinet.armOverlap +
+        ClawCabinet.armH * 0.7;
     SphereComponent? best;
-    var bestDist = captureRadius;
+    var bestDist = ClawCabinet.captureRadius;
     for (final s in _floorSpheres) {
       final dx = s.position.x - mouthX;
       final dy = s.position.y - mouthY;

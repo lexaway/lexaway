@@ -1,8 +1,8 @@
-import 'dart:ui';
-
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
+import '../claw_machine/cabinet.dart';
+import '../claw_machine/claw_session.dart';
 import '../events.dart';
 import '../lexaway_game.dart';
 import '../world/scrolling_item_layer.dart';
@@ -13,7 +13,12 @@ import 'player.dart';
 /// bumps into it. Uses a `_triggered` latch so the event fires exactly once
 /// per encounter — the manager culls the machine when the screen flow marks
 /// it complete.
-class ClawMachine extends SpriteComponent
+///
+/// Idle state: just an [ExteriorComponent] child. During an encounter,
+/// [startSession] mounts a [ClawSessionComponent] (which adds its play
+/// subcomponents as siblings here, using priorities to interleave with
+/// the exterior); [endSession] tears the whole subtree down again.
+class ClawMachine extends PositionComponent
     with
         HasGameReference<LexawayGame>,
         CollisionCallbacks,
@@ -25,28 +30,22 @@ class ClawMachine extends SpriteComponent
   final int itemIndex;
 
   bool _triggered = false;
+  ClawSessionComponent? _session;
 
-  ClawMachine({required this.worldX, required this.itemIndex});
+  ClawMachine({required this.worldX, required this.itemIndex})
+      : super(size: Vector2(ClawCabinet.cabW, ClawCabinet.cabH));
 
   @override
   double get layerWidth => size.x;
 
-  /// World-side scale. Full pixelScale (4×) blows the 80×128 cabinet up to
-  /// 320×512, ~3× the dino's height. We render at 1:1 source so the
-  /// cabinet sits at 80×128 — just slightly taller than the ~106-px dino,
-  /// which is what reads as "an arcade machine the dino walks up to" at
-  /// in-world scale. Pixel art stays crisp via FilterQuality.none below.
-  static const double _scale = 1.0;
+  ClawSessionComponent? get session => _session;
 
   @override
   Future<void> onLoad() async {
-    sprite = await Sprite.load('claw_machine/Exterior.png');
-    size = sprite!.srcSize * _scale;
-    paint = Paint()..filterQuality = FilterQuality.none;
-
     final groundTop = game.size.y * LexawayGame.groundLevel;
     position.y = groundTop - size.y;
 
+    add(ExteriorComponent());
     add(RectangleHitbox());
   }
 
@@ -61,5 +60,23 @@ class ClawMachine extends SpriteComponent
     game.events.emit(
       ClawMachineEntered(itemIndex: itemIndex, worldX: worldX),
     );
+  }
+
+  /// Mount a session and its play subtree. Idempotent — if a session is
+  /// already running this is a no-op.
+  void startSession({required ClawAttemptCallback onResultReady}) {
+    if (_session != null) return;
+    final session = ClawSessionComponent(onResultReady: onResultReady);
+    _session = session;
+    add(session);
+  }
+
+  /// Tear down the session. The session's own `onRemove` cleans up the
+  /// sibling play components it added during onLoad.
+  void endSession() {
+    final s = _session;
+    if (s == null) return;
+    _session = null;
+    s.removeFromParent();
   }
 }

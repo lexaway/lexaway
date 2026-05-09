@@ -5,26 +5,29 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/services.dart';
 
-import '../claw_machine_game.dart';
+import '../lexaway_game.dart';
+import 'cabinet.dart';
+import 'claw_session.dart';
 
 /// "Drop the claw" button. Tap-down triggers the drop sequence (and a
 /// haptic blip); tap-up restores the unpressed sprite. Sprite sheet is
 /// 32×48, 2×3 cells of 16×16 — col 0 is unpressed, col 1 pressed.
 class ActionButtonComponent extends PositionComponent
-    with HasGameReference<ClawMachineGame>, TapCallbacks {
+    with HasGameReference<LexawayGame>, TapCallbacks {
+  final ClawSessionComponent session;
   late final Image _sheet;
   late final Paint _paint;
   bool _pressed = false;
 
-  ActionButtonComponent()
+  ActionButtonComponent({required this.session})
       : super(
           position: Vector2(
-            ClawMachineGame.buttonX,
-            ClawMachineGame.buttonY,
+            ClawCabinet.buttonX,
+            ClawCabinet.buttonY,
           ),
           size: Vector2(
-            ClawMachineGame.buttonW,
-            ClawMachineGame.buttonH,
+            ClawCabinet.buttonW,
+            ClawCabinet.buttonH,
           ),
           priority: 10,
         );
@@ -37,7 +40,7 @@ class ActionButtonComponent extends PositionComponent
       ..isAntiAlias = false;
   }
 
-  bool get _enabled => game.phase == ClawPhase.aiming;
+  bool get _enabled => session.phase == ClawPhase.aiming;
 
   @override
   void onTapDown(TapDownEvent event) {
@@ -51,7 +54,7 @@ class ActionButtonComponent extends PositionComponent
     Future<void>.delayed(const Duration(milliseconds: 80), () {
       _pressed = false;
     });
-    game.requestDrop();
+    session.requestDrop();
   }
 
   @override

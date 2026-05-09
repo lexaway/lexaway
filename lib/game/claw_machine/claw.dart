@@ -3,14 +3,16 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import '../claw_machine_game.dart';
+import '../lexaway_game.dart';
+import 'cabinet.dart';
+import 'claw_session.dart';
 
 /// The cable that hangs from the cabinet ceiling down to the top of the
-/// claw head. Read each frame from [ClawMachineGame.clawX]/[clawY] and
-/// drawn as a 2-cabinet-px black rect.
+/// claw head. Reads each frame from the active session.
 class CableComponent extends PositionComponent
-    with HasGameReference<ClawMachineGame> {
-  CableComponent() : super(priority: 2);
+    with HasGameReference<LexawayGame> {
+  final ClawSessionComponent session;
+  CableComponent({required this.session}) : super(priority: 2);
 
   static final Paint _paint = Paint()..color = const Color(0xFF000000);
 
@@ -18,10 +20,10 @@ class CableComponent extends PositionComponent
   void update(double dt) {
     super.update(dt);
     position = Vector2(
-      game.clawX - 1,
-      ClawMachineGame.glassTop,
+      session.clawX - 1,
+      ClawCabinet.glassTop,
     );
-    final h = math.max(0.0, game.clawY - ClawMachineGame.glassTop);
+    final h = math.max(0.0, session.clawY - ClawCabinet.glassTop);
     size = Vector2(2, h);
   }
 
@@ -31,17 +33,17 @@ class CableComponent extends PositionComponent
   }
 }
 
-/// The compact "spool" head — bottom 16-px slice of ClawBase.png. Reads
-/// the claw position from the game each frame.
+/// The compact "spool" head — bottom 16-px slice of ClawBase.png.
 class ClawHeadComponent extends PositionComponent
-    with HasGameReference<ClawMachineGame> {
+    with HasGameReference<LexawayGame> {
+  final ClawSessionComponent session;
   late final Image _image;
   late final Paint _paint;
   static final Rect _src = const Rect.fromLTWH(0, 32, 24, 16);
 
-  ClawHeadComponent()
+  ClawHeadComponent({required this.session})
       : super(
-          size: Vector2(ClawMachineGame.headW, ClawMachineGame.headH),
+          size: Vector2(ClawCabinet.headW, ClawCabinet.headH),
           priority: 4,
         );
 
@@ -56,7 +58,10 @@ class ClawHeadComponent extends PositionComponent
   @override
   void update(double dt) {
     super.update(dt);
-    position = Vector2(game.clawX - ClawMachineGame.headW / 2, game.clawY);
+    position = Vector2(
+      session.clawX - ClawCabinet.headW / 2,
+      session.clawY,
+    );
   }
 
   @override
@@ -75,15 +80,16 @@ class ClawHeadComponent extends PositionComponent
 /// horizontally mirrored so the same Claw1Trimmed/Claw2Trimmed image
 /// produces a symmetric pair.
 class ClawArmComponent extends PositionComponent
-    with HasGameReference<ClawMachineGame> {
+    with HasGameReference<LexawayGame> {
+  final ClawSessionComponent session;
   final bool isLeft;
   late final Image _open;
   late final Image _closed;
   late final Paint _paint;
 
-  ClawArmComponent({required this.isLeft})
+  ClawArmComponent({required this.session, required this.isLeft})
       : super(
-          size: Vector2(ClawMachineGame.armW, ClawMachineGame.armH),
+          size: Vector2(ClawCabinet.armW, ClawCabinet.armH),
           anchor: Anchor.topCenter,
           priority: 3,
         );
@@ -100,12 +106,12 @@ class ClawArmComponent extends PositionComponent
   @override
   void update(double dt) {
     super.update(dt);
-    final shoulderY = game.clawY +
-        ClawMachineGame.headH -
-        ClawMachineGame.armOverlap;
-    final shoulderX = game.clawX + (isLeft ? -2.0 : 2.0);
+    final shoulderY = session.clawY +
+        ClawCabinet.headH -
+        ClawCabinet.armOverlap;
+    final shoulderX = session.clawX + (isLeft ? -2.0 : 2.0);
     position = Vector2(shoulderX, shoulderY);
-    angle = _armAngle(closed: game.clawClosed, isLeft: isLeft);
+    angle = _armAngle(closed: session.clawClosed, isLeft: isLeft);
   }
 
   static double _armAngle({required bool closed, required bool isLeft}) {
@@ -117,7 +123,7 @@ class ClawArmComponent extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    final image = game.clawClosed ? _closed : _open;
+    final image = session.clawClosed ? _closed : _open;
     final src = Rect.fromLTWH(
       0,
       0,

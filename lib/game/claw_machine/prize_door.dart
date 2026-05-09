@@ -2,25 +2,28 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import '../claw_machine_game.dart';
+import '../lexaway_game.dart';
+import 'cabinet.dart';
+import 'claw_session.dart';
 
 /// Bottom-left prize hatch on the cabinet. Swaps between PrizeDoor1 (closed)
-/// and PrizeDoor2 (open) based on [ClawMachineGame.doorOpen].
+/// and PrizeDoor2 (open) based on the active session's [doorOpen] flag.
 class PrizeDoorComponent extends PositionComponent
-    with HasGameReference<ClawMachineGame> {
+    with HasGameReference<LexawayGame> {
+  final ClawSessionComponent session;
   late final Sprite _closed;
   late final Sprite _open;
   late final Paint _paint;
 
-  PrizeDoorComponent()
+  PrizeDoorComponent({required this.session})
       : super(
           position: Vector2(
-            ClawMachineGame.prizeDoorX,
-            ClawMachineGame.prizeDoorY,
+            ClawCabinet.prizeDoorX,
+            ClawCabinet.prizeDoorY,
           ),
           size: Vector2(
-            ClawMachineGame.prizeDoorW,
-            ClawMachineGame.prizeDoorH,
+            ClawCabinet.prizeDoorW,
+            ClawCabinet.prizeDoorH,
           ),
           priority: 8,
         );
@@ -39,7 +42,7 @@ class PrizeDoorComponent extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    final sprite = game.doorOpen ? _open : _closed;
+    final sprite = session.doorOpen ? _open : _closed;
     sprite.render(canvas, size: size, overridePaint: _paint);
   }
 }

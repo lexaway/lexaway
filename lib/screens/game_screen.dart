@@ -14,7 +14,6 @@ import '../game/events.dart';
 import '../game/lexaway_game.dart';
 import '../models/character.dart';
 import '../providers.dart';
-import '../widgets/claw_machine_overlay.dart';
 import '../widgets/claw_prompt.dart';
 import '../widgets/goal_met_banner.dart';
 import '../widgets/question_panel.dart';
@@ -27,7 +26,7 @@ class GameScreen extends ConsumerStatefulWidget {
   ConsumerState<GameScreen> createState() => _GameScreenState();
 }
 
-enum _ClawEncounterPhase { none, prompt, miniGame }
+enum _ClawEncounterPhase { none, prompt, miniGame, result }
 
 const int _clawMachineCoinCost = 1;
 
@@ -44,10 +43,13 @@ class _GameScreenState extends ConsumerState<GameScreen>
 
   // Claw machine encounter state. The flow is: dino bumps cabinet →
   // ClawMachineEntered fires → walk pauses, prompt appears → on accept,
-  // coin is debited and the mini-game opens → mini-game emits result via
-  // [onClose] → ClawMachineCompleted is dispatched and the walk resumes.
+  // coin is debited and the game zooms into the cabinet to run the
+  // session → session resolves → result splash shows over the zoomed
+  // view → continue zooms back out and ClawMachineCompleted fires.
   _ClawEncounterPhase _clawPhase = _ClawEncounterPhase.none;
   int? _activeClawMachineIndex;
+  bool _clawWon = false;
+  int _clawSpheresWon = 0;
 
   void _maybeShowGoalMetBanner() {
     if (_goalMetBannerVisible) return;
@@ -148,29 +150,71 @@ class _GameScreenState extends ConsumerState<GameScreen>
     });
   }
 
-  void _onClawAccept() {
+  Future<void> _onClawAccept() async {
     final balance = ref.read(coinProvider);
     if (balance < _clawMachineCoinCost) return;
+    final index = _activeClawMachineIndex;
+    if (index == null) return;
     ref.read(coinProvider.notifier).add(-_clawMachineCoinCost);
     setState(() {
       _clawPhase = _ClawEncounterPhase.miniGame;
     });
+    final result = await _game!.startClawEncounter(
+      index,
+      safeBottomInset: MediaQuery.of(context).padding.bottom,
+    );
+    if (!mounted) return;
+    setState(() {
+      _clawWon = result.won;
+      _clawSpheresWon = result.spheresWon;
+      _clawPhase = _ClawEncounterPhase.result;
+    });
   }
 
-  void _onClawClose(ClawResult result) {
+  Future<void> _onClawTryAgain() async {
+    final balance = ref.read(coinProvider);
+    if (balance < _clawMachineCoinCost) return;
     final index = _activeClawMachineIndex;
     if (index == null) return;
-    _game?.events.emit(ClawMachineCompleted(
-      itemIndex: index,
-      won: result.won,
-      spheresWon: result.spheresWon,
-      coinsSpent: result.coinsSpent,
-    ));
-    _game?.resumeMovement();
+    ref.read(coinProvider.notifier).add(-_clawMachineCoinCost);
+    setState(() {
+      _clawWon = false;
+      _clawSpheresWon = 0;
+      _clawPhase = _ClawEncounterPhase.miniGame;
+    });
+    final result = await _game!.restartClawSession(index);
+    if (!mounted) return;
+    setState(() {
+      _clawWon = result.won;
+      _clawSpheresWon = result.spheresWon;
+      _clawPhase = _ClawEncounterPhase.result;
+    });
+  }
+
+  Future<void> _onClawResultContinue() async {
+    final index = _activeClawMachineIndex;
+    if (index == null) return;
+    final won = _clawWon;
+    final spheresWon = _clawSpheresWon;
+    // Clear the phase first so the question panel slides back in alongside
+    // the camera zoom-out (both ~600ms) instead of popping in afterward.
+    // The encounter index is captured locally so the completion event below
+    // still references the right cabinet.
     setState(() {
       _activeClawMachineIndex = null;
       _clawPhase = _ClawEncounterPhase.none;
+      _clawWon = false;
+      _clawSpheresWon = 0;
     });
+    await _game!.endClawEncounter();
+    if (!mounted) return;
+    _game?.events.emit(ClawMachineCompleted(
+      itemIndex: index,
+      won: won,
+      spheresWon: spheresWon,
+      coinsSpent: _clawMachineCoinCost,
+    ));
+    _game?.resumeMovement();
   }
 
   @override
@@ -270,10 +314,25 @@ class _GameScreenState extends ConsumerState<GameScreen>
                   MediaQuery.of(context).size.height * LexawayGame.groundLevel +
                   64,
               bottom: -24,
-              child: QuestionPanel(
-                key: ValueKey(source),
-                game: game,
-                source: source,
+              // Slide the panel off-screen during a claw encounter so the
+              // cabinet has the full viewport. State stays mounted (selected
+              // option, shake animation, TTS prefetch) so the dino picks up
+              // exactly where it left off when the encounter ends.
+              child: AnimatedSlide(
+                offset: _clawPhase == _ClawEncounterPhase.none ||
+                        _clawPhase == _ClawEncounterPhase.prompt
+                    ? Offset.zero
+                    : const Offset(0, 1),
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+                child: IgnorePointer(
+                  ignoring: _clawPhase != _ClawEncounterPhase.none,
+                  child: QuestionPanel(
+                    key: ValueKey(source),
+                    game: game,
+                    source: source,
+                  ),
+                ),
               ),
             ),
           if (_goalMetBannerVisible)
@@ -291,14 +350,140 @@ class _GameScreenState extends ConsumerState<GameScreen>
                 onDecline: _onClawDecline,
               ),
             ),
-          if (_clawPhase == _ClawEncounterPhase.miniGame)
+          if (_clawPhase == _ClawEncounterPhase.result)
             Positioned.fill(
-              child: ClawMachineOverlay(
-                coinsSpent: _clawMachineCoinCost,
-                onClose: _onClawClose,
+              child: _ClawResultDialog(
+                won: _clawWon,
+                tryAgainCost: _clawMachineCoinCost,
+                canAffordTryAgain:
+                    ref.watch(coinProvider) >= _clawMachineCoinCost,
+                onContinue: _onClawResultContinue,
+                onTryAgain: _onClawTryAgain,
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Result splash shown over the zoomed-in cabinet after the session
+/// resolves. Continue tap zooms the camera back out.
+class _ClawResultDialog extends StatelessWidget {
+  final bool won;
+  final int tryAgainCost;
+  final bool canAffordTryAgain;
+  final VoidCallback onContinue;
+  final VoidCallback onTryAgain;
+
+  const _ClawResultDialog({
+    required this.won,
+    required this.tryAgainCost,
+    required this.canAffordTryAgain,
+    required this.onContinue,
+    required this.onTryAgain,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black.withValues(alpha: 0.45),
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFE0AC),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFC2185B), width: 3),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                won ? 'You got a sphere!' : 'So close!',
+                style: const TextStyle(
+                  fontFamily: 'Pixelify Sans',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFFC2185B),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                won ? '+1 sphere' : 'Try the next one.',
+                style: const TextStyle(
+                  fontFamily: 'Pixelify Sans',
+                  fontSize: 16,
+                  color: Color(0xFF3E2723),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OutlinedButton(
+                    onPressed: onContinue,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFC2185B),
+                      side: const BorderSide(
+                        color: Color(0xFFC2185B),
+                        width: 2,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    child: const Text(
+                      'Continue',
+                      style: TextStyle(
+                        fontFamily: 'Pixelify Sans',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: canAffordTryAgain ? onTryAgain : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF4081),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: const Color(0xFFD8B4A0),
+                      disabledForegroundColor: Colors.white70,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    child: Text(
+                      'Try again (${tryAgainCost}c)',
+                      style: const TextStyle(
+                        fontFamily: 'Pixelify Sans',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
