@@ -18,10 +18,27 @@ class HudBar extends ConsumerWidget {
     return Padding(
       padding: EdgeInsets.only(top: topPadding + AppSpacing.sm, left: AppSpacing.md, right: AppSpacing.md),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          HudPill(
-            onTap: () => context.push('/packs'),
-            child: const Icon(Icons.language, color: AppColors.textSecondary, size: 20),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              HudPill(
+                onTap: () => context.push('/packs'),
+                child: const Icon(Icons.language, color: AppColors.textSecondary, size: 20),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              GestureDetector(
+                onTap: () => context.push('/collection'),
+                behavior: HitTestBehavior.opaque,
+                child: Image.asset(
+                  'assets/images/ui/collection_icon.png',
+                  width: 48,
+                  height: 48,
+                  filterQuality: FilterQuality.none,
+                ),
+              ),
+            ],
           ),
           const SizedBox(width: AppSpacing.sm),
           HudPill(

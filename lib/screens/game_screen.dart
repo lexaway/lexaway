@@ -33,7 +33,7 @@ class GameScreen extends ConsumerStatefulWidget {
 
 enum _ClawEncounterPhase { none, prompt, miniGame, result }
 
-const int _clawMachineCoinCost = 1;
+const int _clawMachineCoinCost = 100;
 
 class _GameScreenState extends ConsumerState<GameScreen>
     with WidgetsBindingObserver {
