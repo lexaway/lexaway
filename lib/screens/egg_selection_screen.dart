@@ -158,11 +158,10 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
       backgroundColor: AppColors.scaffold,
       body: Stack(
         children: [
-          Opacity(
-            opacity: 0.15,
+          RepaintBoundary(
             child: TiledBackground(
               texture: BackgroundTexture.chevron,
-              color: AppColors.surfaceBright,
+              color: AppColors.surfaceBright.withValues(alpha: 0.15),
               scale: 8,
               scrollDirection: const Offset(-1, 1),
               scrollSpeed: 12,
