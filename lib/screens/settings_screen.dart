@@ -166,6 +166,10 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                       ),
                       _LinkRow(
+                        label: 'Collection',
+                        onTap: () => context.push('/collection'),
+                      ),
+                      _LinkRow(
                         label: l10n.attributions,
                         onTap: () => context.push('/attributions'),
                       ),

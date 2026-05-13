@@ -29,11 +29,21 @@ class ClawMachine extends PositionComponent
   @override
   final int itemIndex;
 
+  /// Which collectible category this cabinet pulls prizes from. Today the
+  /// only category is `flags`; cabinets are otherwise visually identical
+  /// but the category decides which spheres roll inside. The session
+  /// itself re-rolls a fresh loadout on each `startSession` so try-again
+  /// shuffles the spheres.
+  final String categoryId;
+
   bool _triggered = false;
   ClawSessionComponent? _session;
 
-  ClawMachine({required this.worldX, required this.itemIndex})
-      : super(size: Vector2(ClawCabinet.cabW, ClawCabinet.cabH));
+  ClawMachine({
+    required this.worldX,
+    required this.itemIndex,
+    this.categoryId = 'flags',
+  }) : super(size: Vector2(ClawCabinet.cabW, ClawCabinet.cabH));
 
   @override
   double get layerWidth => size.x;

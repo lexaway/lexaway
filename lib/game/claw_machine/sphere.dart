@@ -10,7 +10,7 @@ import 'package:flame/components.dart';
 /// `physicsRadius` is slightly under the visual radius so the colored fills
 /// touch a hair before the strokes overlap.
 class SphereComponent extends PositionComponent {
-  static const double physicsRadius = 4.5;
+  static const double physicsRadius = 5.5;
 
   Color color;
   final Vector2 velocity = Vector2.zero();
@@ -21,7 +21,7 @@ class SphereComponent extends PositionComponent {
     int priority = 1,
   }) : super(
           position: position,
-          size: Vector2.all(10),
+          size: Vector2.all(12),
           anchor: Anchor.center,
           priority: priority,
         );

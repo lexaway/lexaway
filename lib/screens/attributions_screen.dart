@@ -22,6 +22,7 @@ class AttributionsScreen extends StatelessWidget {
     _Attribution('Backgrounds & Textures', 'Morain', 'https://morain.itch.io/backgrounds-and-textures'),
     _Attribution('Fantasy Icons Pack', 'Matt Firth (shikashipx) & game-icons.net', 'https://shikashipx.itch.io/shikashis-fantasy-icons-pack'),
     _Attribution('Assorted Icons', 'Quintino Pixels', 'https://quintino-pixels.itch.io/assorted-icons'),
+    _Attribution('Pixel Country Flags (CC0)', 'DaFluffyPotato', 'https://dafluffypotato.itch.io/pixel-country-flags'),
     _Attribution('Pixelify Sans (SIL OFL)', 'Stefie Justprince', 'https://fonts.google.com/specimen/Pixelify+Sans'),
     _Attribution('Atkinson Hyperlegible (SIL OFL)', 'Braille Institute', 'https://brailleinstitute.org/freefont'),
     _Attribution('Nunito (SIL OFL)', 'Vernon Adams et al.', 'https://fonts.google.com/specimen/Nunito'),

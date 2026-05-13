@@ -7,6 +7,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/animation.dart' show Curves;
 import 'package:flutter/foundation.dart';
 
+import '../data/collectibles/collectible.dart';
 import '../data/world_state_repository.dart';
 import 'audio_manager.dart';
 import 'claw_machine/cabinet.dart';
@@ -36,6 +37,20 @@ import 'world/entity_footprints.dart';
 import 'world/world_generator.dart';
 import 'world/world_map.dart';
 import 'world/world_renderer.dart';
+
+/// Outcome of a single claw attempt, returned by [LexawayGame.startClawEncounter]
+/// and [LexawayGame.restartClawSession]. Carries the prize identity so the
+/// screen layer can show what the player won (and add it to their inventory).
+class ClawAttemptResult {
+  final bool won;
+  final int spheresWon;
+  final Collectible? prize;
+  const ClawAttemptResult({
+    required this.won,
+    required this.spheresWon,
+    required this.prize,
+  });
+}
 
 class LexawayGame extends FlameGame with HasCollisionDetection {
   static const double pixelScale = 4.0;
@@ -336,7 +351,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   /// played out. The session components remain on-screen (zoomed in) so
   /// the result splash can sit over them — call [endClawEncounter] to
   /// zoom back out and tear the session down.
-  Future<({bool won, int spheresWon})> startClawEncounter(
+  Future<ClawAttemptResult> startClawEncounter(
     int itemIndex, {
     double safeBottomInset = 0,
   }) async {
@@ -344,16 +359,22 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     if (cabinet == null) {
       // Cabinet scrolled off or was already culled — surface a benign
       // result so the screen flow can finish without hanging.
-      return (won: false, spheresWon: 0);
+      return const ClawAttemptResult(won: false, spheresWon: 0, prize: null);
     }
 
     _speechBubble.muted = true;
 
-    final completer = Completer<({bool won, int spheresWon})>();
+    final completer = Completer<ClawAttemptResult>();
     cabinet.startSession(
-      onResultReady: ({required bool won, required int spheresWon}) {
+      onResultReady: ({
+        required bool won,
+        required int spheresWon,
+        Collectible? prize,
+      }) {
         if (!completer.isCompleted) {
-          completer.complete((won: won, spheresWon: spheresWon));
+          completer.complete(
+            ClawAttemptResult(won: won, spheresWon: spheresWon, prize: prize),
+          );
         }
       },
     );
@@ -395,19 +416,23 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   /// Tear down the current session and start a fresh one on the same
   /// cabinet without touching the camera. Used by the result dialog's
   /// "Try again" button so a retry feels instant — no zoom-out/in flash.
-  Future<({bool won, int spheresWon})> restartClawSession(
-    int itemIndex,
-  ) async {
+  Future<ClawAttemptResult> restartClawSession(int itemIndex) async {
     final cabinet = _clawMachineManager.activeItems[itemIndex];
     if (cabinet == null) {
-      return (won: false, spheresWon: 0);
+      return const ClawAttemptResult(won: false, spheresWon: 0, prize: null);
     }
     cabinet.endSession();
-    final completer = Completer<({bool won, int spheresWon})>();
+    final completer = Completer<ClawAttemptResult>();
     cabinet.startSession(
-      onResultReady: ({required bool won, required int spheresWon}) {
+      onResultReady: ({
+        required bool won,
+        required int spheresWon,
+        Collectible? prize,
+      }) {
         if (!completer.isCompleted) {
-          completer.complete((won: won, spheresWon: spheresWon));
+          completer.complete(
+            ClawAttemptResult(won: won, spheresWon: spheresWon, prize: prize),
+          );
         }
       },
     );

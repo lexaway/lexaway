@@ -58,4 +58,8 @@ abstract final class HiveKeys {
 
   // Music packs
   static const musicPacks = 'music_packs';
+
+  // Collectibles — versioned so we can re-shape the storage later without
+  // colliding with existing installs.
+  static const collectibles = 'collectibles_v1';
 }

@@ -8,6 +8,7 @@ import 'screens/game_screen.dart';
 import 'screens/loading_screen.dart';
 import 'screens/pack_manager_screen.dart';
 import 'screens/attributions_screen.dart';
+import 'screens/collection_screen.dart';
 import 'screens/settings_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -42,8 +43,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       final hasQuestions = activePack.valueOrNull?.hasQuestions ?? false;
       final loc = state.matchedLocation;
 
-      // Settings, attributions, and packs are always reachable, even while loading
-      if (loc == '/settings' || loc == '/attributions' || loc == '/packs') return null;
+      // Settings, attributions, packs, and collection are always reachable,
+      // even while loading
+      if (loc == '/settings' ||
+          loc == '/attributions' ||
+          loc == '/packs' ||
+          loc == '/collection') {
+        return null;
+      }
 
       if (isLoading) return loc == '/loading' ? null : '/loading';
 
@@ -85,6 +92,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/attributions',
         builder: (context, state) => const AttributionsScreen(),
+      ),
+      GoRoute(
+        path: '/collection',
+        builder: (context, state) => const CollectionScreen(),
       ),
     ],
   );

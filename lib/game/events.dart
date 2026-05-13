@@ -102,11 +102,16 @@ class ClawMachineCompleted extends GameEvent {
   final bool won;
   final int spheresWon;
   final int coinsSpent;
+  /// Globally-unique collectible id the player walked away with, or null on
+  /// a miss / declined prompt. Future consumers (achievements, telemetry)
+  /// can read this without poking back into the inventory provider.
+  final String? prizeId;
   const ClawMachineCompleted({
     required this.itemIndex,
     required this.won,
     required this.spheresWon,
     required this.coinsSpent,
+    this.prizeId,
   });
 }
 

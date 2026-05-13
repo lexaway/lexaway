@@ -74,6 +74,7 @@ flutter:
     - assets/images/fx/
     - assets/images/ui/
     - assets/images/claw_machine/
+    - assets/flags/
     - assets/audio/
     # Only the bundled main theme. Every other track lives in the optional
     # downloadable music pack (see lib/data/music_manager.dart). Listed

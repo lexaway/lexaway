@@ -5,10 +5,13 @@ import 'package:flame/components.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../data/collectibles/collectible.dart';
+import '../../data/collectibles/registry.dart';
 import '../components/claw_machine.dart';
 import 'action_button.dart';
 import 'cabinet.dart';
 import 'claw.dart';
+import 'prize_sphere.dart';
 import 'joystick.dart';
 import 'prize_door.dart';
 import 'sphere.dart';
@@ -18,10 +21,12 @@ import 'sphere.dart';
 enum ClawPhase { aiming, dropping, grabbing, retracting, delivering, result }
 
 /// Surface only the gameplay outcome; the screen layers `coinsSpent`
-/// onto the public [ClawMachineCompleted] event.
+/// onto the public [ClawMachineCompleted] event. [prize] is the
+/// collectible the player walked away with, or null on a miss.
 typedef ClawAttemptCallback = void Function({
   required bool won,
   required int spheresWon,
+  Collectible? prize,
 });
 
 /// Logic holder for a single in-world claw encounter. Mounted as a child
@@ -59,6 +64,7 @@ class ClawSessionComponent extends PositionComponent {
 
   bool _won = false;
   int _spheresWon = 0;
+  Collectible? _wonPrize;
   bool _resultDispatched = false;
 
   final List<SphereComponent> _floorSpheres = [];
@@ -78,28 +84,35 @@ class ClawSessionComponent extends PositionComponent {
   Future<void> onLoad() async {
     final cabinet = _cabinet;
 
-    // Five spheres on the floor of the glass, lightly jittered. Drop them
-    // from a few px above the floor with a tiny random velocity so the
-    // opening jostle feels lively.
-    final colors = <Color>[
-      const Color(0xFFFF4081),
-      const Color(0xFFFFCA28),
-      const Color(0xFF40C4FF),
-      const Color(0xFF66BB6A),
-      const Color(0xFFAB47BC),
-    ];
+    // Five flag spheres on the floor of the glass, lightly jittered. Drop
+    // them from a few px above the floor with a tiny random velocity so the
+    // opening jostle feels lively. Loadout is re-rolled each session so a
+    // try-again attempt sees a fresh set of flags.
     final rng = math.Random();
+    final loadout = CollectibleRegistry.instance
+        .randomFromCategory(cabinet.categoryId, 5, rng: rng);
+    // Preload every sprite up front so each sphere's first render has a
+    // decoded bitmap to draw (otherwise the first frames would show the
+    // shell-only ball with no sprite inside).
+    for (final c in loadout) {
+      await CollectibleRegistry.instance.loadSprite(c.spriteAsset);
+    }
     final spacing =
-        (ClawCabinet.glassRight - ClawCabinet.glassLeft) / (colors.length + 1);
-    for (var i = 0; i < colors.length; i++) {
-      final s = SphereComponent(
-        color: colors[i],
-        position: Vector2(
-          ClawCabinet.glassLeft +
-              spacing * (i + 1) +
-              (rng.nextDouble() - 0.5) * 6,
-          ClawCabinet.glassFloorY - 30 + rng.nextDouble() * 8,
-        ),
+        (ClawCabinet.glassRight - ClawCabinet.glassLeft) / (loadout.length + 1);
+    for (var i = 0; i < loadout.length; i++) {
+      final item = loadout[i];
+      final pair = randomShellPair(rng);
+      final pos = Vector2(
+        ClawCabinet.glassLeft +
+            spacing * (i + 1) +
+            (rng.nextDouble() - 0.5) * 6,
+        ClawCabinet.glassFloorY - 30 + rng.nextDouble() * 8,
+      );
+      final s = PrizeSphereComponent(
+        collectible: item,
+        shellLeft: pair.$1,
+        shellRight: pair.$2,
+        position: pos,
       );
       s.velocity.x = (rng.nextDouble() - 0.5) * 20;
       _floorSpheres.add(s);
@@ -321,11 +334,7 @@ class ClawSessionComponent extends PositionComponent {
     if (caught != null) {
       _floorSpheres.remove(caught);
       caught.removeFromParent();
-      final captured = SphereComponent(
-        color: caught.color,
-        position: Vector2(clawX, clawY),
-        priority: 5,
-      );
+      final captured = _cloneSphere(caught, Vector2(clawX, clawY), 5);
       capturedSphere = captured;
       _cabinet.add(captured);
       _ownedSiblings.add(captured);
@@ -361,7 +370,6 @@ class ClawSessionComponent extends PositionComponent {
     //     priority 9 (above the door at 8) so it appears inside the hatch.
     clawClosed = false;
     final ball = capturedSphere!;
-    final ballColor = ball.color;
     capturedSphere = null;
     _droppedSphere = ball;
     await _animateDroppedSphereY(
@@ -374,19 +382,20 @@ class ClawSessionComponent extends PositionComponent {
     _ownedSiblings.remove(ball);
 
     await Future<void>.delayed(const Duration(milliseconds: 120));
-    final settled = SphereComponent(
-      color: ballColor,
-      position: Vector2(
+    final settled = _cloneSphere(
+      ball,
+      Vector2(
         ClawCabinet.prizeDoorX + ClawCabinet.prizeDoorW / 2,
         ClawCabinet.prizeDoorY + ClawCabinet.prizeDoorH - 6,
       ),
-      priority: 9,
+      9,
     );
     _cabinet.add(settled);
     _ownedSiblings.add(settled);
     doorOpen = true;
     _won = true;
     _spheresWon = 1;
+    if (ball is PrizeSphereComponent) _wonPrize = ball.collectible;
     await Future<void>.delayed(const Duration(milliseconds: 550));
     doorOpen = false;
     settled.removeFromParent();
@@ -439,7 +448,26 @@ class ClawSessionComponent extends PositionComponent {
   void _dispatchResult() {
     if (_resultDispatched) return;
     _resultDispatched = true;
-    onResultReady(won: _won, spheresWon: _spheresWon);
+    onResultReady(won: _won, spheresWon: _spheresWon, prize: _wonPrize);
+  }
+
+  /// Spawn a new sphere of the same kind as [source] at [position] with
+  /// the given [priority]. For prize spheres this hands the source's
+  /// already-decoded sprite + composed shell to the clone, so the new
+  /// sphere renders on the same frame it's added.
+  SphereComponent _cloneSphere(
+    SphereComponent source,
+    Vector2 position,
+    int priority,
+  ) {
+    if (source is PrizeSphereComponent) {
+      return source.cloneAt(position: position, priority: priority);
+    }
+    return SphereComponent(
+      color: source.color,
+      position: position,
+      priority: priority,
+    );
   }
 
   Future<void> _animateClawX({
