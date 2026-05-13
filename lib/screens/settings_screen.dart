@@ -175,13 +175,26 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                       _LinkRow(
                         label: l10n.privacyPolicy,
-                        onTap: () {
+                        onTap: () async {
                           final lang =
                               Localizations.localeOf(context).languageCode;
-                          launchUrl(
-                            Uri.parse(privacyPolicyUrl(lang)),
-                            mode: LaunchMode.externalApplication,
-                          );
+                          final uri = Uri.parse(privacyPolicyUrl(lang));
+                          final messenger = ScaffoldMessenger.of(context);
+                          try {
+                            final ok = await launchUrl(
+                              uri,
+                              mode: LaunchMode.inAppBrowserView,
+                            );
+                            if (!ok) {
+                              messenger.showSnackBar(
+                                SnackBar(content: Text('Could not open $uri')),
+                              );
+                            }
+                          } catch (_) {
+                            messenger.showSnackBar(
+                              SnackBar(content: Text('Could not open $uri')),
+                            );
+                          }
                         },
                       ),
                     ],
