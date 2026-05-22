@@ -40,10 +40,10 @@ class PackDatabase {
       String? difficulty) {
     switch (difficulty) {
       case 'beginner':
-        return (clause: "level = ?", args: ['beginner']);
+        return (clause: 'level = ?', args: ['beginner']);
       case 'intermediate':
         return (
-          clause: "level IN (?, ?)",
+          clause: 'level IN (?, ?)',
           args: ['beginner', 'intermediate'],
         );
       default:
@@ -91,7 +91,7 @@ class PackDatabase {
 
     final conditions = <String>[
       "next_review != ''",
-      "next_review <= ?",
+      'next_review <= ?',
     ];
     final args = <Object>[today];
 
