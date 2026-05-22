@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../l10n/app_localizations.dart';
 
 import '../data/pack_manager.dart';
 import '../data/tts_manager.dart';
 import '../data/walked_distance.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import 'content_row.dart';

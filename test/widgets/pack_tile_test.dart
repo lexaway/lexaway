@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexaway/data/pack_manager.dart';
 import 'package:lexaway/data/tts_manager.dart';
-import 'package:lexaway/widgets/pack_tile.dart';
 import 'package:lexaway/l10n/app_localizations.dart';
+import 'package:lexaway/widgets/pack_tile.dart';
 
 void main() {
   group('PackTile', () {

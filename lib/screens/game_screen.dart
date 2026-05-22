@@ -21,8 +21,8 @@ import '../models/character.dart';
 import '../providers.dart';
 import '../widgets/claw_prompt.dart';
 import '../widgets/goal_met_banner.dart';
-import '../widgets/question_panel.dart';
 import '../widgets/hud_bar.dart';
+import '../widgets/question_panel.dart';
 
 class GameScreen extends ConsumerStatefulWidget {
   const GameScreen({super.key});

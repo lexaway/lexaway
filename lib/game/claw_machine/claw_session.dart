@@ -11,9 +11,9 @@ import '../components/claw_machine.dart';
 import 'action_button.dart';
 import 'cabinet.dart';
 import 'claw.dart';
-import 'prize_sphere.dart';
 import 'joystick.dart';
 import 'prize_door.dart';
+import 'prize_sphere.dart';
 import 'sphere.dart';
 
 /// Phases of a single attempt. Same enum the standalone game used —

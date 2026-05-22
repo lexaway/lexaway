@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:lexaway/data/hive_keys.dart';
-import 'package:lexaway/providers.dart';
 import 'package:lexaway/l10n/app_localizations.dart';
+import 'package:lexaway/providers.dart';
 import 'package:lexaway/screens/settings_screen.dart';
 
 void main() {

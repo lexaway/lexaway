@@ -1,5 +1,5 @@
-import '../creature.dart';
 import '../../lexaway_game.dart';
+import '../creature.dart';
 import 'creature_behavior_component.dart';
 
 /// Flees when the player gets within [triggerTiles] tiles. Direction is

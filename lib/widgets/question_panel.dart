@@ -7,10 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/question_source.dart';
 import '../game/lexaway_game.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
 import '../models/question.dart';
 import '../providers.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import 'mini_map.dart';
 import 'phrase_text.dart';
 import 'tts_controller.dart';

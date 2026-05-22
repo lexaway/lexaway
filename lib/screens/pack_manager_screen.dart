@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/pack_manager.dart';
+import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';

@@ -11,6 +11,7 @@ linter:
     parameter_assignments: true
     avoid_bool_literals_in_conditional_expressions: true
     omit_local_variable_types: true
+    directives_ordering: true
     # NB: `unawaited_futures` is worth turning on once the existing ~26
     # fire-and-forget sites (mostly Hive writes) are wrapped in
     # `unawaited(...)`. Tracked separately.
