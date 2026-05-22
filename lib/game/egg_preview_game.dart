@@ -40,8 +40,7 @@ class EggPreviewGame extends FlameGame {
     super.onRemove();
   }
 
-  /// Start the crack → hatch → reveal sequence.
-  /// Waits for [onLoad] to finish so we never race with the wobble phase.
+  /// Waits for [onLoad] so the crack phase never races with the wobble phase.
   Future<void> startHatchSequence() async {
     await _loaded.future;
     if (_disposed) return;

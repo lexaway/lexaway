@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// A small modal sheet asking the player whether to spend coins on a claw
-/// machine attempt. The bottom-sheet shape mirrors `PackManagerScreen`'s
-/// locale picker — modeling a real-world mini-encounter as a transient
-/// overlay rather than a full screen.
 class ClawPrompt extends StatelessWidget {
   final int coinCost;
   final int currentCoins;

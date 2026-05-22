@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
-/// A single content-type row within a pack card.
-///
-/// Left side shows status: content icon → spinner → checkmark.
-/// Right side shows action: download button → nothing → trash icon.
 class ContentRow extends StatelessWidget {
   final IconData icon;
   final String label;

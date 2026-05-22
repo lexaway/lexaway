@@ -3,7 +3,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
-/// Available tileable textures from the BaT v2.0 pack.
 enum BackgroundTexture {
   scales('texture40'),
   scalesLarge('texture38'),
@@ -27,16 +26,6 @@ enum BackgroundTexture {
 }
 
 /// A full-bleed tiled background that can scroll continuously in any direction.
-///
-/// ```dart
-/// TiledBackground(
-///   texture: BackgroundTexture.honeycomb,
-///   color: Colors.brown.shade800,
-///   scale: 2,
-///   scrollDirection: Offset(-1, 1),  // top-right → bottom-left
-///   scrollSpeed: 20,                  // pixels per second
-/// )
-/// ```
 class TiledBackground extends StatefulWidget {
   const TiledBackground({
     super.key,
@@ -51,10 +40,10 @@ class TiledBackground extends StatefulWidget {
   final Color color;
   final double scale;
 
-  /// Normalized direction of scroll. Use [Offset.zero] for a static background.
+  /// Normalized direction. Use [Offset.zero] for a static background.
   final Offset scrollDirection;
 
-  /// Speed in logical pixels per second.
+  /// Logical pixels per second.
   final double scrollSpeed;
 
   @override
@@ -82,8 +71,7 @@ class _TiledBackgroundState extends State<TiledBackground>
     super.initState();
     _loadImage();
     _ticker = createTicker(_onTick);
-    // Ticker start is deferred to didChangeDependencies where we can read
-    // MediaQuery.disableAnimations.
+    // Start is deferred to didChangeDependencies so we can read MediaQuery.
   }
 
   @override
@@ -135,11 +123,10 @@ class _TiledBackgroundState extends State<TiledBackground>
     final dt = (elapsed - _lastTick).inMicroseconds / 1e6;
     _lastTick = elapsed;
 
-    final dir = widget.scrollDirection /
-        widget.scrollDirection.distance; // normalize
+    final dir = widget.scrollDirection / widget.scrollDirection.distance;
     _offset += dir * widget.scrollSpeed * dt;
 
-    // Wrap to tile size so _offset never drifts to precision-loss territory
+    // Wrap to tile size so _offset never drifts to precision-loss territory.
     if (_image != null) {
       final tileW = _image!.width * widget.scale;
       final tileH = _image!.height * widget.scale;
@@ -196,7 +183,6 @@ class _TiledPainter extends CustomPainter {
     final src =
         Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
 
-    // Wrap offset so we don't drift to huge values over time
     final ox = offset.dx % tileW;
     final oy = offset.dy % tileH;
 

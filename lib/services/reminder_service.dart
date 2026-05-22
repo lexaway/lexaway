@@ -13,10 +13,8 @@ import '../providers/daily_goal.dart';
 import '../providers/locale.dart';
 import '../providers/stats.dart';
 
-/// Notification IDs used by Lexaway. Keep distinct so future notifications
-/// don't accidentally cancel each other via a shared ID.
-///   1 — daily goal reminder (single pending at a time, repeatedly
-///       cancelled and rescheduled from [ReminderService.scheduleNext]).
+/// Keep notification IDs distinct so future notifications don't accidentally
+/// cancel each other via a shared ID.
 const int _reminderNotificationId = 1;
 
 const String _androidChannelId = 'lexaway_daily_goal';
@@ -24,14 +22,9 @@ const String _androidChannelName = 'Daily goal reminders';
 const String _androidChannelDescription =
     'Gentle nudges when you haven\u2019t met today\u2019s step goal yet.';
 
-/// Thin wrapper around flutter_local_notifications. Owns:
-///   - one-time platform init (timezone + notifications plugin)
-///   - on-demand permission requests
-///   - computing the single next reminder datetime and scheduling it
-///
-/// The service is ref-driven: whenever `reminderEnabled`, `reminderTime`,
-/// `dailyGoal`, or the `stepsProvider`'s goal-met status changes, we
-/// recompute and reschedule.
+/// Ref-driven wrapper around flutter_local_notifications. Whenever
+/// `reminderEnabled`, `reminderTime`, `dailyGoal`, or `goalMetTodayProvider`
+/// changes, the next reminder is recomputed and rescheduled.
 class ReminderService {
   ReminderService(this._ref);
 
@@ -40,7 +33,6 @@ class ReminderService {
       FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
-  /// Called once during app bootstrap (from main()).
   Future<void> init() async {
     if (_initialized) return;
     tzdata.initializeTimeZones();
@@ -49,8 +41,7 @@ class ReminderService {
       tz.setLocalLocation(tz.getLocation(name));
     } catch (_) {
       // Fall back to UTC — scheduled times will be off by the device offset
-      // on platforms where the plugin can't resolve the zone. Rare; logging
-      // would be nice if we wire one up.
+      // when the plugin can't resolve the zone.
     }
 
     const androidInit = AndroidInitializationSettings('@drawable/ic_notification');
@@ -65,16 +56,12 @@ class ReminderService {
     _initialized = true;
   }
 
-  /// Hook ref-listeners so the service reacts to settings and step changes.
-  /// Call once, after [init], with the app-level ProviderContainer.
+  /// Call once after [init].
   ///
-  /// [goalMetTodayProvider] already debounces step changes — it only flips
-  /// when the goal-crossed status changes — so we listen to it rather than
-  /// [stepsProvider] directly. A goal-amount change is also handled
-  /// implicitly here because the derived bool recomputes when the goal
-  /// moves, but we also listen to [dailyGoalProvider] explicitly so that
-  /// changes which don't flip the met-bool (e.g. 500 → 200 while today is
-  /// 50) still trigger a reschedule.
+  /// [goalMetTodayProvider] (not [stepsProvider]) is listened to so we only
+  /// reschedule when the goal-crossed status flips. [dailyGoalProvider] is
+  /// also listened to so that goal changes which don't flip the met-bool
+  /// (e.g. 500 → 200 while today is 50) still trigger a reschedule.
   void attachListeners() {
     _ref.listen(reminderEnabledProvider, (_, __) => scheduleNext());
     _ref.listen(reminderTimeProvider, (_, __) => scheduleNext());
@@ -82,8 +69,6 @@ class ReminderService {
     _ref.listen(goalMetTodayProvider, (_, __) => scheduleNext());
   }
 
-  /// Request OS notification permission. Returns true if granted.
-  /// Called lazily when user toggles reminders on.
   Future<bool> requestPermission() async {
     await init();
     if (Platform.isIOS) {
@@ -105,8 +90,7 @@ class ReminderService {
     return true;
   }
 
-  /// Cancel any pending reminder, then schedule the next one if conditions
-  /// are met. Idempotent — safe to call on any trigger.
+  /// Idempotent — safe to call on any trigger.
   Future<void> scheduleNext() async {
     await init();
     await _plugin.cancel(_reminderNotificationId);
@@ -171,13 +155,9 @@ final reminderServiceProvider = Provider<ReminderService>((ref) {
   return ReminderService(ref);
 });
 
-/// UI-facing helper: flip the reminder toggle. If turning on, request OS
-/// permission first; if denied, leave the toggle off. Returns true if the
-/// final state is enabled.
-///
-/// We don't call `scheduleNext` / `cancel` directly here — the service's
-/// `ref.listen(reminderEnabledProvider)` picks up the state change and
-/// does the right thing (cancel on off, (re)schedule on on).
+/// Flips the toggle, requesting OS permission first when turning on. Returns
+/// the final enabled state. Doesn't call `scheduleNext`/`cancel` directly —
+/// the service's `ref.listen(reminderEnabledProvider)` handles that.
 Future<bool> setReminderEnabled(WidgetRef ref, bool enabled) async {
   if (!enabled) {
     ref.read(reminderEnabledProvider.notifier).set(false);

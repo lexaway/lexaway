@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_spacing.dart';
 
-/// Pixel-art styled pill used for HUD elements in the streak bar.
 class HudPill extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;

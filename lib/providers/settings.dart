@@ -6,8 +6,8 @@ import '../data/hive_keys.dart';
 import 'bootstrap.dart';
 import 'packs.dart';
 
-/// Base class for Hive-backed volume sliders (0.0..1.0).
-/// Splits `set` (drag tick) from `save` (drag end) for responsive UI.
+/// Hive-backed volume slider (0.0..1.0). Splits [set] (drag tick) from [save]
+/// (drag end) so the UI stays responsive without writing on every frame.
 abstract class HiveVolumeNotifier extends Notifier<double> {
   String get key;
   double get defaultValue => 1.0;
@@ -18,10 +18,8 @@ abstract class HiveVolumeNotifier extends Notifier<double> {
   double build() =>
       (_box.get(key, defaultValue: defaultValue) as num).toDouble();
 
-  /// Update in-memory state (call on every drag tick for responsive UI).
   void set(double v) => state = v.clamp(0.0, 1.0);
 
-  /// Persist to Hive (call on drag end).
   void save() => _box.put(key, state);
 }
 
@@ -99,8 +97,6 @@ class AutoPlayTtsNotifier extends Notifier<bool> {
   }
 }
 
-// Gender preference
-
 final genderProvider = NotifierProvider<GenderNotifier, String>(
   GenderNotifier.new,
 );
@@ -117,8 +113,6 @@ class GenderNotifier extends Notifier<String> {
     ref.read(hiveBoxProvider).put(HiveKeys.gender, gender);
   }
 }
-
-// Difficulty preference
 
 final difficultyProvider = NotifierProvider<DifficultyNotifier, String>(
   DifficultyNotifier.new,
@@ -137,8 +131,6 @@ class DifficultyNotifier extends Notifier<String> {
     ref.invalidate(activePackProvider);
   }
 }
-
-// Font preference
 
 final fontProvider = NotifierProvider<FontNotifier, AppFont>(FontNotifier.new);
 

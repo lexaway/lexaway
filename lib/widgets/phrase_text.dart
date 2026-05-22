@@ -2,35 +2,22 @@ import 'package:flutter/material.dart';
 
 import '../models/question.dart';
 
-/// Renders a phrase with one of its words displayed as a fill-in-the-blank.
+/// Renders a phrase with one word displayed as a fill-in-the-blank.
 ///
-/// The blank span is located using [blankIndex] (a character offset into
-/// [phrase]) and [answer] (whose length defines the blank width). Any
-/// punctuation attached to the same whitespace-delimited word as the
-/// answer is preserved around the blank — e.g. `¿Crees que es viejo?`
-/// with `answer: 'Crees'` renders as `¿____ que es viejo?` before the
-/// answer is revealed, and `¿Crees que es viejo?` after.
+/// Punctuation attached to the same whitespace-delimited word as the answer is
+/// preserved around the blank — `¿Crees que es viejo?` with `answer: 'Crees'`
+/// renders as `¿____ que es viejo?` before reveal.
 ///
-/// Each word is tappable: taps invoke [onTapWord] with the containing
-/// word's text — the same token shape `Question.words` produces, so the
-/// TTS prefetcher and the tap handler hit the same cache key.
-/// Tapping an unrevealed blank does not fire [onTapWord].
+/// [onTapWord] is invoked with the containing word's text — the same token
+/// shape `Question.words` produces, so the TTS prefetcher and the tap handler
+/// hit the same cache key. Not called for taps on an unrevealed blank.
 class PhraseText extends StatelessWidget {
   final String phrase;
   final int blankIndex;
   final String answer;
-
-  /// When true, the blank span shows [answer]; otherwise it shows `____`.
   final bool revealed;
-
-  /// Color of the blank span (or revealed answer).
   final Color blankColor;
-
-  /// Base text color for the non-blank portions of the phrase.
   final Color textColor;
-
-  /// Called when a word (or the revealed blank) is tapped. Not called for
-  /// taps on the unrevealed blank.
   final void Function(String text)? onTapWord;
 
   const PhraseText({
@@ -91,8 +78,7 @@ class PhraseText extends StatelessWidget {
     final blankStart = blankIndex - word.start;
     final blankEnd = blankStart + answer.length;
 
-    // Defensive: if the stored range escapes the word boundaries, fall
-    // back to blanking the whole word so we still show *something*.
+    // If the stored range escapes the word boundaries, blank the whole word.
     final safe = blankStart >= 0 && blankEnd <= word.text.length;
     final prefix = safe ? word.text.substring(0, blankStart) : '';
     final suffix = safe ? word.text.substring(blankEnd) : '';
