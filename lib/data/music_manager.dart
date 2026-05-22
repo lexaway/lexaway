@@ -40,7 +40,10 @@ class TrackInfo {
       title: title,
       biomes: _stringList(json['biomes']),
       tags: _stringList(json['tags']),
-      loopable: json['loopable'] is bool ? json['loopable'] as bool : true,
+      loopable: switch (json['loopable']) {
+        final bool b => b,
+        _ => true,
+      },
     );
   }
 
