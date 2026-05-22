@@ -88,7 +88,7 @@ void main() {
     );
     final fakePack =
         container.read(activePackProvider.notifier) as FakeActivePackNotifier;
-    fakePack.setLocaleData(localeData);
+    fakePack.localeData = localeData;
 
     final fakeLocalPacks =
         container.read(localPacksProvider.notifier) as FakeLocalPacksNotifier;

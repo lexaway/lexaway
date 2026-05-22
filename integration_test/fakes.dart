@@ -8,9 +8,7 @@ class FakeActivePackNotifier extends ActivePackNotifier {
   bool _hasQuestions = false;
   ScreenshotLocaleData? _data;
 
-  void setLocaleData(ScreenshotLocaleData data) {
-    _data = data;
-  }
+  set localeData(ScreenshotLocaleData data) => _data = data;
 
   @override
   Future<QuestionSource?> build() async =>

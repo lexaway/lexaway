@@ -53,7 +53,7 @@ class ScrollController extends Component with HasGameReference<LexawayGame> {
       case WalkStopped(:final skipDistance):
         if (skipDistance > 0) _camera.scrollOffset += skipDistance;
         _biomeParallax.setBaseVelocity(Vector2.zero());
-        _camera.stopScrolling();
+        _camera.scrollSpeed = 0;
       default:
         break;
     }
@@ -64,7 +64,7 @@ class ScrollController extends Component with HasGameReference<LexawayGame> {
         ? LexawayGame.walkSpeed * WalkState.runSpeedMultiplier
         : LexawayGame.walkSpeed;
     _biomeParallax.setBaseVelocity(Vector2(speed * 0.1, 0));
-    _camera.startScrolling(speed);
+    _camera.scrollSpeed = speed;
   }
 
   @override

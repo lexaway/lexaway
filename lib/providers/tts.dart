@@ -17,7 +17,7 @@ final ttsServiceProvider = Provider<TtsService>((ref) {
   final service = TtsService(tmpDir: ref.watch(tmpDirProvider));
   final bgm = ref.watch(bgmServiceProvider);
   service.onSpeakingChange = (speaking) {
-    AudioManager.instance.setTtsDucking(speaking);
+    AudioManager.instance.ttsDucking = speaking;
     bgm.setDucking(speaking);
   };
   ref.onDispose(() => service.dispose());

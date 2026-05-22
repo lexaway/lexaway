@@ -30,8 +30,7 @@ class Camera extends Component {
   double _scrollSpeed = 0;
   _ZoomTween? _zoomTween;
 
-  void startScrolling(double speed) => _scrollSpeed = speed;
-  void stopScrolling() => _scrollSpeed = 0;
+  set scrollSpeed(double speed) => _scrollSpeed = speed;
 
   /// Tween zoom + focus over [duration]. Resolves when the tween lands.
   Future<void> zoomTo({

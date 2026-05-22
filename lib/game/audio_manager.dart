@@ -30,7 +30,7 @@ class AudioManager {
   double sfxVolume = 1.0;
 
   bool _ttsDucking = false;
-  void setTtsDucking(bool ducking) => _ttsDucking = ducking;
+  set ttsDucking(bool ducking) => _ttsDucking = ducking;
 
   double get _feedbackVol =>
       (taperedVolume(masterVolume) *
