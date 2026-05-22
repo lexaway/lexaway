@@ -28,7 +28,7 @@ Future<void> downloadToFile(
     final outFile = File(destPath);
     final sink = outFile.openWrite();
 
-    int received = 0;
+    var received = 0;
     try {
       await for (final chunk in response.stream) {
         sink.add(chunk);

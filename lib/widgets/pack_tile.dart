@@ -57,7 +57,7 @@ class PackTile extends StatelessWidget {
   }
 
   void _showVoicePicker(BuildContext buttonContext) {
-    final RenderBox button = buttonContext.findRenderObject()! as RenderBox;
+    final button = buttonContext.findRenderObject()! as RenderBox;
     final overlay = Overlay.of(buttonContext).context.findRenderObject()! as RenderBox;
     final position = RelativeRect.fromRect(
       Rect.fromPoints(

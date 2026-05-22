@@ -49,7 +49,7 @@ class WindLines extends Component with HasGameReference<LexawayGame> {
       }
     }
 
-    for (int i = _lines.length - 1; i >= 0; i--) {
+    for (var i = _lines.length - 1; i >= 0; i--) {
       _lines[i].x -= _lineSpeed * scale * step;
       if (_lines[i].x + _lines[i].width < 0) {
         _lines.removeAt(i);

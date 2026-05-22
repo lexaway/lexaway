@@ -186,8 +186,8 @@ class _TiledPainter extends CustomPainter {
     final ox = offset.dx % tileW;
     final oy = offset.dy % tileH;
 
-    for (double y = -tileH + oy; y < size.height + tileH; y += tileH) {
-      for (double x = -tileW + ox; x < size.width + tileW; x += tileW) {
+    for (var y = -tileH + oy; y < size.height + tileH; y += tileH) {
+      for (var x = -tileW + ox; x < size.width + tileW; x += tileW) {
         canvas.drawImageRect(image, src, Rect.fromLTWH(x, y, tileW, tileH),
             paint);
       }

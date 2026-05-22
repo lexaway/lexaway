@@ -157,7 +157,7 @@ class Ground extends Component with HasGameReference<LexawayGame> {
     final scrollOffset = camera.scrollOffset;
     final pixelOffset = scrollOffset % tileSize;
 
-    for (int i = 0; i < tilesAcross; i++) {
+    for (var i = 0; i < tilesAcross; i++) {
       final x = i * tileSize - pixelOffset;
       final worldX = scrollOffset + x;
       final tileX = (worldX / tileSize).floor();

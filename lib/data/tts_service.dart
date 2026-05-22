@@ -248,7 +248,7 @@ void _isolateEntryPoint(SendPort mainSendPort) {
   final receivePort = ReceivePort();
   mainSendPort.send(receivePort.sendPort);
 
-  bool bindingsInitialized = false;
+  var bindingsInitialized = false;
   sherpa.OfflineTts? tts;
   String? currentLang;
   String? currentModelId;
