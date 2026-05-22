@@ -107,7 +107,7 @@ class WeatherDef {
     // ~0.025 tiles ≈ 40-tile period ≈ 32 seconds at walk speed — broad
     // squalls that read as "the weather just changed" rather than flicker.
     intensityNoiseScale: 0.025,
-    minIntensity: 0.15,
+    minIntensity: 0,
     maxIntensity: 1.0,
     intensitySeedOffset: 7,
   );
