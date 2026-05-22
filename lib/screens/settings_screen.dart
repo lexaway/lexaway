@@ -504,7 +504,7 @@ class _MusicPackRow extends StatelessWidget {
                               color: AppColors.success,
                               size: 22,
                             )
-                          : Icon(
+                          : const Icon(
                               Icons.music_note,
                               color: AppColors.textSecondary,
                               size: 22,

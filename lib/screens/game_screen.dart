@@ -330,7 +330,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
                 : null,
             child: GameWidget(key: ValueKey(_activeLang), game: game),
           ),
-          Positioned(left: 0, right: 0, top: 0, child: const HudBar()),
+          const Positioned(left: 0, right: 0, top: 0, child: HudBar()),
           if (source != null)
             Positioned(
               left: 0,

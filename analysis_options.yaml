@@ -13,6 +13,7 @@ linter:
     omit_local_variable_types: true
     directives_ordering: true
     use_setters_to_change_properties: true
+    prefer_const_constructors: true
     # NB: `unawaited_futures` is worth turning on once the existing ~26
     # fire-and-forget sites (mostly Hive writes) are wrapped in
     # `unawaited(...)`. Tracked separately.

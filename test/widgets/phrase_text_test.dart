@@ -189,13 +189,13 @@ void main() {
       // phrase. If these ever drift apart the TTS cache will silently
       // miss on punctuation-attached words.
       const phrase = '¿Crees que es viejo?';
-      final tokens = Question(
+      final tokens = const Question(
         id: 0,
         phrase: phrase,
         translation: '',
         blankIndex: 1,
         answer: 'Crees',
-        options: const [],
+        options: [],
       ).words;
       expect(tokens, ['¿Crees', 'que', 'es', 'viejo?']);
 

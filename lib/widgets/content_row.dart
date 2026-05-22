@@ -128,7 +128,7 @@ class ContentRow extends StatelessWidget {
                 if (onSwap != null)
                   Builder(
                     builder: (btnContext) => IconButton(
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.swap_horiz,
                         color: AppColors.tileTextSecondary,
                         size: 20,
@@ -138,7 +138,7 @@ class ContentRow extends StatelessWidget {
                     ),
                   ),
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.delete_outline,
                     color: AppColors.tileTextFaint,
                     size: 18,

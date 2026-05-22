@@ -138,7 +138,7 @@ class _AttributionTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
+            const Icon(
               Icons.open_in_new,
               size: 16,
               color: AppColors.textSecondary,

@@ -93,9 +93,9 @@ class _GoalMetBannerState extends State<GoalMetBanner>
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     '\u{1F389}',
-                    style: const TextStyle(fontSize: 22),
+                    style: TextStyle(fontSize: 22),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Flexible(

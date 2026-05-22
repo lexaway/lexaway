@@ -240,7 +240,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                 child: Text(
                   AppLocalizations.of(context)!.packManagerSubtitle,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 14,
                   ),
@@ -311,7 +311,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                               child: Text(
                                 AppLocalizations.of(context)!.communityContent,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: AppColors.textTertiary,
                                   fontSize: 14,
                                 ),
@@ -383,7 +383,7 @@ class _ManifestErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            const Icon(
               Icons.cloud_off,
               size: 48,
               color: AppColors.textTertiary,
@@ -392,7 +392,7 @@ class _ManifestErrorView extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: AppSpacing.lg),
             ElevatedButton.icon(

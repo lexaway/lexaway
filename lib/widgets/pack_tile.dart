@@ -148,7 +148,7 @@ class PackTile extends StatelessWidget {
                 ),
                 if (langSteps > 0) ...[
                   const SizedBox(width: AppSpacing.sm),
-                  Icon(
+                  const Icon(
                     Icons.directions_walk,
                     size: 16,
                     color: AppColors.tileTextSecondary,

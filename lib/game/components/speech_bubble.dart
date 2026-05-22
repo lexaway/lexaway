@@ -94,7 +94,7 @@ class SpeechBubble extends PositionComponent {
           ..pushStyle(ui.TextStyle(color: const ui.Color(0xFF3B2010)))
           ..addText(text);
     _paragraph = builder.build();
-    _paragraph.layout(ui.ParagraphConstraints(width: _maxTextWidth));
+    _paragraph.layout(const ui.ParagraphConstraints(width: _maxTextWidth));
   }
 
   void _layout() {
@@ -145,7 +145,7 @@ class SpeechBubble extends PositionComponent {
 
     canvas.drawParagraph(
       _paragraph,
-      ui.Offset(
+      const ui.Offset(
         BubblePainter.borderLeft + _padding,
         BubblePainter.borderTop + _padding,
       ),
