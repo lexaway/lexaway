@@ -184,8 +184,6 @@ final voiceDownloadProgressProvider = StateProvider.family<double?, String>(
   (ref, lang) => null,
 );
 
-// Active pack
-
 final activePackProvider =
     AsyncNotifierProvider<ActivePackNotifier, QuestionSource?>(
       ActivePackNotifier.new,

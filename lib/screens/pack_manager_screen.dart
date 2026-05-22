@@ -80,7 +80,6 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                         Navigator.pop(ctx);
                       },
                     ),
-                    // Each supported locale
                     for (final locale in AppLocalizations.supportedLocales)
                       LocaleOption(
                         label:
@@ -250,7 +249,6 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
               ),
               const SizedBox(height: AppSpacing.md),
 
-              // Pack list
               Expanded(
                 child: manifest.when(
                   loading: () => const Center(

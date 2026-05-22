@@ -31,7 +31,6 @@ class WindLines extends Component with HasGameReference<LexawayGame> {
     dt = dt.clamp(0, 1);
     final scale = LexawayGame.pixelScale;
 
-    // Fade in/out
     if (_active && _fadeOpacity < 1) {
       _fadeOpacity = (_fadeOpacity + dt * 4).clamp(0, 1);
     } else if (!_active && _fadeOpacity > 0) {
@@ -40,7 +39,6 @@ class WindLines extends Component with HasGameReference<LexawayGame> {
 
     if (_fadeOpacity <= 0 && _lines.isEmpty) return;
 
-    // Spawn new lines
     if (_active) {
       _spawnTimer += dt;
       while (_spawnTimer >= _spawnInterval) {
@@ -51,7 +49,6 @@ class WindLines extends Component with HasGameReference<LexawayGame> {
       }
     }
 
-    // Move and cull
     for (int i = _lines.length - 1; i >= 0; i--) {
       _lines[i].x -= _lineSpeed * scale * dt;
       if (_lines[i].x + _lines[i].width < 0) {
@@ -79,7 +76,6 @@ class WindLines extends Component with HasGameReference<LexawayGame> {
     for (final line in _lines) {
       final alpha = (line.opacity * _fadeOpacity * 255).round();
       _paint.color = Color.fromARGB(alpha, 255, 255, 255);
-      // Snap to pixel grid
       final px = (line.x / scale).round() * scale;
       final py = (line.y / scale).round() * scale;
       canvas.drawRect(Rect.fromLTWH(px, py, line.width, h), _paint);

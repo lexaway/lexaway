@@ -66,7 +66,6 @@ class SpeechBubble extends PositionComponent {
       bottomHeight: BubblePainter.borderBottom.toDouble(),
     );
 
-    // Crispy pixel art rendering
     _paint = ui.Paint()..filterQuality = ui.FilterQuality.none;
 
     _buildParagraph('');
@@ -142,10 +141,8 @@ class SpeechBubble extends PositionComponent {
     final nativeW = size.x / _scale;
     final nativeH = size.y / _scale;
 
-    // Nine-tile-box bubble
     _box.drawRect(canvas, ui.Rect.fromLTWH(0, 0, nativeW, nativeH), _paint);
 
-    // Text inside the bubble
     canvas.drawParagraph(
       _paragraph,
       ui.Offset(

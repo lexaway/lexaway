@@ -124,7 +124,6 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
     }
     _fadeController.forward();
 
-    // Start the hatch sequence on the selected egg
     final game = _games[index]!;
     game.onAllPhasesComplete = _onHatchComplete;
     game.startHatchSequence();
@@ -172,7 +171,6 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
               children: [
                 const SizedBox(height: AppSpacing.xl),
 
-                // Title
                 Text(
                   l10n.chooseYourEgg,
                   textAlign: TextAlign.center,
@@ -191,14 +189,12 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                   ),
                 ),
 
-                // Eggs in a triad: one top-centre, two bottom
                 Expanded(
                   child: Stack(
                     children: List.generate(_eggs.length, (i) {
                       final isSelected = _selected == i;
                       final shouldFade = _selected != null && !isSelected;
 
-                      // Triad positions
                       const triad = [
                         Alignment(0, -0.35), // top centre
                         Alignment(-0.45, 0.3), // bottom left
@@ -247,7 +243,6 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                   ),
                 ),
 
-                // Gender toggle at the bottom
                 if (!_hatching)
                   Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.lg),

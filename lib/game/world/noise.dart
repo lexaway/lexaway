@@ -35,7 +35,6 @@ class Noise1D {
     h = ((h + 0xd3a2646c) ^ (h << 9)) & 0xFFFFFFFF;
     h = ((h + 0xfd7046c5) + (h << 3)) & 0xFFFFFFFF;
     h = ((h ^ 0xb55a4f09) ^ (h >> 16)) & 0xFFFFFFFF;
-    // Map to [0, 1].
     return (h & 0x7FFFFFFF) / 0x7FFFFFFF;
   }
 
