@@ -39,10 +39,8 @@ class Question {
     );
   }
 
-  /// Text before the blank
   String get before => phrase.substring(0, blankIndex);
 
-  /// Text after the blank
   String get after => phrase.substring(blankIndex + answer.length);
 
   /// Individual words in the phrase (non-whitespace runs), matching the
@@ -55,7 +53,6 @@ class Question {
 /// A non-whitespace run within a phrase, annotated with its character
 /// offsets in the original string.
 class PhraseWord {
-  /// Word text (no surrounding whitespace).
   final String text;
 
   /// Inclusive start character offset in the phrase.

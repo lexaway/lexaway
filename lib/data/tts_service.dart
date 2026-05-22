@@ -265,7 +265,6 @@ void _isolateEntryPoint(SendPort mainSendPort) {
 
     final request = message;
 
-    // Re-init engine if language/model changed
     if (request.paths != null) {
       final paths = request.paths!;
 

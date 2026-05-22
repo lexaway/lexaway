@@ -15,10 +15,8 @@ class CharacterInfo {
   String get eggCrackAsset => '$eggPath/crack.png';
   String get eggHatchAsset => '$eggPath/hatch.png';
 
-  /// Serialize for Hive storage.
   String get key => '$gender/$name';
 
-  /// Deserialize from Hive storage.
   static CharacterInfo fromKey(String key) {
     final parts = key.split('/');
     return CharacterInfo(gender: parts[0], name: parts[1]);
@@ -43,7 +41,6 @@ class CharacterRegistry {
 
   static final _rng = Random();
 
-  /// Pick [count] random characters from the available pool.
   static List<CharacterInfo> randomSelection(String gender, {int count = 4}) {
     final pool = available(gender)..shuffle(_rng);
     return pool.take(count).toList();

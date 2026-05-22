@@ -368,7 +368,6 @@ const List<(Color, Color)> shellPalette = [
   (Color(0xFFFFCC80), Color(0xFFCE93D8)), // peach + orchid
 ];
 
-/// Pick a random pair from [shellPalette].
 (Color, Color) randomShellPair(math.Random rng) {
   return shellPalette[rng.nextInt(shellPalette.length)];
 }

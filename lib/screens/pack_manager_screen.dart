@@ -43,7 +43,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (_) {
-        // Consumer so the checkmark stays reactive (#1 fix).
+        // Consumer so the checkmark stays reactive.
         return Consumer(
           builder: (ctx, ref, _) {
             final current = ref.watch(localeProvider);
@@ -55,7 +55,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                   children: [
                     // Globe icon instead of localized text — universally
                     // recognizable even if the user is stuck in the wrong
-                    // language (#5 fix).
+                    // language.
                     const Padding(
                       padding: EdgeInsets.fromLTRB(
                         AppSpacing.lg,
@@ -194,7 +194,6 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     final local = localPacks.valueOrNull ?? {};
     final nativeLang = ref.watch(nativeLangProvider);
 
-    // Watch the state so we rebuild when it changes; read the notifier for the packId.
     final hasActiveQuestions =
         ref.watch(activePackProvider).valueOrNull?.hasQuestions ?? false;
     final activePackId = ref.read(activePackProvider.notifier).activePackId;

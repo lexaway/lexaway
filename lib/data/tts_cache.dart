@@ -25,7 +25,6 @@ class TtsCache {
 
   String _key(String lang, String text) => '$lang:${text.trim().toLowerCase()}';
 
-  /// Return cached audio or null.
   Uint8List? get(String lang, String text) => _cache[_key(lang, text)];
 
   /// Return cached audio, await in-flight generation, or generate on demand.
