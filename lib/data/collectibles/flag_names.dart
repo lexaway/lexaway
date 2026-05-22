@@ -146,7 +146,7 @@ const Map<String, String> flagDisplayNames = {
   'cd': 'DR Congo',
   'cf': 'Central African Republic',
   'cg': 'Republic of the Congo',
-  'ci': 'Cote d\'Ivoire',
+  'ci': "Cote d'Ivoire",
   'cm': 'Cameroon',
   'cv': 'Cabo Verde',
   'dj': 'Djibouti',

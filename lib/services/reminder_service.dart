@@ -167,4 +167,3 @@ Future<bool> setReminderEnabled(WidgetRef ref, bool enabled) async {
   ref.read(reminderEnabledProvider.notifier).set(granted);
   return granted;
 }
-

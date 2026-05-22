@@ -94,4 +94,3 @@ class CollectibleRegistry {
   /// loops should arrange a preload first.
   ui.Image? cachedSprite(String assetPath) => _spriteCache[assetPath];
 }
-
