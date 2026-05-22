@@ -28,19 +28,19 @@ class WindLines extends Component with HasGameReference<LexawayGame> {
 
   @override
   void update(double dt) {
-    dt = dt.clamp(0, 1);
+    final step = dt.clamp(0, 1);
     final scale = LexawayGame.pixelScale;
 
     if (_active && _fadeOpacity < 1) {
-      _fadeOpacity = (_fadeOpacity + dt * 4).clamp(0, 1);
+      _fadeOpacity = (_fadeOpacity + step * 4).clamp(0, 1);
     } else if (!_active && _fadeOpacity > 0) {
-      _fadeOpacity = (_fadeOpacity - dt * 3).clamp(0, 1);
+      _fadeOpacity = (_fadeOpacity - step * 3).clamp(0, 1);
     }
 
     if (_fadeOpacity <= 0 && _lines.isEmpty) return;
 
     if (_active) {
-      _spawnTimer += dt;
+      _spawnTimer += step;
       while (_spawnTimer >= _spawnInterval) {
         _spawnTimer -= _spawnInterval;
         if (_lines.length < _maxLines) {
@@ -50,7 +50,7 @@ class WindLines extends Component with HasGameReference<LexawayGame> {
     }
 
     for (int i = _lines.length - 1; i >= 0; i--) {
-      _lines[i].x -= _lineSpeed * scale * dt;
+      _lines[i].x -= _lineSpeed * scale * step;
       if (_lines[i].x + _lines[i].width < 0) {
         _lines.removeAt(i);
       }
