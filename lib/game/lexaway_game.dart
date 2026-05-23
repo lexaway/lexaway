@@ -135,6 +135,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   /// pattern. Sibling systems should take a [Camera] in their constructor.
   double get scrollOffset => _camera.scrollOffset;
   ValueNotifier<double> get scrollNotifier => _camera.scrollNotifier;
+  double get zoomBlend => _camera.zoomBlend;
 
   @override
   Color backgroundColor() => const Color(0xFF50BBFF);

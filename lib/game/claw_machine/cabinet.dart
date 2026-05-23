@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flame/components.dart';
@@ -49,10 +50,21 @@ class ClawCabinet {
 /// claws, head, captured sphere) so the painted frame masks anything
 /// that would otherwise leak past the window edges. The window cutout
 /// in Exterior.png is transparent, so the playfield shows through it.
+///
+/// Renders two variants and crossfades between them based on the camera's
+/// zoom blend: a chunky low-detail sprite for world view (zoom == 1) and
+/// the full detailed cabinet for encounter view (zoom > 1). Both stretch
+/// to the same 80×128 footprint so the ground anchor and hitbox stay put.
 class ExteriorComponent extends PositionComponent
     with HasGameReference<LexawayGame> {
-  late final Image _image;
-  late final Paint _paint;
+  late final Image _bigImage;
+  late final Image _littleImage;
+  final Paint _bigPaint = Paint()
+    ..filterQuality = FilterQuality.none
+    ..isAntiAlias = false;
+  final Paint _littlePaint = Paint()
+    ..filterQuality = FilterQuality.none
+    ..isAntiAlias = false;
 
   ExteriorComponent()
       : super(
@@ -62,20 +74,47 @@ class ExteriorComponent extends PositionComponent
 
   @override
   Future<void> onLoad() async {
-    _image = await game.images.load('claw_machine/Exterior.png');
-    _paint = Paint()
-      ..filterQuality = FilterQuality.none
-      ..isAntiAlias = false;
+    _bigImage = await game.images.load('claw_machine/Exterior.png');
+    _littleImage = await game.images.load('claw_machine/little_machine.png');
   }
 
   @override
   void render(Canvas canvas) {
-    canvas.drawImageRect(
-      _image,
-      Rect.fromLTWH(0, 0, _image.width.toDouble(), _image.height.toDouble()),
-      Offset.zero & size.toSize(),
-      _paint,
-    );
+    final blend = game.zoomBlend;
+    final dst = Offset.zero & size.toSize();
+    if (blend < 1.0) {
+      // Fit the little sprite inside the cabinet footprint at its native
+      // aspect ratio, anchored to the bottom so it sits on the ground.
+      // Stretching it to fill 80×128 distorts the artwork (the source is
+      // a 36×36 square).
+      final imgW = _littleImage.width.toDouble();
+      final imgH = _littleImage.height.toDouble();
+      final scale = min(size.x / imgW, size.y / imgH);
+      final w = imgW * scale;
+      final h = imgH * scale;
+      final littleDst = Rect.fromLTWH((size.x - w) / 2, size.y - h, w, h);
+      _littlePaint.color = Color.fromRGBO(255, 255, 255, 1.0 - blend);
+      canvas.drawImageRect(
+        _littleImage,
+        Rect.fromLTWH(0, 0, imgW, imgH),
+        littleDst,
+        _littlePaint,
+      );
+    }
+    if (blend > 0.0) {
+      _bigPaint.color = Color.fromRGBO(255, 255, 255, blend);
+      canvas.drawImageRect(
+        _bigImage,
+        Rect.fromLTWH(
+          0,
+          0,
+          _bigImage.width.toDouble(),
+          _bigImage.height.toDouble(),
+        ),
+        dst,
+        _bigPaint,
+      );
+    }
   }
 }
 

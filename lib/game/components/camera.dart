@@ -29,8 +29,18 @@ class Camera extends Component {
 
   double _scrollSpeed = 0;
   _ZoomTween? _zoomTween;
+  double _encounterZoom = 1.0;
 
   set scrollSpeed(double speed) => _scrollSpeed = speed;
+
+  /// Crossfade factor for sprites that swap between a world-view variant
+  /// and a zoomed-encounter variant. 0 == fully world (zoom == 1), 1 ==
+  /// fully encounter (zoom == the most recent non-1 target). Tracks the
+  /// live zoom value so the blend rides whatever curve the tween uses.
+  double get zoomBlend {
+    if (_encounterZoom == 1.0) return 0;
+    return ((zoom - 1.0) / (_encounterZoom - 1.0)).clamp(0.0, 1.0);
+  }
 
   /// Tween zoom + focus over [duration]. Resolves when the tween lands.
   Future<void> zoomTo({
@@ -39,6 +49,7 @@ class Camera extends Component {
     required double duration,
     Curve curve = Curves.easeInOut,
   }) {
+    if (target != 1.0) _encounterZoom = target;
     final completer = Completer<void>();
     _zoomTween = _ZoomTween(
       fromZoom: zoom,
