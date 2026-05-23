@@ -36,6 +36,7 @@ class HudBar extends ConsumerWidget {
                   'assets/images/ui/collection_icon.png',
                   width: 48,
                   height: 48,
+                  fit: BoxFit.contain,
                   filterQuality: FilterQuality.none,
                 ),
               ),
