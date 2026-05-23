@@ -13,6 +13,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import 'mini_map.dart';
 import 'phrase_text.dart';
+import 'pixel_sprite_icon.dart';
 import 'tts_controller.dart';
 
 enum _AnswerState { unanswered, correct, wrong }
@@ -285,19 +286,13 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                 right: 0,
                 child: GestureDetector(
                   onTap: _advance,
-                  child: Container(
-                    width: 56,
-                    height: 56,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/ui/fab_circle_bg.png'),
-                        filterQuality: FilterQuality.none,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.arrow_forward,
-                      color: AppColors.textPrimary,
-                      size: 24,
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.all(AppSpacing.sm),
+                    child: PixelSpriteIcon(
+                      asset: 'assets/images/ui/button_forward_sheet.png',
+                      frameSize: 16,
+                      scale: 3,
                     ),
                   ),
                 ),
