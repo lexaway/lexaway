@@ -14,6 +14,7 @@ import 'l10n/app_localizations.dart';
 import 'providers.dart';
 import 'router.dart';
 import 'services/reminder_service.dart';
+import 'widgets/pixel_sprite_icon.dart';
 
 /// Current Hive box schema version. Bump when the shape of stored data changes
 /// and add a migration case in migrateHive.
@@ -165,7 +166,27 @@ class _LexawayAppState extends ConsumerState<LexawayApp>
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: font.family),
+      theme: ThemeData(
+        fontFamily: font.family,
+        appBarTheme: const AppBarTheme(leadingWidth: 72),
+        actionIconTheme: ActionIconThemeData(
+          backButtonIconBuilder: (_) => const Padding(
+            padding: EdgeInsets.only(left: 12),
+            child: PixelSpriteIcon(
+              asset: 'assets/images/ui/button_back_sheet.png',
+              frameSize: 16,
+              scale: 3,
+            ),
+          ),
+          closeButtonIconBuilder: (_) => const Padding(
+            padding: EdgeInsets.only(left: 12),
+            child: PixelSpriteIcon(
+              asset: 'assets/images/ui/button_close_sheet.png',
+              frameSize: 24,
+            ),
+          ),
+        ),
+      ),
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

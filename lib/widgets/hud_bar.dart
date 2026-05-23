@@ -6,6 +6,7 @@ import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import 'hud_pill.dart';
+import 'pixel_sprite_icon.dart';
 
 class HudBar extends ConsumerWidget {
   const HudBar({super.key});
@@ -41,9 +42,22 @@ class HudBar extends ConsumerWidget {
             ],
           ),
           const SizedBox(width: AppSpacing.sm),
-          HudPill(
+          GestureDetector(
             onTap: () => context.push('/settings'),
-            child: const Icon(Icons.settings, color: AppColors.textSecondary, size: 20),
+            behavior: HitTestBehavior.opaque,
+            child: const Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.sm,
+                0,
+                AppSpacing.sm,
+                AppSpacing.sm,
+              ),
+              child: PixelSpriteIcon(
+                asset: 'assets/images/ui/button_options_sheet.png',
+                frameSize: 24,
+                scale: 2,
+              ),
+            ),
           ),
           const Spacer(),
           HudPill(
