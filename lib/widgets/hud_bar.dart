@@ -21,28 +21,6 @@ class HudBar extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              HudPill(
-                onTap: () => context.push('/packs'),
-                child: const Icon(Icons.language, color: AppColors.textSecondary, size: 20),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              GestureDetector(
-                onTap: () => context.push('/collection'),
-                behavior: HitTestBehavior.opaque,
-                child: Image.asset(
-                  'assets/images/ui/collection_icon.png',
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.none,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: AppSpacing.sm),
           GestureDetector(
             onTap: () => context.push('/settings'),
             behavior: HitTestBehavior.opaque,
@@ -58,6 +36,18 @@ class HudBar extends ConsumerWidget {
                 frameSize: 24,
                 scale: 2,
               ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          GestureDetector(
+            onTap: () => context.push('/collection'),
+            behavior: HitTestBehavior.opaque,
+            child: Image.asset(
+              'assets/images/ui/collection_icon.png',
+              width: 48,
+              height: 48,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.none,
             ),
           ),
           const Spacer(),
@@ -82,6 +72,11 @@ class HudBar extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          HudPill(
+            onTap: () => context.push('/packs'),
+            child: const Icon(Icons.language, color: AppColors.textSecondary, size: 20),
           ),
         ],
       ),
