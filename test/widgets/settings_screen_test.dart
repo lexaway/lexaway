@@ -43,7 +43,12 @@ void main() {
                 ),
                 onGenerateInitialRoutes: (navigator, initialRoute) => [
                   MaterialPageRoute(builder: (_) => const Scaffold()),
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  MaterialPageRoute(
+                    // SettingsScreen is hosted inside LexawayBottomSheet
+                    // in the real app, which supplies the Material ancestor
+                    // its Sliders/Switches need. Mirror that here.
+                    builder: (_) => const Scaffold(body: SettingsScreen()),
+                  ),
                 ],
               ),
             );
@@ -154,9 +159,9 @@ void main() {
       expect(find.text('Gameplay'), findsOneWidget);
     });
 
-    testWidgets('back button exists', (tester) async {
+    testWidgets('close button exists', (tester) async {
       await pumpSettings(tester);
-      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+      expect(find.byIcon(Icons.close), findsOneWidget);
     });
 
     testWidgets('daily goal tiles render one per preset with time labels',
