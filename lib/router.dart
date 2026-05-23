@@ -10,6 +10,7 @@ import 'screens/game_screen.dart';
 import 'screens/loading_screen.dart';
 import 'screens/pack_manager_screen.dart';
 import 'screens/settings_screen.dart';
+import 'widgets/lexaway_bottom_sheet.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _RefreshNotifier();
@@ -87,7 +88,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/settings',
-        builder: (context, state) => const SettingsScreen(),
+        pageBuilder: (context, state) => LexawayBottomSheet.goRoute(
+          key: state.pageKey,
+          name: state.matchedLocation,
+          fluidSheetDrag: true,
+          sheetSize: 0.92,
+          body: const SettingsScreen(),
+        ),
       ),
       GoRoute(
         path: '/attributions',
@@ -121,8 +128,12 @@ class _BgmRouteObserver extends NavigatorObserver {
       _maybeNotify(route);
 
   @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      _maybeNotify(previousRoute);
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    // When a dialog/sheet pops, the topmost PageRoute didn't change — no
+    // BGM mode switch is warranted. Only notify when an actual page popped.
+    if (route is! PageRoute) return;
+    _maybeNotify(previousRoute);
+  }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) =>

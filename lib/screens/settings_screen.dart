@@ -11,7 +11,6 @@ import '../providers.dart';
 import '../services/reminder_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
-import '../widgets/tiled_background.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -25,184 +24,191 @@ class SettingsScreen extends ConsumerWidget {
     final ttsVol = ref.watch(ttsVolumeProvider);
     final haptics = ref.watch(hapticsEnabledProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.scaffold,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: AppColors.textSecondary,
-        title: Text(l10n.settings),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.lg,
       ),
-      body: Stack(
-        children: [
-          RepaintBoundary(
-            child: TiledBackground(
-              texture: BackgroundTexture.chevron,
-              color: AppColors.surfaceBright.withValues(alpha: 0.15),
-              scale: 8,
-              scrollDirection: const Offset(-1, 1),
-              scrollSpeed: 12,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // panel_metal_bg.png is 96×96 with a 12px slice border on each
+          // side. When the container shrinks below ~24px tall (mid sheet
+          // dismiss), Flutter's centerSlice path asserts because the slice
+          // corners no longer fit. Skip the decoration in that case.
+          final canRenderPanel = constraints.maxHeight >= 32;
+          return Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.md,
             ),
-          ),
-          Column(
-            children: [
-              SizedBox(
-                height: MediaQuery.of(context).padding.top + kToolbarHeight,
-              ),
-              Expanded(
-                child: Container(
-                  margin: EdgeInsets.fromLTRB(
-                    AppSpacing.lg,
-                    AppSpacing.md,
-                    AppSpacing.lg,
-                    AppSpacing.lg + MediaQuery.of(context).padding.bottom,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.md,
-                  ),
-                  decoration: const BoxDecoration(
+            decoration: canRenderPanel
+                ? const BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage(
-                        'assets/images/ui/panel_metal_bg.png',
-                      ),
+                      image: AssetImage('assets/images/ui/panel_metal_bg.png'),
+                      fit: BoxFit.fill,
                       centerSlice: Rect.fromLTRB(12, 12, 84, 84),
                       filterQuality: FilterQuality.none,
                     ),
+                  )
+                : null,
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: AppSpacing.xs,
+                    bottom: AppSpacing.sm,
                   ),
-                  child: ListView(
-                    padding: EdgeInsets.zero,
+                  child: Row(
                     children: [
-                      _SectionHeader(label: l10n.settingsSound),
-                      const SizedBox(height: AppSpacing.sm),
-                      _VolumeSlider(
-                        label: l10n.settingsMaster,
-                        value: masterVol,
-                        onChanged: (v) =>
-                            ref.read(masterVolumeProvider.notifier).set(v),
-                        onChangeEnd: (_) =>
-                            ref.read(masterVolumeProvider.notifier).save(),
-                      ),
-                      _VolumeSlider(
-                        label: l10n.settingsSfx,
-                        value: sfxVol,
-                        onChanged: (v) =>
-                            ref.read(sfxVolumeProvider.notifier).set(v),
-                        onChangeEnd: (_) =>
-                            ref.read(sfxVolumeProvider.notifier).save(),
-                      ),
-                      _VolumeSlider(
-                        label: l10n.settingsMusic,
-                        value: bgmVol,
-                        onChanged: (v) =>
-                            ref.read(bgmVolumeProvider.notifier).set(v),
-                        onChangeEnd: (_) =>
-                            ref.read(bgmVolumeProvider.notifier).save(),
-                      ),
-                      _VolumeSlider(
-                        label: l10n.voice,
-                        value: ttsVol,
-                        onChanged: (v) =>
-                            ref.read(ttsVolumeProvider.notifier).set(v),
-                        onChangeEnd: (_) =>
-                            ref.read(ttsVolumeProvider.notifier).save(),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: l10n.settingsGameplay),
-                      const SizedBox(height: AppSpacing.sm),
-                      _ToggleRow(
-                        label: l10n.settingsHaptics,
-                        value: haptics,
-                        onChanged: (v) =>
-                            ref.read(hapticsEnabledProvider.notifier).set(v),
-                      ),
-                      _ToggleRow(
-                        label: l10n.settingsAutoPlayVoice,
-                        value: ref.watch(autoPlayTtsProvider),
-                        onChanged: (v) =>
-                            ref.read(autoPlayTtsProvider.notifier).set(v),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: l10n.settingsMusicPack),
-                      const SizedBox(height: AppSpacing.sm),
-                      const _MusicPackSection(),
-                      const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: l10n.settingsDailyGoal),
-                      const SizedBox(height: AppSpacing.sm),
-                      const _DailyGoalSection(),
-                      const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: l10n.settingsDifficulty),
-                      const SizedBox(height: AppSpacing.sm),
-                      for (final entry in {
-                        'beginner': l10n.difficultyBeginner,
-                        'intermediate': l10n.difficultyIntermediate,
-                        'advanced': l10n.difficultyAdvanced,
-                      }.entries)
-                        _RadioRow(
-                          label: entry.value,
-                          selected: ref.watch(difficultyProvider) == entry.key,
-                          onTap: () =>
-                              ref.read(difficultyProvider.notifier).set(entry.key),
-                        ),
-                      const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: l10n.settingsFont),
-                      const SizedBox(height: AppSpacing.sm),
-                      for (final font in AppFont.values)
-                        _FontPickerRow(
-                          font: font,
-                          selected: ref.watch(fontProvider) == font,
-                          onTap: () =>
-                              ref.read(fontProvider.notifier).set(font),
-                        ),
-                      const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: l10n.settingsAbout),
-                      const SizedBox(height: AppSpacing.sm),
-                      _LinkRow(
-                        label: 'Discord',
-                        onTap: () => launchUrl(
-                          Uri.parse(discordInvite),
-                          mode: LaunchMode.externalApplication,
+                      Expanded(
+                        child: Text(
+                          l10n.settings,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 20,
+                          ),
                         ),
                       ),
-                      _LinkRow(
-                        label: 'Collection',
-                        onTap: () => context.push('/collection'),
-                      ),
-                      _LinkRow(
-                        label: l10n.attributions,
-                        onTap: () => context.push('/attributions'),
-                      ),
-                      _LinkRow(
-                        label: l10n.privacyPolicy,
-                        onTap: () async {
-                          final lang =
-                              Localizations.localeOf(context).languageCode;
-                          final uri = Uri.parse(privacyPolicyUrl(lang));
-                          final messenger = ScaffoldMessenger.of(context);
-                          try {
-                            final ok = await launchUrl(
-                              uri,
-                              mode: LaunchMode.inAppBrowserView,
-                            );
-                            if (!ok) {
-                              messenger.showSnackBar(
-                                SnackBar(content: Text('Could not open $uri')),
-                              );
-                            }
-                          } catch (_) {
-                            messenger.showSnackBar(
-                              SnackBar(content: Text('Could not open $uri')),
-                            );
-                          }
-                        },
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => Navigator.of(context).pop(),
+                        child: const Padding(
+                          padding: EdgeInsets.all(AppSpacing.xs),
+                          child: Icon(
+                            Icons.close,
+                            color: AppColors.textSecondary,
+                            size: 22,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                _SectionHeader(label: l10n.settingsSound),
+                const SizedBox(height: AppSpacing.sm),
+                _VolumeSlider(
+                  label: l10n.settingsMaster,
+                  value: masterVol,
+                  onChanged: (v) =>
+                      ref.read(masterVolumeProvider.notifier).set(v),
+                  onChangeEnd: (_) =>
+                      ref.read(masterVolumeProvider.notifier).save(),
+                ),
+                _VolumeSlider(
+                  label: l10n.settingsSfx,
+                  value: sfxVol,
+                  onChanged: (v) => ref.read(sfxVolumeProvider.notifier).set(v),
+                  onChangeEnd: (_) =>
+                      ref.read(sfxVolumeProvider.notifier).save(),
+                ),
+                _VolumeSlider(
+                  label: l10n.settingsMusic,
+                  value: bgmVol,
+                  onChanged: (v) => ref.read(bgmVolumeProvider.notifier).set(v),
+                  onChangeEnd: (_) =>
+                      ref.read(bgmVolumeProvider.notifier).save(),
+                ),
+                _VolumeSlider(
+                  label: l10n.voice,
+                  value: ttsVol,
+                  onChanged: (v) => ref.read(ttsVolumeProvider.notifier).set(v),
+                  onChangeEnd: (_) =>
+                      ref.read(ttsVolumeProvider.notifier).save(),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                _SectionHeader(label: l10n.settingsGameplay),
+                const SizedBox(height: AppSpacing.sm),
+                _ToggleRow(
+                  label: l10n.settingsHaptics,
+                  value: haptics,
+                  onChanged: (v) =>
+                      ref.read(hapticsEnabledProvider.notifier).set(v),
+                ),
+                _ToggleRow(
+                  label: l10n.settingsAutoPlayVoice,
+                  value: ref.watch(autoPlayTtsProvider),
+                  onChanged: (v) =>
+                      ref.read(autoPlayTtsProvider.notifier).set(v),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                _SectionHeader(label: l10n.settingsMusicPack),
+                const SizedBox(height: AppSpacing.sm),
+                const _MusicPackSection(),
+                const SizedBox(height: AppSpacing.lg),
+                _SectionHeader(label: l10n.settingsDailyGoal),
+                const SizedBox(height: AppSpacing.sm),
+                const _DailyGoalSection(),
+                const SizedBox(height: AppSpacing.lg),
+                _SectionHeader(label: l10n.settingsDifficulty),
+                const SizedBox(height: AppSpacing.sm),
+                for (final entry in {
+                  'beginner': l10n.difficultyBeginner,
+                  'intermediate': l10n.difficultyIntermediate,
+                  'advanced': l10n.difficultyAdvanced,
+                }.entries)
+                  _RadioRow(
+                    label: entry.value,
+                    selected: ref.watch(difficultyProvider) == entry.key,
+                    onTap: () =>
+                        ref.read(difficultyProvider.notifier).set(entry.key),
+                  ),
+                const SizedBox(height: AppSpacing.lg),
+                _SectionHeader(label: l10n.settingsFont),
+                const SizedBox(height: AppSpacing.sm),
+                for (final font in AppFont.values)
+                  _FontPickerRow(
+                    font: font,
+                    selected: ref.watch(fontProvider) == font,
+                    onTap: () => ref.read(fontProvider.notifier).set(font),
+                  ),
+                const SizedBox(height: AppSpacing.lg),
+                _SectionHeader(label: l10n.settingsAbout),
+                const SizedBox(height: AppSpacing.sm),
+                _LinkRow(
+                  label: 'Discord',
+                  onTap: () => launchUrl(
+                    Uri.parse(discordInvite),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+                _LinkRow(
+                  label: 'Collection',
+                  onTap: () => context.push('/collection'),
+                ),
+                _LinkRow(
+                  label: l10n.attributions,
+                  onTap: () => context.push('/attributions'),
+                ),
+                _LinkRow(
+                  label: l10n.privacyPolicy,
+                  onTap: () async {
+                    final lang = Localizations.localeOf(context).languageCode;
+                    final uri = Uri.parse(privacyPolicyUrl(lang));
+                    final messenger = ScaffoldMessenger.of(context);
+                    try {
+                      final ok = await launchUrl(
+                        uri,
+                        mode: LaunchMode.inAppBrowserView,
+                      );
+                      if (!ok) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text('Could not open $uri')),
+                        );
+                      }
+                    } catch (_) {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text('Could not open $uri')),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -216,10 +222,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
-        color: AppColors.textSecondary,
-        fontSize: 18,
-      ),
+      style: const TextStyle(color: AppColors.textSecondary, fontSize: 18),
     );
   }
 }
@@ -351,7 +354,9 @@ class _FontPickerRow extends StatelessWidget {
               ),
             ),
             Icon(
-              selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              selected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
               size: 20,
               color: selected ? AppColors.accent : AppColors.textSecondary,
             ),
@@ -392,7 +397,9 @@ class _RadioRow extends StatelessWidget {
               ),
             ),
             Icon(
-              selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              selected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
               size: 20,
               color: selected ? AppColors.accent : AppColors.textSecondary,
             ),
@@ -473,8 +480,8 @@ class _MusicPackRow extends StatelessWidget {
     final subtitle = isExtracting
         ? extractingLabel
         : downloaded
-            ? (trackCount > 0 ? trackCountLabel : null)
-            : optionalLabel;
+        ? (trackCount > 0 ? trackCountLabel : null)
+        : optionalLabel;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -494,21 +501,22 @@ class _MusicPackRow extends StatelessWidget {
                             strokeWidth: 2,
                             value: progress! > 0 ? progress : null,
                             color: AppColors.accent,
-                            backgroundColor:
-                                AppColors.textPrimary.withValues(alpha: 0.12),
+                            backgroundColor: AppColors.textPrimary.withValues(
+                              alpha: 0.12,
+                            ),
                           ),
                         )
                       : downloaded
-                          ? const Icon(
-                              Icons.check_circle,
-                              color: AppColors.success,
-                              size: 22,
-                            )
-                          : const Icon(
-                              Icons.music_note,
-                              color: AppColors.textSecondary,
-                              size: 22,
-                            ),
+                      ? const Icon(
+                          Icons.check_circle,
+                          color: AppColors.success,
+                          size: 22,
+                        )
+                      : const Icon(
+                          Icons.music_note,
+                          color: AppColors.textSecondary,
+                          size: 22,
+                        ),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -584,8 +592,7 @@ class _MusicPackRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(3),
               child: LinearProgressIndicator(
                 value: progress! > 0 ? progress : null,
-                backgroundColor:
-                    AppColors.textPrimary.withValues(alpha: 0.12),
+                backgroundColor: AppColors.textPrimary.withValues(alpha: 0.12),
                 valueColor: AlwaysStoppedAnimation(AppColors.accent),
                 minHeight: 4,
               ),
@@ -718,8 +725,9 @@ class _GoalTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? AppColors.accentDark : AppColors.controlInactive,
           border: Border.all(
-            color:
-                selected ? AppColors.accentLight : AppColors.controlInactiveThumb,
+            color: selected
+                ? AppColors.accentLight
+                : AppColors.controlInactiveThumb,
             width: 1,
           ),
         ),
@@ -729,8 +737,7 @@ class _GoalTile extends StatelessWidget {
             Text(
               timeLabel,
               style: TextStyle(
-                color:
-                    selected ? AppColors.accentLight : AppColors.textPrimary,
+                color: selected ? AppColors.accentLight : AppColors.textPrimary,
                 fontSize: 20,
               ),
             ),
@@ -738,8 +745,9 @@ class _GoalTile extends StatelessWidget {
             Text(
               tierLabel,
               style: TextStyle(
-                color:
-                    selected ? AppColors.accentLight : AppColors.textSecondary,
+                color: selected
+                    ? AppColors.accentLight
+                    : AppColors.textSecondary,
                 fontSize: 12,
               ),
             ),
@@ -828,17 +836,10 @@ class _LinkRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(
-                  color: AppColors.accent,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: AppColors.accent, fontSize: 16),
               ),
             ),
-            Icon(
-              Icons.open_in_new,
-              size: 18,
-              color: AppColors.accent,
-            ),
+            Icon(Icons.open_in_new, size: 18, color: AppColors.accent),
           ],
         ),
       ),
