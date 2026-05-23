@@ -1,4 +1,46 @@
 ### 🇬🇧 English
+**1.10.0** — The collection screen now glints with gilded frames on a brushed-steel backdrop. New pixel-art icons that press in when tapped. Settings is now a drag-down sheet that won't interrupt the music.
+
+### 🇫🇷 Français
+**1.10.0** — La collection scintille désormais de cadres dorés sur un fond d'acier brossé. De nouvelles icônes pixel art s'enfoncent quand vous les touchez. Les Réglages se déroulent maintenant en feuille glissante sans interrompre la musique.
+
+### 🇪🇸 Español
+**1.10.0** — La colección ahora reluce con marcos dorados sobre un fondo de acero cepillado. Nuevos íconos pixel art que se hunden al tocarlos. Los Ajustes ahora son una hoja deslizable que no interrumpe la música.
+
+### 🇩🇪 Deutsch
+**1.10.0** — Die Sammlung glänzt jetzt mit goldenen Rahmen auf gebürstetem Stahl. Neue Pixel-Art-Icons drücken sich beim Tippen ein. Die Einstellungen sind nun eine ziehbare Lasche, die die Musik nicht mehr unterbricht.
+
+### 🇮🇹 Italiano
+**1.10.0** — La collezione ora brilla di cornici dorate su uno sfondo d'acciaio spazzolato. Nuove icone pixel art che si premono al tocco. Le Impostazioni ora sono un foglio scorrevole che non interrompe la musica.
+
+### 🇵🇹 Português
+**1.10.0** — A coleção agora reluz com molduras douradas sobre um fundo de aço escovado. Novos ícones pixel art que afundam ao toque. Os Ajustes agora são uma aba deslizante que não interrompe a música.
+
+### 🇳🇱 Nederlands
+**1.10.0** — De collectie glanst nu met vergulde lijsten op een geborsteld stalen achtergrond. Nieuwe pixelart-iconen die indrukken als je ze aanraakt. Instellingen zijn nu een trekbaar paneel dat de muziek niet onderbreekt.
+
+### 🇬🇧 English
+**1.9.0** — A claw machine has appeared in the world! Drop a coin and try your luck at collectible flag spheres that crack open to reveal what's inside.
+
+### 🇫🇷 Français
+**1.9.0** — Une machine à pince est apparue dans le monde ! Glissez une pièce et tentez votre chance sur des sphères-drapeaux à collectionner qui s'ouvrent en révélant ce qu'elles cachent.
+
+### 🇪🇸 Español
+**1.9.0** — ¡Ha aparecido una máquina de garra en el mundo! Echa una moneda y prueba suerte con esferas-bandera coleccionables que se abren para revelar lo que llevan dentro.
+
+### 🇩🇪 Deutsch
+**1.9.0** — Ein Greifautomat ist in der Welt aufgetaucht! Wirf eine Münze ein und versuche dein Glück mit sammelbaren Flaggenkugeln, die aufspringen und ihren Inhalt freigeben.
+
+### 🇮🇹 Italiano
+**1.9.0** — Una macchina con la pinza è apparsa nel mondo! Inserisci una moneta e tenta la sorte con sfere-bandiera da collezionare che si aprono per rivelare cosa contengono.
+
+### 🇵🇹 Português
+**1.9.0** — Uma máquina de garra surgiu no mundo! Insira uma moeda e teste sua sorte com esferas-bandeira colecionáveis que se abrem revelando o que há dentro.
+
+### 🇳🇱 Nederlands
+**1.9.0** — Een grijpautomaat is in de wereld verschenen! Gooi een muntje erin en probeer je geluk met verzamelbare vlagbollen die opensplijten en hun inhoud onthullen.
+
+### 🇬🇧 English
 **1.8.0** — An optional Towball's Crossing music pack adds a different theme to each biome. Your dino now flares with a power-up aura at a 3-streak and bursts into sparkles every 10.
 
 ### 🇫🇷 Français
