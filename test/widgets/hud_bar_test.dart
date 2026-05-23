@@ -8,6 +8,7 @@ import 'package:hive_ce/hive_ce.dart';
 import 'package:lexaway/data/hive_keys.dart';
 import 'package:lexaway/providers.dart';
 import 'package:lexaway/widgets/hud_bar.dart';
+import 'package:lexaway/widgets/pixel_sprite_icon.dart';
 
 void main() {
   late Box box;
@@ -68,7 +69,14 @@ void main() {
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w is PixelSpriteIcon &&
+              w.asset == 'assets/images/ui/button_options_sheet.png',
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('tapping language icon navigates to /packs', (tester) async {
@@ -122,7 +130,13 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.settings));
+      await tester.tap(
+        find.byWidgetPredicate(
+          (w) =>
+              w is PixelSpriteIcon &&
+              w.asset == 'assets/images/ui/button_options_sheet.png',
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('SETTINGS_SCREEN'), findsOneWidget);
