@@ -233,8 +233,7 @@ class _FramePainter extends CustomPainter {
 }
 
 class _FrameSheet {
-  static const _assetPath =
-      'assets/tinyRPG_dragonRegaliaGUI_v1_0/20240713dragonFilledFrame-Sheet.png';
+  static const _assetPath = 'assets/images/ui/frame_slot_sheet.png';
 
   static ui.Image? _image;
   static Future<ui.Image>? _pending;
