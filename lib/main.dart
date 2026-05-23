@@ -168,7 +168,11 @@ class _LexawayAppState extends ConsumerState<LexawayApp>
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: font.family,
-        appBarTheme: const AppBarTheme(leadingWidth: 72),
+        appBarTheme: const AppBarTheme(
+          leadingWidth: 72,
+          scrolledUnderElevation: 0,
+          surfaceTintColor: Colors.transparent,
+        ),
         actionIconTheme: ActionIconThemeData(
           backButtonIconBuilder: (_) => const Padding(
             padding: EdgeInsets.only(left: 12),
