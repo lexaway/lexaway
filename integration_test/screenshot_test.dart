@@ -108,22 +108,18 @@ void main() {
       }
     }
 
-    // Helper to navigate via GoRouter
-    void navigate(String path) {
-      final ctx = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(ctx).go(path);
-    }
+    // Grab the GoRouter once from the initial route's context. Re-resolving
+    // it later via find.byType(Scaffold) breaks when a modal-bottom-sheet
+    // route (e.g. /settings) is up, because the underlying Scaffold isn't
+    // visible to the finder and MaterialApp itself isn't a GoRouter
+    // descendant.
+    final router = GoRouter.of(tester.element(find.byType(Scaffold).first));
+    void navigate(String path) => router.go(path);
 
     // --- 1. Pack Manager ---
     // We land here naturally since there are no active questions.
     expect(find.byType(PackManagerScreen), findsOneWidget);
     await screenshot('01_packs');
-
-    // --- 2. Settings ---
-    navigate('/settings');
-    await pumpFrames(tester, 30);
-    expect(find.byType(SettingsScreen), findsOneWidget);
-    await screenshot('02_settings');
 
     // --- 3. Egg Selection ---
     // Activate the pack so the router sees questions, but no character yet.
@@ -154,6 +150,16 @@ void main() {
     await pumpFrames(tester, 180);
     expect(find.byType(GameScreen), findsOneWidget);
     await screenshot('04_game');
+
+    // --- 2. Settings ---
+    // Push (not go) so the bottom sheet stacks on top of /game — otherwise
+    // the sheet would render against an empty/black backdrop.
+    router.push('/settings');
+    await pumpFrames(tester, 30);
+    expect(find.byType(SettingsScreen), findsOneWidget);
+    await screenshot('02_settings');
+    router.pop();
+    await pumpFrames(tester, 30);
 
     // --- 5. Loading Screen ---
     // Put the provider back into loading state so the router redirects to /loading.
