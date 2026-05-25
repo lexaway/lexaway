@@ -86,12 +86,6 @@ void main() {
       expect(fixture['steps_day_key'] as String, isA<String>());
     });
 
-    test('daily goal + reminder prefs deserialize', () {
-      expect(fixture['daily_goal'] as int, isA<int>());
-      expect(fixture['reminder_enabled'] as bool, isA<bool>());
-      expect(fixture['reminder_time'] as String, isA<String>());
-    });
-
     test('pack metadata matches PackManager expectations', () {
       final packs = fixture['packs'] as Map<String, dynamic>;
       for (final entry in packs.entries) {

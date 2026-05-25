@@ -22,8 +22,6 @@ class MovementController extends Component {
   final WorldMap _worldMap;
   final GameEvents _events;
 
-  // Feeds daily-goal session-length labels; see `dailyGoalPresets` in
-  // `lib/providers/daily_goal.dart` if you change this.
   static const double _stepInterval = 0.3;
   static const int _runStreakThreshold = 3;
   static const double _runDistanceMultiplier = 1.5;

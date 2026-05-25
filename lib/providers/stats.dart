@@ -71,8 +71,7 @@ class CoinNotifier extends HiveIntNotifier {
 }
 
 /// Per-language lifetime step counter, surfaced on the pack tile so the user
-/// can see how far the dino has walked in each language. Pure display — the
-/// global [stepsProvider] still drives the daily goal.
+/// can see how far the dino has walked in each language. Pure display.
 ///
 /// NOT autoDispose: GameScreen writes via `ref.read` without watching, so an
 /// autoDispose family would dispose between every step and force a Hive read

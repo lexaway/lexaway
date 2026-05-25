@@ -26,9 +26,6 @@ dependencies:
   audioplayers: ^6.1.0
   archive: ^4.0.2
   url_launcher: ^6.3.2
-  flutter_local_notifications: ^18.0.1
-  timezone: ^0.10.0
-  flutter_timezone: ^4.1.1
 
 dev_dependencies:
   flutter_test:
@@ -81,6 +78,7 @@ flutter:
     # explicitly to avoid silently bundling stray .m4a files.
     - assets/bgm/bgm_main_theme.m4a
     - assets/dino/
+    - assets/vocab.csv
     # Female characters (all 12 complete)
     - assets/images/characters/female/cole/base/
     - assets/images/characters/female/cole/egg/

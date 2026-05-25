@@ -13,7 +13,6 @@ import 'data/pack_manager.dart';
 import 'l10n/app_localizations.dart';
 import 'providers.dart';
 import 'router.dart';
-import 'services/reminder_service.dart';
 import 'widgets/pixel_sprite_icon.dart';
 
 /// Current Hive box schema version. Bump when the shape of stored data changes
@@ -117,20 +116,6 @@ class _LexawayAppState extends ConsumerState<LexawayApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Fire-and-forget: initialize the notifications plugin + timezone data,
-    // wire the ref-driven listeners, and schedule the first reminder if
-    // one is due. We don't block the UI on this — scheduling errors would
-    // only affect the reminder, not app boot.
-    final service = ref.read(reminderServiceProvider);
-    unawaited(
-      service.init().then((_) {
-        service.attachListeners();
-        service.scheduleNext();
-      }).catchError((Object e, StackTrace s) {
-        debugPrint('[ReminderService] init failed: $e\n$s');
-      }),
-    );
-
     // Mirror the merged voice catalog into TtsManager so non-Riverpod
     // playback paths see manifest-supplied voices. `fireImmediately` covers
     // the initial baseline + any synchronously-available cached manifest.

@@ -30,18 +30,10 @@ abstract final class HiveKeys {
   static const stepsToday = 'steps_today';
   static const stepsDayKey = 'steps_day_key';
 
-  // Daily goal
-  static const dailyGoal = 'daily_goal';
-  static const reminderEnabled = 'reminder_enabled';
-  static const reminderTime = 'reminder_time';
-  static const goalMetShownDayKey = 'goal_met_shown_day_key';
-
   // World state (per-language)
   static String world(String lang) => 'world_$lang';
 
   // Per-language lifetime steps — display-only counter for the pack tile.
-  // Independent from the global stepsLifetime/stepsToday used by the daily
-  // goal flow.
   static String langSteps(String lang) => 'steps_lang_$lang';
 
   // Character selection (per-language)

@@ -60,8 +60,8 @@ void main() {
 
   Future<void> pumpSettings(WidgetTester tester, {Box? hiveBox}) async {
     // Settings is a long ListView. Force a tall surface so virtualized
-    // children below the fold (daily-goal tiles, reminder toggle) are
-    // realised in the widget tree without per-test scrolling.
+    // children below the fold are realised in the widget tree without
+    // per-test scrolling.
     await tester.binding.setSurfaceSize(const Size(800, 2000));
     await tester.pumpWidget(buildApp(hiveBox: hiveBox));
     await tester.pumpAndSettle();
@@ -84,8 +84,8 @@ void main() {
     testWidgets('renders haptics toggle', (tester) async {
       await pumpSettings(tester);
       expect(find.text('Haptics'), findsOneWidget);
-      // Haptics, Auto-play voice, and Reminder toggles.
-      expect(find.byType(Switch), findsNWidgets(3));
+      // Haptics and Auto-play voice toggles.
+      expect(find.byType(Switch), findsNWidgets(2));
     });
 
     testWidgets('sliders default correctly', (tester) async {
@@ -162,43 +162,6 @@ void main() {
     testWidgets('close button exists', (tester) async {
       await pumpSettings(tester);
       expect(find.byIcon(Icons.close), findsOneWidget);
-    });
-
-    testWidgets('daily goal tiles render one per preset with time labels',
-        (tester) async {
-      await pumpSettings(tester);
-      // Parallel-list-drift guard: if dailyGoalPresets and its minutes/tier
-      // fields ever fall out of sync, one of these asserts fails before the
-      // UI ships a mislabelled tile.
-      expect(find.text('~1 min'), findsOneWidget);
-      expect(find.text('~2 min'), findsOneWidget);
-      expect(find.text('~5 min'), findsOneWidget);
-      expect(find.text('~10 min'), findsOneWidget);
-      expect(find.text('Quick'), findsOneWidget);
-      expect(find.text('Short'), findsOneWidget);
-      expect(find.text('Medium'), findsOneWidget);
-      expect(find.text('Long'), findsOneWidget);
-    });
-
-    testWidgets('tapping a goal tile persists the step count to Hive',
-        (tester) async {
-      await pumpSettings(tester);
-      final tile = find.text('~5 min');
-      await tester.ensureVisible(tile);
-      await tester.pumpAndSettle();
-      await tester.tap(tile);
-      await tester.pumpAndSettle();
-      expect(box.get(HiveKeys.dailyGoal), equals(500));
-    });
-
-    testWidgets('stale stored goal snaps to nearest preset on load',
-        (tester) async {
-      // Pre-refactor users may have 50 persisted. Build() should snap to
-      // the closest surviving preset (100) and rewrite Hive so the UI
-      // always has a highlighted tile.
-      box.put(HiveKeys.dailyGoal, 50);
-      await pumpSettings(tester);
-      expect(box.get(HiveKeys.dailyGoal), equals(100));
     });
   });
 }

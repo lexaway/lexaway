@@ -10,8 +10,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/app_font.dart';
 import '../data/collectibles/collectible.dart';
 import '../data/collectibles/registry.dart';
-import '../data/day_key.dart';
-import '../data/hive_keys.dart';
 import '../data/lang_codes.dart';
 import '../game/audio_manager.dart';
 import '../game/claw_machine/prize_sphere.dart';
@@ -20,7 +18,6 @@ import '../game/lexaway_game.dart';
 import '../models/character.dart';
 import '../providers.dart';
 import '../widgets/claw_prompt.dart';
-import '../widgets/goal_met_banner.dart';
 import '../widgets/hud_bar.dart';
 import '../widgets/question_panel.dart';
 
@@ -44,7 +41,6 @@ class _GameScreenState extends ConsumerState<GameScreen>
   // around every switch. We never see a lang change on a live GameScreen.
   String? _activeLang;
   StreamSubscription<GameEvent>? _eventSub;
-  bool _goalMetBannerVisible = false;
 
   // Claw machine encounter state. The flow is: dino bumps cabinet →
   // ClawMachineEntered fires → walk pauses, prompt appears → on accept,
@@ -60,16 +56,6 @@ class _GameScreenState extends ConsumerState<GameScreen>
   // the dialog's "New!" vs "Already in your collection" indicator.
   bool _clawPrizeIsNew = false;
 
-  void _maybeShowGoalMetBanner() {
-    if (_goalMetBannerVisible) return;
-    final box = ref.read(hiveBoxProvider);
-    final shownKey = box.get(HiveKeys.goalMetShownDayKey) as String?;
-    final today = todayKey();
-    if (shownKey == today) return;
-    box.put(HiveKeys.goalMetShownDayKey, today);
-    setState(() => _goalMetBannerVisible = true);
-  }
-
   @override
   void initState() {
     super.initState();
@@ -79,13 +65,6 @@ class _GameScreenState extends ConsumerState<GameScreen>
     // the audio singleton with the current provider values here.
     AudioManager.instance.masterVolume = ref.read(masterVolumeProvider);
     AudioManager.instance.sfxVolume = ref.read(sfxVolumeProvider);
-    // If the user returns to /game with today's goal already met (e.g.
-    // after a background rollover) and we haven't flashed the banner for
-    // this day yet, show it once.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (ref.read(goalMetTodayProvider)) _maybeShowGoalMetBanner();
-    });
   }
 
   @override
@@ -299,16 +278,6 @@ class _GameScreenState extends ConsumerState<GameScreen>
       AudioManager.instance.sfxVolume = next;
     });
 
-    // Goal-met flourish: fire when a *step* pushes today across the goal
-    // line. We gate on the step delta (not the derived goal-met bool) so
-    // that lowering the daily goal from Settings never retroactively
-    // triggers the banner. Once-per-day dedup lives in the shown-key check.
-    ref.listen<StepsState>(stepsProvider, (prev, next) {
-      if (prev == null) return;
-      final goal = ref.read(dailyGoalProvider);
-      if (prev.today < goal && next.today >= goal) _maybeShowGoalMetBanner();
-    });
-
     return Scaffold(
       body: Stack(
         children: [
@@ -359,12 +328,6 @@ class _GameScreenState extends ConsumerState<GameScreen>
                   ),
                 ),
               ),
-            ),
-          if (_goalMetBannerVisible)
-            GoalMetBanner(
-              onDismissed: () {
-                if (mounted) setState(() => _goalMetBannerVisible = false);
-              },
             ),
           if (_clawPhase == _ClawEncounterPhase.prompt)
             Positioned.fill(
