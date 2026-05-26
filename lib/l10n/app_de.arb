@@ -42,5 +42,16 @@
   "settingsDifficulty": "Schwierigkeit",
   "difficultyBeginner": "Anfänger",
   "difficultyIntermediate": "Mittelstufe",
-  "difficultyAdvanced": "Fortgeschritten"
+  "difficultyAdvanced": "Fortgeschritten",
+  "settingsNotifications": "Benachrichtigungen",
+  "notifMaster": "Vokabel-Karten",
+  "notifPerDay": "Pro Tag",
+  "notifActiveWindow": "Aktives Zeitfenster",
+  "notifStartTime": "Start",
+  "notifEndTime": "Ende",
+  "notifLanguages": "Sprachen",
+  "notifNoPacks": "Lade ein Paket, um Vokabel-Karten zu bekommen.",
+  "notifPreview": "Vorschau (zum Neuwürfeln tippen)",
+  "notifPreviewEmpty": "Wähle eine Sprache für die Vorschau.",
+  "notifPickAtLeastOne": "Wähle mindestens eine Sprache."
 }

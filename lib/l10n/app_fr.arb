@@ -42,5 +42,16 @@
   "settingsDifficulty": "Difficulté",
   "difficultyBeginner": "Débutant",
   "difficultyIntermediate": "Intermédiaire",
-  "difficultyAdvanced": "Avancé"
+  "difficultyAdvanced": "Avancé",
+  "settingsNotifications": "Notifications",
+  "notifMaster": "Cartes de vocabulaire",
+  "notifPerDay": "Par jour",
+  "notifActiveWindow": "Plage active",
+  "notifStartTime": "Début",
+  "notifEndTime": "Fin",
+  "notifLanguages": "Langues",
+  "notifNoPacks": "Télécharge un paquet pour recevoir des cartes.",
+  "notifPreview": "Aperçu (touche pour rafraîchir)",
+  "notifPreviewEmpty": "Choisis une langue pour voir un aperçu.",
+  "notifPickAtLeastOne": "Choisis au moins une langue."
 }

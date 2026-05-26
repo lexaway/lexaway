@@ -335,6 +335,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Advanced'**
   String get difficultyAdvanced;
+
+  /// No description provided for @settingsNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get settingsNotifications;
+
+  /// No description provided for @notifMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Vocab flashcards'**
+  String get notifMaster;
+
+  /// No description provided for @notifPerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Per day'**
+  String get notifPerDay;
+
+  /// No description provided for @notifActiveWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Active window'**
+  String get notifActiveWindow;
+
+  /// No description provided for @notifStartTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get notifStartTime;
+
+  /// No description provided for @notifEndTime.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get notifEndTime;
+
+  /// No description provided for @notifLanguages.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get notifLanguages;
+
+  /// No description provided for @notifNoPacks.
+  ///
+  /// In en, this message translates to:
+  /// **'Download a pack to get vocab flashcards.'**
+  String get notifNoPacks;
+
+  /// No description provided for @notifPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview (tap to re-roll)'**
+  String get notifPreview;
+
+  /// No description provided for @notifPreviewEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a language to see a preview.'**
+  String get notifPreviewEmpty;
+
+  /// No description provided for @notifPickAtLeastOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least one language.'**
+  String get notifPickAtLeastOne;
 }
 
 class _AppLocalizationsDelegate

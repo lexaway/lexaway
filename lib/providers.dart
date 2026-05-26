@@ -8,6 +8,7 @@ export 'providers/character.dart';
 export 'providers/collection.dart';
 export 'providers/locale.dart';
 export 'providers/music.dart';
+export 'providers/notifications.dart';
 export 'providers/packs.dart';
 export 'providers/settings.dart';
 export 'providers/stats.dart';

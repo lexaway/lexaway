@@ -133,6 +133,10 @@ class SettingsScreen extends ConsumerWidget {
                       ref.read(autoPlayTtsProvider.notifier).set(v),
                 ),
                 const SizedBox(height: AppSpacing.lg),
+                _SectionHeader(label: l10n.settingsNotifications),
+                const SizedBox(height: AppSpacing.sm),
+                const _NotificationsSection(),
+                const SizedBox(height: AppSpacing.lg),
                 _SectionHeader(label: l10n.settingsMusicPack),
                 const SizedBox(height: AppSpacing.sm),
                 const _MusicPackSection(),
@@ -622,6 +626,352 @@ class _LinkRow extends StatelessWidget {
             Icon(Icons.open_in_new, size: 18, color: AppColors.accent),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Endonyms for L2 language chips (ISO 639-3 → native name). Centralized so
+/// the chip label always reflects the language itself, not the UI locale.
+const _l2Endonyms = {
+  'eng': 'English',
+  'fra': 'Français',
+  'deu': 'Deutsch',
+  'ita': 'Italiano',
+  'nld': 'Nederlands',
+  'por': 'Português',
+  'spa': 'Español',
+};
+
+class _NotificationsSection extends ConsumerWidget {
+  const _NotificationsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final settings = ref.watch(notifSettingsProvider);
+    final installed = ref.watch(installedL2sProvider);
+    final disabled = !settings.enabled;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _ToggleRow(
+          label: l10n.notifMaster,
+          value: settings.enabled,
+          onChanged: (v) =>
+              ref.read(notifSettingsProvider.notifier).setEnabled(v),
+        ),
+        Opacity(
+          opacity: disabled ? 0.5 : 1.0,
+          child: IgnorePointer(
+            ignoring: disabled,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _PerDaySlider(
+                  value: settings.perDay,
+                  onChanged: (v) =>
+                      ref.read(notifSettingsProvider.notifier).setPerDay(v),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                  child: Text(
+                    l10n.notifActiveWindow,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                _TimeRow(
+                  label: l10n.notifStartTime,
+                  hour: settings.startHour,
+                  onPick: (h) => ref.read(notifSettingsProvider.notifier)
+                      .setWindow(startHour: h, endHour: settings.endHour),
+                ),
+                _TimeRow(
+                  label: l10n.notifEndTime,
+                  hour: settings.endHour,
+                  onPick: (h) => ref.read(notifSettingsProvider.notifier)
+                      .setWindow(startHour: settings.startHour, endHour: h),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: AppSpacing.sm,
+                    bottom: AppSpacing.xs,
+                  ),
+                  child: Text(
+                    l10n.notifLanguages,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                if (installed.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                    child: Text(
+                      l10n.notifNoPacks,
+                      style: const TextStyle(
+                        color: AppColors.textTertiary,
+                        fontSize: 13,
+                      ),
+                    ),
+                  )
+                else ...[
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: 4,
+                    children: [
+                      for (final iso3 in installed)
+                        FilterChip(
+                          label: Text(_l2Endonyms[iso3] ?? iso3),
+                          selected: settings.langs.contains(iso3),
+                          onSelected: (on) => ref
+                              .read(notifSettingsProvider.notifier)
+                              .toggleLang(iso3, on),
+                          backgroundColor: AppColors.surface,
+                          selectedColor: AppColors.accentDark,
+                          checkmarkColor: AppColors.textPrimary,
+                          labelStyle: const TextStyle(
+                            color: AppColors.textPrimary,
+                          ),
+                          side: BorderSide(color: AppColors.surfaceBorder),
+                        ),
+                    ],
+                  ),
+                  if (settings.langs.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.xs),
+                      child: Text(
+                        l10n.notifPickAtLeastOne,
+                        style: const TextStyle(
+                          color: AppColors.textTertiary,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                ],
+                const SizedBox(height: AppSpacing.sm),
+                const _NotifPreviewCard(),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Per-day slider. Local state during drag so we don't fire a full reschedule
+/// on every frame — the actual `setPerDay` only happens on `onChangeEnd`,
+/// matching the `_VolumeSlider` "tick during drag, save on release" pattern.
+class _PerDaySlider extends StatefulWidget {
+  final int value;
+  final ValueChanged<int> onChanged;
+  const _PerDaySlider({required this.value, required this.onChanged});
+
+  @override
+  State<_PerDaySlider> createState() => _PerDaySliderState();
+}
+
+class _PerDaySliderState extends State<_PerDaySlider> {
+  late double _drag = widget.value.toDouble();
+
+  @override
+  void didUpdateWidget(covariant _PerDaySlider old) {
+    super.didUpdateWidget(old);
+    // Pick up external changes (e.g. settings restored from Hive) when we're
+    // not actively dragging.
+    if (old.value != widget.value) _drag = widget.value.toDouble();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final shown = _drag.round();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 88,
+            child: Text(
+              l10n.notifPerDay,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          Expanded(
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: AppColors.accent,
+                inactiveTrackColor: AppColors.controlInactive,
+                thumbColor: AppColors.accentLight,
+                overlayColor: AppColors.accent.withValues(alpha: 0.2),
+                trackHeight: 4,
+              ),
+              child: Slider(
+                value: _drag,
+                min: 1,
+                max: 8,
+                divisions: 7,
+                label: '$shown',
+                onChanged: (v) => setState(() => _drag = v),
+                onChangeEnd: (v) => widget.onChanged(v.round()),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 24,
+            child: Text(
+              '$shown',
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimeRow extends StatelessWidget {
+  final String label;
+  final int hour;
+  final ValueChanged<int> onPick;
+  const _TimeRow({
+    required this.label,
+    required this.hour,
+    required this.onPick,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tod = TimeOfDay(hour: hour, minute: 0);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () async {
+        final picked = await showTimePicker(
+          context: context,
+          initialTime: tod,
+          builder: (ctx, child) => Theme(
+            data: Theme.of(ctx).copyWith(
+              colorScheme: ColorScheme.dark(
+                primary: AppColors.accent,
+                onPrimary: AppColors.textPrimary,
+                surface: AppColors.surface,
+                onSurface: AppColors.textPrimary,
+              ),
+            ),
+            child: child!,
+          ),
+        );
+        if (picked != null) onPick(picked.hour);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 88,
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                tod.format(context),
+                style: TextStyle(color: AppColors.accent, fontSize: 16),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NotifPreviewCard extends ConsumerWidget {
+  const _NotifPreviewCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final async = ref.watch(notifPreviewProvider);
+    final preview = async.valueOrNull;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            l10n.notifPreview,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 4),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => ref.invalidate(notifPreviewProvider),
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                border: Border.all(color: AppColors.surfaceBorder),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: preview == null
+                  ? Text(
+                      l10n.notifPreviewEmpty,
+                      style: const TextStyle(
+                        color: AppColors.textTertiary,
+                        fontSize: 14,
+                      ),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          preview.title,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          preview.body,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }

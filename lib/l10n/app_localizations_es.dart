@@ -130,4 +130,37 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get difficultyAdvanced => 'Avanzado';
+
+  @override
+  String get settingsNotifications => 'Notificaciones';
+
+  @override
+  String get notifMaster => 'Tarjetas de vocabulario';
+
+  @override
+  String get notifPerDay => 'Por día';
+
+  @override
+  String get notifActiveWindow => 'Franja activa';
+
+  @override
+  String get notifStartTime => 'Inicio';
+
+  @override
+  String get notifEndTime => 'Fin';
+
+  @override
+  String get notifLanguages => 'Idiomas';
+
+  @override
+  String get notifNoPacks => 'Descarga un paquete para recibir tarjetas.';
+
+  @override
+  String get notifPreview => 'Vista previa (toca para refrescar)';
+
+  @override
+  String get notifPreviewEmpty => 'Elige un idioma para ver la vista previa.';
+
+  @override
+  String get notifPickAtLeastOne => 'Elige al menos un idioma.';
 }

@@ -52,5 +52,16 @@
   "settingsDifficulty": "Difficulty",
   "difficultyBeginner": "Beginner",
   "difficultyIntermediate": "Intermediate",
-  "difficultyAdvanced": "Advanced"
+  "difficultyAdvanced": "Advanced",
+  "settingsNotifications": "Notifications",
+  "notifMaster": "Vocab flashcards",
+  "notifPerDay": "Per day",
+  "notifActiveWindow": "Active window",
+  "notifStartTime": "Start",
+  "notifEndTime": "End",
+  "notifLanguages": "Languages",
+  "notifNoPacks": "Download a pack to get vocab flashcards.",
+  "notifPreview": "Preview (tap to re-roll)",
+  "notifPreviewEmpty": "Pick a language to see a preview.",
+  "notifPickAtLeastOne": "Pick at least one language."
 }

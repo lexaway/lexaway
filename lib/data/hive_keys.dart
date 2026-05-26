@@ -51,6 +51,13 @@ abstract final class HiveKeys {
   // Music packs
   static const musicPacks = 'music_packs';
 
+  // Notifications
+  static const notifEnabled = 'notif_enabled';
+  static const notifPerDay = 'notif_per_day';
+  static const notifStartHour = 'notif_start_hour';
+  static const notifEndHour = 'notif_end_hour';
+  static const notifLangs = 'notif_langs';
+
   // Collectibles — versioned so we can re-shape the storage later without
   // colliding with existing installs.
   static const collectibles = 'collectibles_v1';

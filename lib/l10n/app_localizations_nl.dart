@@ -129,4 +129,37 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get difficultyAdvanced => 'Gevorderd';
+
+  @override
+  String get settingsNotifications => 'Meldingen';
+
+  @override
+  String get notifMaster => 'Woordkaarten';
+
+  @override
+  String get notifPerDay => 'Per dag';
+
+  @override
+  String get notifActiveWindow => 'Actieve periode';
+
+  @override
+  String get notifStartTime => 'Begin';
+
+  @override
+  String get notifEndTime => 'Eind';
+
+  @override
+  String get notifLanguages => 'Talen';
+
+  @override
+  String get notifNoPacks => 'Download een pakket voor woordkaarten.';
+
+  @override
+  String get notifPreview => 'Voorbeeld (tik om te verversen)';
+
+  @override
+  String get notifPreviewEmpty => 'Kies een taal voor een voorbeeld.';
+
+  @override
+  String get notifPickAtLeastOne => 'Kies ten minste één taal.';
 }

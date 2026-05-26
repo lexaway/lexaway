@@ -129,4 +129,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get difficultyAdvanced => 'Advanced';
+
+  @override
+  String get settingsNotifications => 'Notifications';
+
+  @override
+  String get notifMaster => 'Vocab flashcards';
+
+  @override
+  String get notifPerDay => 'Per day';
+
+  @override
+  String get notifActiveWindow => 'Active window';
+
+  @override
+  String get notifStartTime => 'Start';
+
+  @override
+  String get notifEndTime => 'End';
+
+  @override
+  String get notifLanguages => 'Languages';
+
+  @override
+  String get notifNoPacks => 'Download a pack to get vocab flashcards.';
+
+  @override
+  String get notifPreview => 'Preview (tap to re-roll)';
+
+  @override
+  String get notifPreviewEmpty => 'Pick a language to see a preview.';
+
+  @override
+  String get notifPickAtLeastOne => 'Pick at least one language.';
 }

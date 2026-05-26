@@ -84,19 +84,20 @@ void main() {
     testWidgets('renders haptics toggle', (tester) async {
       await pumpSettings(tester);
       expect(find.text('Haptics'), findsOneWidget);
-      // Haptics and Auto-play voice toggles.
-      expect(find.byType(Switch), findsNWidgets(2));
+      // Haptics, Auto-play voice, and Vocab-flashcard notifications toggles.
+      expect(find.byType(Switch), findsNWidgets(3));
     });
 
     testWidgets('sliders default correctly', (tester) async {
       await pumpSettings(tester);
 
       final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
-      expect(sliders.length, 4);
+      expect(sliders.length, 5);
       expect(sliders[0].value, 1.0);  // master
       expect(sliders[1].value, 0.5);  // sfx
       expect(sliders[2].value, 0.5);  // bgm
       expect(sliders[3].value, 1.0);  // tts
+      expect(sliders[4].value, 3.0);  // notifications per-day
     });
 
     testWidgets('sliders read initial values from Hive', (tester) async {

@@ -42,5 +42,16 @@
   "settingsDifficulty": "Moeilijkheid",
   "difficultyBeginner": "Beginner",
   "difficultyIntermediate": "Gemiddeld",
-  "difficultyAdvanced": "Gevorderd"
+  "difficultyAdvanced": "Gevorderd",
+  "settingsNotifications": "Meldingen",
+  "notifMaster": "Woordkaarten",
+  "notifPerDay": "Per dag",
+  "notifActiveWindow": "Actieve periode",
+  "notifStartTime": "Begin",
+  "notifEndTime": "Eind",
+  "notifLanguages": "Talen",
+  "notifNoPacks": "Download een pakket voor woordkaarten.",
+  "notifPreview": "Voorbeeld (tik om te verversen)",
+  "notifPreviewEmpty": "Kies een taal voor een voorbeeld.",
+  "notifPickAtLeastOne": "Kies ten minste één taal."
 }

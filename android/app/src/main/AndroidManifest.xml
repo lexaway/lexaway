@@ -2,6 +2,8 @@
     <!-- Pack manifest + downloads. Required for release builds; the debug and
          profile manifests grant this separately so Flutter tooling can attach. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Vocab flashcard notifications (Android 13+ requires runtime grant). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="Lexaway"
         android:name="${applicationName}"

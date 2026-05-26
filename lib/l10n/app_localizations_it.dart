@@ -130,4 +130,37 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get difficultyAdvanced => 'Avanzato';
+
+  @override
+  String get settingsNotifications => 'Notifiche';
+
+  @override
+  String get notifMaster => 'Schede di vocabolario';
+
+  @override
+  String get notifPerDay => 'Al giorno';
+
+  @override
+  String get notifActiveWindow => 'Finestra attiva';
+
+  @override
+  String get notifStartTime => 'Inizio';
+
+  @override
+  String get notifEndTime => 'Fine';
+
+  @override
+  String get notifLanguages => 'Lingue';
+
+  @override
+  String get notifNoPacks => 'Scarica un pacchetto per ricevere le schede.';
+
+  @override
+  String get notifPreview => 'Anteprima (tocca per ricaricare)';
+
+  @override
+  String get notifPreviewEmpty => 'Scegli una lingua per vedere l\'anteprima.';
+
+  @override
+  String get notifPickAtLeastOne => 'Scegli almeno una lingua.';
 }

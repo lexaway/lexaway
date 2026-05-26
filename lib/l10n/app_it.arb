@@ -42,5 +42,16 @@
   "settingsDifficulty": "Difficoltà",
   "difficultyBeginner": "Principiante",
   "difficultyIntermediate": "Intermedio",
-  "difficultyAdvanced": "Avanzato"
+  "difficultyAdvanced": "Avanzato",
+  "settingsNotifications": "Notifiche",
+  "notifMaster": "Schede di vocabolario",
+  "notifPerDay": "Al giorno",
+  "notifActiveWindow": "Finestra attiva",
+  "notifStartTime": "Inizio",
+  "notifEndTime": "Fine",
+  "notifLanguages": "Lingue",
+  "notifNoPacks": "Scarica un pacchetto per ricevere le schede.",
+  "notifPreview": "Anteprima (tocca per ricaricare)",
+  "notifPreviewEmpty": "Scegli una lingua per vedere l'anteprima.",
+  "notifPickAtLeastOne": "Scegli almeno una lingua."
 }

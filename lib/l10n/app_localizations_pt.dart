@@ -129,4 +129,38 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get difficultyAdvanced => 'Avançado';
+
+  @override
+  String get settingsNotifications => 'Notificações';
+
+  @override
+  String get notifMaster => 'Cartões de vocabulário';
+
+  @override
+  String get notifPerDay => 'Por dia';
+
+  @override
+  String get notifActiveWindow => 'Janela ativa';
+
+  @override
+  String get notifStartTime => 'Início';
+
+  @override
+  String get notifEndTime => 'Fim';
+
+  @override
+  String get notifLanguages => 'Idiomas';
+
+  @override
+  String get notifNoPacks => 'Baixe um pacote para receber cartões.';
+
+  @override
+  String get notifPreview => 'Pré-visualização (toque para atualizar)';
+
+  @override
+  String get notifPreviewEmpty =>
+      'Escolha um idioma para ver a pré-visualização.';
+
+  @override
+  String get notifPickAtLeastOne => 'Escolha pelo menos um idioma.';
 }

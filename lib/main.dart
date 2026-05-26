@@ -13,6 +13,7 @@ import 'data/pack_manager.dart';
 import 'l10n/app_localizations.dart';
 import 'providers.dart';
 import 'router.dart';
+import 'services/notification_service.dart';
 import 'widgets/pixel_sprite_icon.dart';
 
 /// Current Hive box schema version. Bump when the shape of stored data changes
@@ -70,6 +71,9 @@ void main() async {
   final box = await Hive.openBox('app');
   migrateHive(box);
 
+  final notifService = NotificationService();
+  await notifService.init();
+
   // BGM and TTS each create their own AudioPlayer; without mixWithOthers,
   // iOS deactivates whichever AVAudioSession was active when a new one
   // activates — so TTS's first utterance would kill BGM. `playback` plays
@@ -97,6 +101,7 @@ void main() async {
         modelsDirProvider.overrideWithValue('${supportDir.path}/tts_models'),
         musicDirProvider.overrideWithValue('${docsDir.path}/music'),
         tmpDirProvider.overrideWithValue(tmpDir.path),
+        notificationServiceProvider.overrideWithValue(notifService),
       ],
       child: const LexawayApp(),
     ),
@@ -122,6 +127,12 @@ class _LexawayAppState extends ConsumerState<LexawayApp>
     ref.listenManual(voiceCatalogProvider, (_, next) {
       ref.read(ttsManagerProvider).setVoiceCatalog(next);
     }, fireImmediately: true);
+    // Refresh the notification queue on startup. Reads the current settings
+    // and schedules (or cancels) accordingly. Delayed by one frame so the
+    // provider has time to build from Hive.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(ref.read(notifSettingsProvider.notifier).refresh());
+    });
   }
 
   @override
@@ -139,6 +150,9 @@ class _LexawayAppState extends ConsumerState<LexawayApp>
       unawaited(bgm.pause());
     } else if (state == AppLifecycleState.resumed) {
       unawaited(bgm.resume());
+      // Refresh-on-open: each resume re-fills the queue so the 7-day horizon
+      // stays full and any drift from DST / locale changes corrects itself.
+      unawaited(ref.read(notifSettingsProvider.notifier).refresh());
     }
   }
 

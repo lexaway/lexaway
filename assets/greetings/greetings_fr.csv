@@ -1,0 +1,201 @@
+lang,text,time
+fr,Bonjour,morning|afternoon
+fr,Bonjour !,morning|afternoon
+fr,Bonjour ☀,morning
+fr,Bonjour ☕,morning
+fr,Bonjour le soleil,morning
+fr,Bonjour la France,morning|afternoon
+fr,Bonjour à toi,morning|afternoon
+fr,Bonjour mon ami,morning|afternoon
+fr,Bonjour à tous,morning|afternoon
+fr,Bonjour madame,morning|afternoon
+fr,Bonjour monsieur,morning|afternoon
+fr,Bonjour tout le monde,morning|afternoon
+fr,Bien le bonjour,morning|afternoon
+fr,Bon matin,morning
+fr,Bon matin !,morning
+fr,Bon matin l'ami,morning
+fr,Salut le matin,morning
+fr,Petit-déj ?,morning
+fr,Déjà debout ?,morning
+fr,Bien dormi ?,morning
+fr,T'as bien dormi ?,morning
+fr,Réveille-toi,morning
+fr,Debout !,morning
+fr,Debout là-dedans,morning
+fr,Hop hop hop debout,morning
+fr,Le café est prêt,morning
+fr,Café ?,morning
+fr,Bonne matinée,morning
+fr,Bonne matinée à toi,morning
+fr,Bonne journée,morning|afternoon
+fr,Bonne journée à toi,morning|afternoon
+fr,Belle journée,morning|afternoon
+fr,Passe une belle journée,morning|afternoon
+fr,Bon après-midi,afternoon
+fr,Bon aprèm,afternoon
+fr,Bon aprèm !,afternoon
+fr,Bon aprèm l'ami,afternoon
+fr,Bonjour de l'aprèm,afternoon
+fr,Coucou de l'aprèm,afternoon
+fr,Petite pause ?,afternoon
+fr,Bonsoir,evening
+fr,Bonsoir !,evening
+fr,Bonsoir 🌙,evening
+fr,Bonsoir à toi,evening
+fr,Bonsoir mon ami,evening
+fr,Bonsoir tout le monde,evening
+fr,Bonne soirée,evening
+fr,Belle soirée,evening
+fr,Passe une bonne soirée,evening
+fr,Bon film !,evening|night
+fr,Bonne nuit,night
+fr,Bonne nuit 🌙,night
+fr,Bonne nuit toi,night
+fr,Fais de beaux rêves,night
+fr,Fais de doux rêves,night
+fr,Rêve bien,night
+fr,Dors bien,night
+fr,Dors comme un loir,night
+fr,Dodo !,night
+fr,Au dodo,night
+fr,Bonne grasse mat',night|morning
+fr,Encore debout ?,night
+fr,Insomnie ?,night
+fr,Petit creux nocturne ?,night
+fr,Salut,any
+fr,Salut !,any
+fr,Salut toi,any
+fr,Salut l'ami,any
+fr,Salut l'amie,any
+fr,Salut mon ami,any
+fr,Salut mon pote,any
+fr,Salut copain,any
+fr,Salut frérot,any
+fr,Salut frangine,any
+fr,Salut la compagnie,any
+fr,Salut tout le monde,any
+fr,Salut à tous,any
+fr,Salut à toi,any
+fr,Salut les amis,any
+fr,Salut les copains,any
+fr,Salut la team,any
+fr,Salut la famille,any
+fr,Coucou,any
+fr,Coucou !,any
+fr,Coucou toi,any
+fr,Coucou mon ami,any
+fr,Coucou ma belle,any
+fr,Coucou mon beau,any
+fr,Coucou les amis,any
+fr,Coucou tout le monde,any
+fr,Hello,any
+fr,Hello !,any
+fr,Hello toi,any
+fr,Hello ✨,any
+fr,Hello la team,any
+fr,Hello sunshine,morning
+fr,Hey,any
+fr,Hey !,any
+fr,Hey toi,any
+fr,Hey 👋,any
+fr,Hey ho !,any
+fr,Hé !,any
+fr,Hé toi !,any
+fr,Hé l'ami,any
+fr,Yo,any
+fr,Yo !,any
+fr,Yo mec,any
+fr,Yo gros,any
+fr,Yo la zone,any
+fr,Allô,any
+fr,Allô !,any
+fr,Allô toi,any
+fr,Allô la Terre ?,any
+fr,Bienvenue,any
+fr,Bienvenue !,any
+fr,Bienvenue à toi,any
+fr,Bienvenue à la maison,any
+fr,Bienvenue chez nous,any
+fr,Bon retour,any
+fr,Bon retour parmi nous,any
+fr,Te revoilà !,any
+fr,Re !,any
+fr,Re bonjour,any
+fr,Re coucou,any
+fr,Ça va ?,any
+fr,Ça va bien ?,any
+fr,Ça va ou quoi ?,any
+fr,Ça va toi ?,any
+fr,Comment ça va ?,any
+fr,Comment vas-tu ?,any
+fr,Comment tu vas ?,any
+fr,Comment allez-vous ?,any
+fr,Tu vas bien ?,any
+fr,Vous allez bien ?,any
+fr,Tout va bien ?,any
+fr,Tout roule ?,any
+fr,Tout baigne ?,any
+fr,Quoi de neuf ?,any
+fr,Quoi de beau ?,any
+fr,Quoi de neuf docteur ?,any
+fr,Quoi de neuf sous le soleil ?,any
+fr,Alors quoi de neuf ?,any
+fr,Ça roule ?,any
+fr,Ça roule ma poule ?,any
+fr,Ça boume ?,any
+fr,Ça gaze ?,any
+fr,Ça baigne ?,any
+fr,Ça farte ?,any
+fr,Ça dépote ?,any
+fr,Ça pulse ?,any
+fr,Ça déchire ?,any
+fr,Comment ça roule ?,any
+fr,En forme ?,any
+fr,La forme ?,any
+fr,La pêche ?,any
+fr,La frite ?,any
+fr,T'as la patate ?,any
+fr,T'es en forme ?,any
+fr,Wesh,any
+fr,Wesh !,any
+fr,Wesh frérot,any
+fr,Wesh la zone,any
+fr,Wesh ma gueule,any
+fr,Salutations,any
+fr,Salutations distinguées,any
+fr,Mes hommages,any
+fr,Mes respects,any
+fr,Enchanté,any
+fr,Enchantée,any
+fr,Ravi de te voir,any
+fr,Ravi de te rencontrer,any
+fr,Ravi de faire ta connaissance,any
+fr,Heureux de te revoir,any
+fr,Content de te voir,any
+fr,Contente de te voir,any
+fr,Quel plaisir de te voir,any
+fr,Ça fait plaisir,any
+fr,Ça fait plaisir de te voir,any
+fr,Ça fait longtemps,any
+fr,Ça faisait longtemps,any
+fr,Ça fait un bail,any
+fr,Ça fait une éternité,any
+fr,Ça fait des lustres,any
+fr,Une éternité dis donc !,any
+fr,Tiens te voilà !,any
+fr,Tiens donc !,any
+fr,Regardez qui voilà,any
+fr,J'espère que tu vas bien,any
+fr,J'espère que tout va bien,any
+fr,Pense à toi,any
+fr,Coucou de Paris,any
+fr,Bisous de Bruxelles,any
+fr,Salut de Montréal,any
+fr,Allô de Québec,any
+fr,Bonjour de Genève,any
+fr,Salut de Marseille,any
+fr,Bisous,any
+fr,Gros bisous,any
+fr,Grosses bises,any
+fr,Bisou bisou,any

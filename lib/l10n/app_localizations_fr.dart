@@ -130,4 +130,37 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get difficultyAdvanced => 'Avancé';
+
+  @override
+  String get settingsNotifications => 'Notifications';
+
+  @override
+  String get notifMaster => 'Cartes de vocabulaire';
+
+  @override
+  String get notifPerDay => 'Par jour';
+
+  @override
+  String get notifActiveWindow => 'Plage active';
+
+  @override
+  String get notifStartTime => 'Début';
+
+  @override
+  String get notifEndTime => 'Fin';
+
+  @override
+  String get notifLanguages => 'Langues';
+
+  @override
+  String get notifNoPacks => 'Télécharge un paquet pour recevoir des cartes.';
+
+  @override
+  String get notifPreview => 'Aperçu (touche pour rafraîchir)';
+
+  @override
+  String get notifPreviewEmpty => 'Choisis une langue pour voir un aperçu.';
+
+  @override
+  String get notifPickAtLeastOne => 'Choisis au moins une langue.';
 }
