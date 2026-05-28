@@ -167,9 +167,14 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
     }
   }
 
-  void _respawn(_Particle p, Vector2 size, {required bool fullHeight}) {
+  void _respawn(
+    _Particle p,
+    Vector2 size, {
+    required bool fullHeight,
+    double? enterFromX,
+  }) {
     final def = _activeDef!;
-    p.x = _rng.nextDouble() * size.x;
+    p.x = enterFromX ?? _rng.nextDouble() * size.x;
     if (fullHeight) {
       // Spread across the *full* lifecycle — from staged above the screen
       // all the way down to ground level. If we only seeded the visible
@@ -253,11 +258,13 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
         continue;
       }
 
-      // Recycle off-screen flakes from the top — wrapping horizontally would
-      // teleport them across at the same Y, which reads as a glitch when
-      // scroll is fast. A fresh spawn looks like the next flake drifting in.
-      if (p.x < -spriteH || p.x > size.x + spriteH) {
-        _respawn(p, size, fullHeight: false);
+      // Off-screen flakes re-enter from the *opposite* edge so the wind keeps
+      // feeding the screen as the dino runs. Spawning uniformly across the
+      // full width here would drain the leading edge faster than it refills.
+      if (p.x < -spriteH) {
+        _respawn(p, size, fullHeight: false, enterFromX: size.x + spriteH);
+      } else if (p.x > size.x + spriteH) {
+        _respawn(p, size, fullHeight: false, enterFromX: -spriteH);
       }
     }
   }
