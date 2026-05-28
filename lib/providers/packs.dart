@@ -277,6 +277,19 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
     state = await AsyncValue.guard(() => _openAndLoad(packId));
   }
 
+  /// Tear down a pack we can't use (corrupt DB, empty question set). Each step
+  /// is guarded so one failure doesn't block the rest — we'd rather end up with
+  /// stale Hive than a half-cleaned state that blocks future retries.
+  Future<QuestionSource?> _discardPack(String packId) async {
+    try { await _db.close(); } catch (_) {}
+    try {
+      await ref.read(packManagerProvider).deletePack(packId);
+    } catch (_) {}
+    try { ref.invalidate(localPacksProvider); } catch (_) {}
+    _activePackId = null;
+    return null;
+  }
+
   Future<QuestionSource?> _openAndLoad(String packId) async {
     // Non-destructive schema gate: if the local pack is outside the supported
     // schema window, bail out *before* touching SQLite. Returning null mimics
@@ -301,20 +314,10 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
     try {
       loaded = await _loadQuestions(packId);
     } catch (_) {
-      // .db file missing or corrupt — close leaked handle, scrub stale metadata.
-      // Protect each step so one failure doesn't block the rest.
-      await _db.close();
-      try { await pm.deletePack(packId); } catch (_) {}
-      try { ref.invalidate(localPacksProvider); } catch (_) {}
-      _activePackId = null;
-      return null;
+      return _discardPack(packId);
     }
     if (loaded.fresh.isEmpty && loaded.review.isEmpty) {
-      try { await _db.close(); } catch (_) {}
-      try { await pm.deletePack(packId); } catch (_) {}
-      try { ref.invalidate(localPacksProvider); } catch (_) {}
-      _activePackId = null;
-      return null;
+      return _discardPack(packId);
     }
     pm.setLastUsed(packId);
     _activePackId = packId;
