@@ -63,86 +63,87 @@ class TtsVolumeNotifier extends HiveVolumeNotifier {
   String get key => HiveKeys.volTts;
 }
 
+/// Hive-backed scalar setting. Override [encode]/[decode] for non-primitive
+/// types (see [FontNotifier]); override [onSet] for cross-provider side-effects
+/// (see [DifficultyNotifier]).
+abstract class HiveValueNotifier<T> extends Notifier<T> {
+  String get key;
+  T get defaultValue;
+
+  Object? encode(T v) => v;
+  T decode(Object raw) => raw as T;
+  void onSet(T v) {}
+
+  Box get _box => ref.read(hiveBoxProvider);
+
+  @override
+  T build() {
+    final raw = _box.get(key);
+    return raw == null ? defaultValue : decode(raw);
+  }
+
+  void set(T v) {
+    state = v;
+    _box.put(key, encode(v));
+    onSet(v);
+  }
+}
+
 final hapticsEnabledProvider =
     NotifierProvider<HapticsEnabledNotifier, bool>(
       HapticsEnabledNotifier.new,
     );
 
-class HapticsEnabledNotifier extends Notifier<bool> {
+class HapticsEnabledNotifier extends HiveValueNotifier<bool> {
   @override
-  bool build() {
-    return ref.read(hiveBoxProvider).get(HiveKeys.haptics, defaultValue: true)
-        as bool;
-  }
-
-  void set(bool v) {
-    state = v;
-    ref.read(hiveBoxProvider).put(HiveKeys.haptics, v);
-  }
+  String get key => HiveKeys.haptics;
+  @override
+  bool get defaultValue => true;
 }
 
 final autoPlayTtsProvider =
     NotifierProvider<AutoPlayTtsNotifier, bool>(AutoPlayTtsNotifier.new);
 
-class AutoPlayTtsNotifier extends Notifier<bool> {
+class AutoPlayTtsNotifier extends HiveValueNotifier<bool> {
   @override
-  bool build() {
-    return ref.read(hiveBoxProvider).get(HiveKeys.ttsAutoPlay, defaultValue: true)
-        as bool;
-  }
-
-  void set(bool v) {
-    state = v;
-    ref.read(hiveBoxProvider).put(HiveKeys.ttsAutoPlay, v);
-  }
+  String get key => HiveKeys.ttsAutoPlay;
+  @override
+  bool get defaultValue => true;
 }
 
 final genderProvider = NotifierProvider<GenderNotifier, String>(
   GenderNotifier.new,
 );
 
-class GenderNotifier extends Notifier<String> {
+class GenderNotifier extends HiveValueNotifier<String> {
   @override
-  String build() {
-    return ref.read(hiveBoxProvider).get(HiveKeys.gender, defaultValue: 'female')
-        as String;
-  }
-
-  void set(String gender) {
-    state = gender;
-    ref.read(hiveBoxProvider).put(HiveKeys.gender, gender);
-  }
+  String get key => HiveKeys.gender;
+  @override
+  String get defaultValue => 'female';
 }
 
 final difficultyProvider = NotifierProvider<DifficultyNotifier, String>(
   DifficultyNotifier.new,
 );
 
-class DifficultyNotifier extends Notifier<String> {
+class DifficultyNotifier extends HiveValueNotifier<String> {
   @override
-  String build() {
-    return ref.read(hiveBoxProvider).get(HiveKeys.difficulty, defaultValue: 'beginner')
-        as String;
-  }
-
-  void set(String difficulty) {
-    state = difficulty;
-    ref.read(hiveBoxProvider).put(HiveKeys.difficulty, difficulty);
-    ref.invalidate(activePackProvider);
-  }
+  String get key => HiveKeys.difficulty;
+  @override
+  String get defaultValue => 'beginner';
+  @override
+  void onSet(String _) => ref.invalidate(activePackProvider);
 }
 
 final fontProvider = NotifierProvider<FontNotifier, AppFont>(FontNotifier.new);
 
-class FontNotifier extends Notifier<AppFont> {
+class FontNotifier extends HiveValueNotifier<AppFont> {
   @override
-  AppFont build() {
-    final key = ref.read(hiveBoxProvider).get(HiveKeys.font) as String?;
-    return AppFont.fromKey(key);
-  }
-
-  void set(AppFont font) {
-    state = font;
-    ref.read(hiveBoxProvider).put(HiveKeys.font, font.name);
-  }
+  String get key => HiveKeys.font;
+  @override
+  AppFont get defaultValue => AppFont.fromKey(null);
+  @override
+  Object encode(AppFont v) => v.name;
+  @override
+  AppFont decode(Object raw) => AppFont.fromKey(raw as String);
 }
