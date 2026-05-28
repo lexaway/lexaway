@@ -63,7 +63,6 @@ def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
 
 
 def run_quiet(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
-    """Run a command and capture output."""
     return subprocess.run(cmd, capture_output=True, text=True, **kwargs)
 
 

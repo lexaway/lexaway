@@ -25,9 +25,7 @@ class PackDatabase {
 
   /// Idempotent migration for pack schema changes after launch.
   /// Pre-launch, bake new columns directly into build.py instead.
-  Future<void> _migrate() async {
-    // Add migrations here when users have local packs that can't be rebuilt.
-  }
+  Future<void> _migrate() async {}
 
   static const _sm2Cols =
       'id, phrase, translation, blank_index, answer, options, '

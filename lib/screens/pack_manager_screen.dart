@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import '../utils/endonyms.dart';
 import '../widgets/locale_option.dart';
 import '../widgets/pack_tile.dart';
 import '../widgets/tiled_background.dart';
@@ -19,22 +20,18 @@ class PackManagerScreen extends ConsumerStatefulWidget {
 }
 
 class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
-  /// Endonyms — language names in their own language. Always display these
-  /// regardless of the current UI locale.
-  static const _endonyms = {
-    'en': 'English',
-    'es': 'Español',
-    'fr': 'Français',
-    'de': 'Deutsch',
-    'it': 'Italiano',
-    'pt': 'Português',
-  };
-
   void _showLocalePicker(BuildContext context) {
     // Resolve what "System default" would actually give the user.
     final systemLang =
         WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-    final systemEndonym = _endonyms[systemLang] ?? _endonyms['en']!;
+    // Fall back to English so an unshipped system language doesn't surface as
+    // a raw code in the user-facing subtitle.
+    final systemEndonym = endonymFor(
+      AppLocalizations.supportedLocales
+              .any((l) => l.languageCode == systemLang)
+          ? systemLang
+          : 'en',
+    );
 
     showModalBottomSheet<void>(
       context: context,
@@ -82,9 +79,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                     ),
                     for (final locale in AppLocalizations.supportedLocales)
                       LocaleOption(
-                        label:
-                            _endonyms[locale.languageCode] ??
-                            locale.languageCode,
+                        label: endonymFor(locale.languageCode),
                         selected: current?.languageCode == locale.languageCode,
                         onTap: () {
                           ref.read(localeProvider.notifier).setLocale(locale);

@@ -41,7 +41,6 @@ def find_non_empty_tiles(img, tile_size):
             for y in range(y0, min(y0 + tile_size, height)):
                 for x in range(x0, min(x0 + tile_size, width)):
                     pixel = pixels[x, y]
-                    # Check alpha channel — if RGBA and alpha > 0, tile is occupied
                     if len(pixel) >= 4 and pixel[3] > 0:
                         occupied.add((col, row))
                         break
@@ -100,7 +99,6 @@ def _try_split(tiles, threshold):
     w = max_col - min_col + 1
     h = max_row - min_row + 1
 
-    # Try splitting along columns first
     if w >= 3:  # need at least 3 cols to have an interior split
         for col in range(min_col + 1, max_col):
             col_count = sum(1 for (c, r) in tiles if c == col)
@@ -117,7 +115,6 @@ def _try_split(tiles, threshold):
                 if pieces:
                     return pieces
 
-    # Try splitting along rows
     if h >= 3:
         for row in range(min_row + 1, max_row):
             row_count = sum(1 for (c, r) in tiles if r == row)
@@ -162,7 +159,6 @@ def extract_sprites(img, tile_size, density_threshold=0.5, min_tiles=1,
     groups = find_connected_sprites(occupied)
     groups = split_sparse_components(groups, density_threshold)
 
-    # Filter out fragments smaller than min_tiles
     groups = [g for g in groups if len(g) >= min_tiles]
 
     sprites = []
@@ -180,10 +176,8 @@ def extract_sprites(img, tile_size, density_threshold=0.5, min_tiles=1,
             "size": [w_tiles * tile_size, h_tiles * tile_size],
         })
 
-    # Sort top-to-bottom, then left-to-right
+    # Sort top-to-bottom, then left-to-right, then renumber.
     sprites.sort(key=lambda s: (s["row"], s["col"]))
-
-    # Re-number after sorting
     for i, s in enumerate(sprites):
         s["name"] = f"sprite_{i}"
 

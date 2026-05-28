@@ -40,7 +40,7 @@ def make_scrim_dithered(
     Each chunky block (pixel_size x pixel_size) is either fully opaque or fully
     transparent, with density increasing toward the bottom — retro game fade style.
     """
-    # 8x8 Bayer threshold matrix (normalized to 0..1)
+    # 8x8 Bayer threshold matrix, normalized to 0..1 below.
     bayer8 = [
         [ 0, 48, 12, 60,  3, 51, 15, 63],
         [32, 16, 44, 28, 35, 19, 47, 31],
@@ -51,7 +51,6 @@ def make_scrim_dithered(
         [10, 58,  6, 54,  9, 57,  5, 53],
         [42, 26, 38, 22, 41, 25, 37, 21],
     ]
-    # Normalize to 0..1
     bayer = [[v / 64.0 for v in row] for row in bayer8]
 
     fill = (*color, int(255 * max_opacity))

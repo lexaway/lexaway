@@ -407,7 +407,6 @@ class _ClawResultDialog extends StatelessWidget {
                 Text(
                   prize!.displayName,
                   style: const TextStyle(
-                    fontFamily: 'Pixelify Sans',
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF3E2723),
@@ -417,7 +416,6 @@ class _ClawResultDialog extends StatelessWidget {
                 Text(
                   isNewPrize ? 'New!' : 'Already in your collection',
                   style: TextStyle(
-                    fontFamily: 'Pixelify Sans',
                     fontSize: 14,
                     color: isNewPrize
                         ? const Color(0xFFC2185B)
@@ -428,7 +426,6 @@ class _ClawResultDialog extends StatelessWidget {
                 Text(
                   won ? 'You got a sphere!' : 'So close!',
                   style: const TextStyle(
-                    fontFamily: 'Pixelify Sans',
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFFC2185B),
@@ -438,7 +435,6 @@ class _ClawResultDialog extends StatelessWidget {
                 Text(
                   won ? '+1 sphere' : 'Try the next one.',
                   style: const TextStyle(
-                    fontFamily: 'Pixelify Sans',
                     fontSize: 16,
                     color: Color(0xFF3E2723),
                   ),
@@ -467,7 +463,6 @@ class _ClawResultDialog extends StatelessWidget {
                     child: const Text(
                       'Continue',
                       style: TextStyle(
-                        fontFamily: 'Pixelify Sans',
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -492,7 +487,6 @@ class _ClawResultDialog extends StatelessWidget {
                     child: Text(
                       'Try again (${tryAgainCost}c)',
                       style: const TextStyle(
-                        fontFamily: 'Pixelify Sans',
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),

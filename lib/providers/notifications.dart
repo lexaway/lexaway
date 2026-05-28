@@ -219,33 +219,16 @@ final notifPreviewProvider = FutureProvider<({String title, String body})?>((
   if (vocab.isEmpty) return null;
 
   final rng = Random();
-  final l1 = ref.read(nativeLangProvider);
   final l2 = candidates[rng.nextInt(candidates.length)];
-
-  String? l1Word;
-  String? l2Word;
-  for (var i = 0; i < 10; i++) {
-    final row = vocab[rng.nextInt(vocab.length)];
-    final a = row.translation(l1);
-    final b = row.translation(l2);
-    if (a != null && a.isNotEmpty && b != null && b.isNotEmpty) {
-      l1Word = a;
-      l2Word = b;
-      break;
-    }
-  }
-  if (l1Word == null || l2Word == null) return null;
-
   final iso2 = iso3to2[l2] ?? 'en';
   final greetings = await loadGreetings(iso2);
-  final bucket = timeBucketForHour(DateTime.now().hour);
-  final pool = greetings.where((g) => g.fitsTime(bucket)).toList();
-  final greeting = pool.isNotEmpty
-      ? pool[rng.nextInt(pool.length)]
-      : (greetings.isNotEmpty ? greetings[rng.nextInt(greetings.length)] : null);
 
-  return (
-    title: greeting?.text ?? l2Word,
-    body: '$l1Word → $l2Word',
+  return pickNotifContent(
+    vocab: vocab,
+    greetings: greetings,
+    l1Iso3: ref.read(nativeLangProvider),
+    l2Iso3: l2,
+    bucket: timeBucketForHour(DateTime.now().hour),
+    random: rng,
   );
 });

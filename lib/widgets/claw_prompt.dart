@@ -46,7 +46,6 @@ class ClawPrompt extends StatelessWidget {
                     const Text(
                       'A claw machine!',
                       style: TextStyle(
-                        fontFamily: 'Pixelify Sans',
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFFC2185B),
@@ -56,7 +55,6 @@ class ClawPrompt extends StatelessWidget {
                     Text(
                       'Try a grab for $coinCost coin${coinCost == 1 ? '' : 's'}?',
                       style: const TextStyle(
-                        fontFamily: 'Pixelify Sans',
                         fontSize: 16,
                         color: Color(0xFF3E2723),
                       ),
@@ -66,7 +64,6 @@ class ClawPrompt extends StatelessWidget {
                       Text(
                         'Not enough coins (you have $currentCoins).',
                         style: const TextStyle(
-                          fontFamily: 'Pixelify Sans',
                           fontSize: 13,
                           color: Color(0xFFB00020),
                         ),
@@ -132,7 +129,6 @@ class _PromptButton extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          fontFamily: 'Pixelify Sans',
           fontSize: 16,
           fontWeight: FontWeight.w700,
         ),

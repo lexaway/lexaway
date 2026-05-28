@@ -10,6 +10,7 @@ import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import '../utils/endonyms.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -631,18 +632,6 @@ class _LinkRow extends StatelessWidget {
   }
 }
 
-/// Endonyms for L2 language chips (ISO 639-3 → native name). Centralized so
-/// the chip label always reflects the language itself, not the UI locale.
-const _l2Endonyms = {
-  'eng': 'English',
-  'fra': 'Français',
-  'deu': 'Deutsch',
-  'ita': 'Italiano',
-  'nld': 'Nederlands',
-  'por': 'Português',
-  'spa': 'Español',
-};
-
 class _NotificationsSection extends ConsumerWidget {
   const _NotificationsSection();
 
@@ -727,7 +716,7 @@ class _NotificationsSection extends ConsumerWidget {
                     children: [
                       for (final iso3 in installed)
                         FilterChip(
-                          label: Text(_l2Endonyms[iso3] ?? iso3),
+                          label: Text(endonymFor(iso3)),
                           selected: settings.langs.contains(iso3),
                           onSelected: (on) => ref
                               .read(notifSettingsProvider.notifier)

@@ -56,6 +56,44 @@ List<tz.TZDateTime> computeSlots({
   return out;
 }
 
+/// Shared by the scheduler and the settings preview so the preview can't
+/// drift from what actually fires. Returns null if no vocab row has both
+/// translations after ten tries — caller skips the slot.
+///
+/// Title falls back to the app name, not the L2 word: using L2 would duplicate
+/// the L2 half of the body ("maison / home → maison") on the lockscreen.
+({String title, String body})? pickNotifContent({
+  required List<VocabRow> vocab,
+  required List<Greeting> greetings,
+  required String l1Iso3,
+  required String l2Iso3,
+  required String bucket,
+  required Random random,
+}) {
+  String? l1;
+  String? l2;
+  for (var attempt = 0; attempt < 10; attempt++) {
+    final row = vocab[random.nextInt(vocab.length)];
+    final a = row.translation(l1Iso3);
+    final b = row.translation(l2Iso3);
+    if (a != null && a.isNotEmpty && b != null && b.isNotEmpty) {
+      l1 = a;
+      l2 = b;
+      break;
+    }
+  }
+  if (l1 == null || l2 == null) return null;
+
+  String? greetingText;
+  if (greetings.isNotEmpty) {
+    final matching = greetings.where((g) => g.fitsTime(bucket)).toList();
+    final pool = matching.isNotEmpty ? matching : greetings;
+    greetingText = pool[random.nextInt(pool.length)].text;
+  }
+
+  return (title: greetingText ?? 'Lexaway', body: '$l1 → $l2');
+}
+
 /// iOS hard-caps pending notifications at 64. We schedule under that to leave
 /// headroom for any system-fired ones (e.g. permission rationale) — and the
 /// same cap on Android keeps behavior identical across platforms.
@@ -177,26 +215,20 @@ class NotificationService {
     for (final when in slots) {
       if (nextId - _idBase >= _maxScheduled) break;
       final l2 = langs[random.nextInt(langs.length)];
-
-      final pair = _pickVocab(vocab, l1Iso3: l1Iso3, l2Iso3: l2, random: random);
-      if (pair == null) continue;
-
-      final greeting = _pickGreeting(
-        greetingsByLang[l2] ?? const [],
+      final content = pickNotifContent(
+        vocab: vocab,
+        greetings: greetingsByLang[l2] ?? const [],
+        l1Iso3: l1Iso3,
+        l2Iso3: l2,
         bucket: timeBucketForHour(when.hour),
         random: random,
       );
-
-      // Title fallback: "Lexaway" (the app name). Using pair.l2 here would
-      // make the title duplicate the L2 half of the body, which reads as
-      // "maison / home → maison" — visually redundant on the lockscreen.
-      final title = greeting?.text ?? 'Lexaway';
-      final body = '${pair.l1} → ${pair.l2}';
+      if (content == null) continue;
 
       await _plugin.zonedSchedule(
         nextId++,
-        title,
-        body,
+        content.title,
+        content.body,
         when,
         notifDetails,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -219,32 +251,4 @@ class NotificationService {
     );
   }
 
-  ({String l1, String l2})? _pickVocab(
-    List<VocabRow> vocab, {
-    required String l1Iso3,
-    required String l2Iso3,
-    required Random random,
-  }) {
-    // Try up to 10 times to find a row with both translations non-empty.
-    for (var attempt = 0; attempt < 10; attempt++) {
-      final row = vocab[random.nextInt(vocab.length)];
-      final l1 = row.translation(l1Iso3);
-      final l2 = row.translation(l2Iso3);
-      if (l1 != null && l1.isNotEmpty && l2 != null && l2.isNotEmpty) {
-        return (l1: l1, l2: l2);
-      }
-    }
-    return null;
-  }
-
-  Greeting? _pickGreeting(
-    List<Greeting> all, {
-    required String bucket,
-    required Random random,
-  }) {
-    if (all.isEmpty) return null;
-    final matching = all.where((g) => g.fitsTime(bucket)).toList();
-    final pool = matching.isNotEmpty ? matching : all;
-    return pool[random.nextInt(pool.length)];
-  }
 }

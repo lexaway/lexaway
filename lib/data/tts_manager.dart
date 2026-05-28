@@ -229,7 +229,6 @@ class TtsManager {
     void Function(double)? onProgress,
     void Function()? onExtracting,
   }) async {
-    // Ensure espeak-ng-data is present first
     await downloadEspeakData();
 
     final dir = modelsDir;
