@@ -1,5 +1,7 @@
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'lang_codes.dart';
+
 /// One row from `assets/vocab.csv`. Fields are ISO 639-3 language columns;
 /// access them with [translation] using either 2- or 3-letter codes.
 class VocabRow {
@@ -78,15 +80,22 @@ Future<List<VocabRow>> loadVocab() async {
   return out;
 }
 
-Future<List<Greeting>> loadGreetings(String iso2) async {
-  final cached = _greetingsCache[iso2];
+/// Owns the iso3→iso2→asset-path mapping for greeting CSVs so callers can't
+/// disagree on what an unknown lang means. Unknown iso3 → empty list (cached).
+Future<List<Greeting>> loadGreetingsForL2(String l2Iso3) async {
+  final cached = _greetingsCache[l2Iso3];
   if (cached != null) return cached;
+  final iso2 = iso3to2[l2Iso3];
+  if (iso2 == null) {
+    _greetingsCache[l2Iso3] = const [];
+    return const [];
+  }
   final path = 'assets/greetings/greetings_$iso2.csv';
   final String raw;
   try {
     raw = await rootBundle.loadString(path);
   } catch (_) {
-    _greetingsCache[iso2] = const [];
+    _greetingsCache[l2Iso3] = const [];
     return const [];
   }
   final rows = parseCsv(raw);
@@ -107,7 +116,7 @@ Future<List<Greeting>> loadGreetings(String iso2) async {
     }
     out.add(Greeting(text, times));
   }
-  _greetingsCache[iso2] = out;
+  _greetingsCache[l2Iso3] = out;
   return out;
 }
 

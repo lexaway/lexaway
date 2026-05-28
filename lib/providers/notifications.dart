@@ -5,7 +5,6 @@ import 'package:hive_ce/hive_ce.dart';
 
 import '../data/csv_loaders.dart';
 import '../data/hive_keys.dart';
-import '../data/lang_codes.dart';
 import '../services/notification_service.dart';
 import 'bootstrap.dart';
 import 'locale.dart';
@@ -220,8 +219,7 @@ final notifPreviewProvider = FutureProvider<({String title, String body})?>((
 
   final rng = Random();
   final l2 = candidates[rng.nextInt(candidates.length)];
-  final iso2 = iso3to2[l2] ?? 'en';
-  final greetings = await loadGreetings(iso2);
+  final greetings = await loadGreetingsForL2(l2);
 
   return pickNotifContent(
     vocab: vocab,

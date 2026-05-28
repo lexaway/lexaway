@@ -7,7 +7,6 @@ import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../data/csv_loaders.dart';
-import '../data/lang_codes.dart';
 
 /// Compute scheduled slot times for the next 7 days. Slots are evenly spread
 /// within the active window with ±5min jitter so they don't all fire on the
@@ -190,9 +189,7 @@ class NotificationService {
     // Pre-load greetings for each selected L2 once.
     final greetingsByLang = <String, List<Greeting>>{};
     for (final iso3 in l2Iso3) {
-      final iso2 = iso3to2[iso3];
-      if (iso2 == null) continue;
-      greetingsByLang[iso3] = await loadGreetings(iso2);
+      greetingsByLang[iso3] = await loadGreetingsForL2(iso3);
     }
 
     final random = rng ?? Random();
