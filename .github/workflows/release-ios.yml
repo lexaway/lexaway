@@ -1,15 +1,48 @@
 name: Release iOS (TestFlight)
 
-# Push a version tag to ship a build to TestFlight, e.g.:
-#   git tag v1.10.0 && git push origin v1.10.0
-# The tag's version becomes the build name; the run number becomes the build number.
+# Releases are driven by pubspec.yaml. Bump `version:` (name + build number,
+# e.g. 1.11.0+18) and push to main — when the version line changes this builds,
+# ships to TestFlight, and stamps a v<version> git tag as a record.
+# Pushes that touch pubspec.yaml WITHOUT changing the version (e.g. dep bumps)
+# are ignored.
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths: ['pubspec.yaml']
+
+permissions:
+  contents: write # to push the release tag
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.detect.outputs.release }}
+      version: ${{ steps.detect.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need the previous commit to diff the version line
+
+      - name: Detect version bump
+        id: detect
+        run: |
+          NEW="$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//')"
+          OLD="$(git show '${{ github.event.before }}:pubspec.yaml' 2>/dev/null | grep '^version:' | sed 's/version:[[:space:]]*//' || true)"
+          echo "old=$OLD  new=$NEW"
+          if [ "$NEW" = "$OLD" ]; then
+            echo "Version unchanged — not a release."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Version bumped $OLD -> $NEW — releasing."
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "version=${NEW%%+*}" >> "$GITHUB_OUTPUT"
+          fi
+
   testflight:
+    needs: check
+    if: needs.check.outputs.release == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,19 +53,10 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Show Xcode / SDK version
-        run: |
-          xcodebuild -version
-          xcodebuild -showsdks | grep -i iphoneos || true
-
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
-
-      - name: Derive version from tag
-        id: version
-        run: echo "name=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
       - name: Import signing certificate
         env:
@@ -54,11 +78,9 @@ jobs:
           # which holds Apple's WWDR intermediate cert needed to validate the chain.
           security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed 's/"//g')
 
-          echo "==> Signing identities visible to the build:"
-          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
-          # Fail loudly with a clear message if the private key didn't import.
+          # Fail fast with a clear message if the distribution identity isn't present.
           if ! security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -q "Distribution"; then
-            echo "::error::No distribution identity with a private key in the keychain. The exported .p12 is probably missing its private key — re-export from Keychain Access 'My Certificates' (not 'Certificates')."
+            echo "::error::No distribution signing identity found — check IOS_DIST_CERT_P12 (must be the Apple Distribution cert exported with its private key)."
             exit 1
           fi
 
@@ -81,11 +103,10 @@ jobs:
 
       - run: flutter pub get
 
+      # Build name + number come straight from pubspec.yaml (the source of truth).
       - name: Build signed IPA
         run: |
           flutter build ipa --release \
-            --build-name="${{ steps.version.outputs.name }}" \
-            --build-number="${{ github.run_number }}" \
             --export-options-plist=ios/ExportOptions.plist
 
       - name: Upload to App Store Connect (TestFlight)
@@ -97,3 +118,15 @@ jobs:
             -f build/ios/ipa/*.ipa \
             --apiKey "$ASC_KEY_ID" \
             --apiIssuer "$ASC_ISSUER_ID"
+
+      # Stamp a tag as a record of what shipped. GITHUB_TOKEN intentionally does
+      # not trigger other workflows, so this can't loop back into a release.
+      - name: Tag the release
+        run: |
+          VERSION="v${{ needs.check.outputs.version }}"
+          if git ls-remote --tags origin "refs/tags/$VERSION" | grep -q .; then
+            echo "Tag $VERSION already exists — skipping."
+          else
+            git tag "$VERSION"
+            git push origin "$VERSION"
+          fi
