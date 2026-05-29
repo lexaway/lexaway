@@ -38,8 +38,18 @@ jobs:
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security import "$CERT_PATH" -P "$DIST_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
-          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          # Prepend our keychain to the search list but KEEP the login keychain,
+          # which holds Apple's WWDR intermediate cert needed to validate the chain.
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed 's/"//g')
+
+          echo "==> Signing identities visible to the build:"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+          # Fail loudly with a clear message if the private key didn't import.
+          if ! security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -q "Distribution"; then
+            echo "::error::No distribution identity with a private key in the keychain. The exported .p12 is probably missing its private key — re-export from Keychain Access 'My Certificates' (not 'Certificates')."
+            exit 1
+          fi
 
       - name: Install provisioning profile
         env:
