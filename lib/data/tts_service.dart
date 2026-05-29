@@ -183,10 +183,18 @@ class TtsService {
         if (!completer.isCompleted) completer.complete();
       });
 
+      // Safety net: on iOS `onPlayerComplete` (and even `play`) can fail to
+      // fire, which would leave `_speaking` stuck true and the BGM/SFX ducked
+      // forever. Fall back to the clip's own duration plus a margin so the
+      // duck always releases. The margin keeps long utterances from being cut.
+      final timeout = _wavDuration(wavBytes) + const Duration(seconds: 2);
+
       try {
         await _player.setVolume(volume.clamp(0.0, 1.0));
-        await _player.play(DeviceFileSource(wavPath));
-        await completer.future;
+        await _player
+            .play(DeviceFileSource(wavPath))
+            .timeout(timeout, onTimeout: () {});
+        await completer.future.timeout(timeout, onTimeout: () {});
       } finally {
         await sub.cancel();
       }
@@ -211,6 +219,17 @@ class TtsService {
     final bytes = await generateWavBytes(text, lang: lang, ttsManager: ttsManager);
     if (bytes == null) return;
     await playBytes(bytes, volume: volume);
+  }
+
+  /// Playback duration of a 16-bit mono WAV from its header (data size /
+  /// byte rate). Returns [Duration.zero] for malformed buffers.
+  static Duration _wavDuration(Uint8List wav) {
+    if (wav.length < 44) return Duration.zero;
+    final header = ByteData.sublistView(wav);
+    final byteRate = header.getUint32(28, Endian.little);
+    final dataSize = header.getUint32(40, Endian.little);
+    if (byteRate == 0) return Duration.zero;
+    return Duration(milliseconds: (dataSize / byteRate * 1000).round());
   }
 
   Future<void> stop() async {

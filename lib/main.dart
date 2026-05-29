@@ -127,6 +127,10 @@ class _LexawayAppState extends ConsumerState<LexawayApp>
     ref.listenManual(voiceCatalogProvider, (_, next) {
       ref.read(ttsManagerProvider).setVoiceCatalog(next);
     }, fireImmediately: true);
+    // Keep the AudioManager SFX singleton in sync with the volume sliders.
+    // Subscribing here (not watching) instantiates the side-effect provider
+    // and keeps it alive for the whole app lifetime without forcing rebuilds.
+    ref.listenManual(audioManagerSyncProvider, (_, _) {});
     // Refresh the notification queue on startup. Reads the current settings
     // and schedules (or cancels) accordingly. Delayed by one frame so the
     // provider has time to build from Hive.

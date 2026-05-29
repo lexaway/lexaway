@@ -11,5 +11,6 @@ export 'providers/music.dart';
 export 'providers/notifications.dart';
 export 'providers/packs.dart';
 export 'providers/settings.dart';
+export 'providers/sfx.dart';
 export 'providers/stats.dart';
 export 'providers/tts.dart';
