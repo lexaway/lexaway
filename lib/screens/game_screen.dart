@@ -29,7 +29,9 @@ class GameScreen extends ConsumerStatefulWidget {
 
 enum _ClawEncounterPhase { none, prompt, miniGame, result }
 
-const int _clawMachineCoinCost = 100;
+// Free to play in debug builds (handy while iterating on the art); costs
+// coins in release. kDebugMode is a compile-time const, so this stays const.
+const int _clawMachineCoinCost = kDebugMode ? 0 : 100;
 
 class _GameScreenState extends ConsumerState<GameScreen>
     with WidgetsBindingObserver {
