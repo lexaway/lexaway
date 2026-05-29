@@ -11,7 +11,7 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
 
 echo "==> Building IPA..."
-flutter build ipa --release
+flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
 
 echo "==> Uploading to App Store Connect..."
 xcrun altool --upload-app --type ios \
