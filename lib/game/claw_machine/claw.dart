@@ -8,23 +8,25 @@ import 'cabinet.dart';
 import 'claw_session.dart';
 
 /// The cable that hangs from the cabinet ceiling down to the top of the
-/// claw head. Reads each frame from the active session.
+/// claw head. Reads each frame from the active session. Coloured to match
+/// the cream rod that hook_base.png draws above the spool bulb (the bulb
+/// itself is the [ClawHeadComponent] slice).
 class CableComponent extends PositionComponent
-    with HasGameReference<LexawayGame> {
+    with HasGameReference<LexawayGame>, ZoomFaded {
   final ClawSessionComponent session;
   CableComponent({required this.session}) : super(priority: 2);
 
-  static final Paint _paint = Paint()..color = const Color(0xFF000000);
+  static final Paint _paint = Paint()..color = const Color(0xFFF9D597);
 
   @override
   void update(double dt) {
     super.update(dt);
     position = Vector2(
-      session.clawX - 1,
+      session.clawX - 2,
       ClawCabinet.glassTop,
     );
     final h = math.max(0.0, session.clawY - ClawCabinet.glassTop);
-    size = Vector2(2, h);
+    size = Vector2(4, h);
   }
 
   @override
@@ -33,13 +35,15 @@ class CableComponent extends PositionComponent
   }
 }
 
-/// The compact "spool" head — bottom 16-px slice of ClawBase.png.
+/// The compact "spool" head — the pink bulb at the bottom of hook_base.png
+/// (the cream rod above it is drawn by [CableComponent]). The sheet is 2×,
+/// so the bulb lives in the 36×36 sub-rect below the rod.
 class ClawHeadComponent extends PositionComponent
-    with HasGameReference<LexawayGame> {
+    with HasGameReference<LexawayGame>, ZoomFaded {
   final ClawSessionComponent session;
   late final Image _image;
   late final Paint _paint;
-  static final Rect _src = const Rect.fromLTWH(0, 32, 24, 16);
+  static final Rect _src = const Rect.fromLTWH(18, 35, 36, 36);
 
   ClawHeadComponent({required this.session})
       : super(
@@ -49,7 +53,7 @@ class ClawHeadComponent extends PositionComponent
 
   @override
   Future<void> onLoad() async {
-    _image = await game.images.load('claw_machine/ClawBase.png');
+    _image = await game.images.load('claw_machine/hook_base.png');
     _paint = Paint()
       ..filterQuality = FilterQuality.none
       ..isAntiAlias = false;
@@ -76,15 +80,15 @@ class ClawHeadComponent extends PositionComponent
 }
 
 /// One of the two claw prongs. Pivots around its top-center (the
-/// "shoulder") via [Anchor.topCenter]. The right arm renders its sprite
-/// horizontally mirrored so the same Claw1Trimmed/Claw2Trimmed image
-/// produces a symmetric pair.
+/// "shoulder") via [Anchor.topCenter]. The new art ships a mirrored pair
+/// (hook_left / hook_right), each already drawn for its side, so there's
+/// no horizontal flip and no separate open/closed frame — the prongs just
+/// splay out (open) or draw together (closed) by rotation alone.
 class ClawArmComponent extends PositionComponent
-    with HasGameReference<LexawayGame> {
+    with HasGameReference<LexawayGame>, ZoomFaded {
   final ClawSessionComponent session;
   final bool isLeft;
-  late final Image _open;
-  late final Image _closed;
+  late final Image _prong;
   late final Paint _paint;
 
   ClawArmComponent({required this.session, required this.isLeft})
@@ -96,8 +100,9 @@ class ClawArmComponent extends PositionComponent
 
   @override
   Future<void> onLoad() async {
-    _open = await game.images.load('claw_machine/Claw1Trimmed.png');
-    _closed = await game.images.load('claw_machine/Claw2Trimmed.png');
+    _prong = await game.images.load(
+      isLeft ? 'claw_machine/hook_left.png' : 'claw_machine/hook_right.png',
+    );
     _paint = Paint()
       ..filterQuality = FilterQuality.none
       ..isAntiAlias = false;
@@ -109,36 +114,30 @@ class ClawArmComponent extends PositionComponent
     final shoulderY = session.clawY +
         ClawCabinet.headH -
         ClawCabinet.armOverlap;
-    final shoulderX = session.clawX + (isLeft ? -2.0 : 2.0);
+    final shoulderX = session.clawX + (isLeft ? -3.5 : 3.5);
     position = Vector2(shoulderX, shoulderY);
     angle = _armAngle(closed: session.clawClosed, isLeft: isLeft);
   }
 
   static double _armAngle({required bool closed, required bool isLeft}) {
     if (closed) {
-      return isLeft ? -0.18 : 0.18;
+      return isLeft ? -0.12 : 0.12;
     }
-    return isLeft ? 0.7 : -0.7;
+    return isLeft ? 0.32 : -0.32;
   }
 
   @override
   void render(Canvas canvas) {
-    final image = session.clawClosed ? _closed : _open;
-    final src = Rect.fromLTWH(
-      0,
-      0,
-      image.width.toDouble(),
-      image.height.toDouble(),
+    canvas.drawImageRect(
+      _prong,
+      Rect.fromLTWH(
+        0,
+        0,
+        _prong.width.toDouble(),
+        _prong.height.toDouble(),
+      ),
+      Offset.zero & size.toSize(),
+      _paint,
     );
-    final dst = Offset.zero & size.toSize();
-    if (isLeft) {
-      canvas.drawImageRect(image, src, dst, _paint);
-    } else {
-      canvas.save();
-      canvas.translate(size.x, 0);
-      canvas.scale(-1, 1);
-      canvas.drawImageRect(image, src, dst, _paint);
-      canvas.restore();
-    }
   }
 }

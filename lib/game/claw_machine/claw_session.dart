@@ -125,6 +125,7 @@ class ClawSessionComponent extends PositionComponent {
     _addSibling(cabinet, ClawHeadComponent(session: this));
     _addSibling(cabinet, GlassShineComponent());
     _addSibling(cabinet, PrizeDoorComponent(session: this));
+    _addSibling(cabinet, ConsoleStarComponent());
     _addSibling(cabinet, ClawJoystickComponent(session: this));
     _addSibling(cabinet, ActionButtonComponent(session: this));
   }
@@ -156,7 +157,7 @@ class ClawSessionComponent extends PositionComponent {
 
     if (phase == ClawPhase.aiming && stickDir != 0) {
       clawX = (clawX + stickDir * stickSpeedPerSec * dt)
-          .clamp(ClawCabinet.glassLeft, ClawCabinet.glassRight);
+          .clamp(ClawCabinet.clawMinX, ClawCabinet.clawMaxX);
     }
 
     _stepPhysics(dt);
@@ -258,8 +259,8 @@ class ClawSessionComponent extends PositionComponent {
     for (final isLeft in [true, false]) {
       final shoulderX = clawX + (isLeft ? -2.0 : 2.0);
       final angle = clawClosed
-          ? (isLeft ? -0.18 : 0.18)
-          : (isLeft ? 0.7 : -0.7);
+          ? (isLeft ? -0.12 : 0.12)
+          : (isLeft ? 0.32 : -0.32);
       // Arm hangs from anchor topCenter and rotates by `angle`. In Flame's
       // y-down coords positive angle is visual CW, so the local-down axis
       // (0, 1) rotates to (-sin, cos).

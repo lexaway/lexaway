@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
+import 'cabinet.dart';
+
 /// A single colored ball on the floor of the cabinet, or carried under the
 /// claw. Drawn as a filled circle with a thin black outline — matches the
 /// `_SphereDot` decoration the previous Flutter overlay used.
@@ -9,7 +11,7 @@ import 'package:flame/components.dart';
 /// `position` is the visual center (Anchor.center) and the physics center —
 /// `physicsRadius` is slightly under the visual radius so the colored fills
 /// touch a hair before the strokes overlap.
-class SphereComponent extends PositionComponent {
+class SphereComponent extends PositionComponent with ZoomFaded {
   static const double physicsRadius = 5.5;
 
   Color color;

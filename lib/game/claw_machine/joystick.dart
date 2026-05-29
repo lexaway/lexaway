@@ -14,16 +14,16 @@ enum _StickPose { center, right, left }
 /// threshold (0.4 / 0.6) and the three-pose look match the previous
 /// Flutter overlay exactly.
 class ClawJoystickComponent extends PositionComponent
-    with HasGameReference<LexawayGame>, DragCallbacks {
+    with HasGameReference<LexawayGame>, DragCallbacks, ZoomFaded {
   final ClawSessionComponent session;
   late final Image _sheet;
   late final Paint _paint;
   _StickPose _pose = _StickPose.center;
 
-  // Sheet layout: 5×3 cells of 24×27 each. Row 2 (green) is the colorway
-  // we want; cols 0/1/2 are center/right/left.
-  static const double _cellW = 24;
-  static const double _cellH = 27;
+  // Sheet layout: a single row of 3 cells, 28×20 each. Cols 0/1/2 are
+  // center (upright) / right-lean / left-lean.
+  static const double _cellW = 28;
+  static const double _cellH = 20;
 
   ClawJoystickComponent({required this.session})
       : super(
@@ -40,7 +40,7 @@ class ClawJoystickComponent extends PositionComponent
 
   @override
   Future<void> onLoad() async {
-    _sheet = await game.images.load('claw_machine/Joystick.png');
+    _sheet = await game.images.load('claw_machine/joystick.png');
     _paint = Paint()
       ..filterQuality = FilterQuality.none
       ..isAntiAlias = false;
@@ -99,7 +99,7 @@ class ClawJoystickComponent extends PositionComponent
       _StickPose.right => 1,
       _StickPose.left => 2,
     };
-    final src = Rect.fromLTWH(col * _cellW, 2 * _cellH, _cellW, _cellH);
+    final src = Rect.fromLTWH(col * _cellW, 0, _cellW, _cellH);
     canvas.drawImageRect(_sheet, src, Offset.zero & size.toSize(), _paint);
   }
 }

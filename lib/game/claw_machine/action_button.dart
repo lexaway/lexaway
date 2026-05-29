@@ -11,9 +11,9 @@ import 'claw_session.dart';
 
 /// "Drop the claw" button. Tap-down triggers the drop sequence (and a
 /// haptic blip); tap-up restores the unpressed sprite. Sprite sheet is
-/// 32×48, 2×3 cells of 16×16 — col 0 is unpressed, col 1 pressed.
+/// 24×8, 2 cells of 12×8 — col 0 is unpressed, col 1 pressed.
 class ActionButtonComponent extends PositionComponent
-    with HasGameReference<LexawayGame>, TapCallbacks {
+    with HasGameReference<LexawayGame>, TapCallbacks, ZoomFaded {
   final ClawSessionComponent session;
   late final Image _sheet;
   late final Paint _paint;
@@ -34,7 +34,7 @@ class ActionButtonComponent extends PositionComponent
 
   @override
   Future<void> onLoad() async {
-    _sheet = await game.images.load('claw_machine/Button.png');
+    _sheet = await game.images.load('claw_machine/button.png');
     _paint = Paint()
       ..filterQuality = FilterQuality.none
       ..isAntiAlias = false;
@@ -71,7 +71,7 @@ class ActionButtonComponent extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    final src = Rect.fromLTWH(_pressed ? 16 : 0, 0, 16, 16);
+    final src = Rect.fromLTWH(_pressed ? 12 : 0, 0, 12, 8);
     canvas.drawImageRect(_sheet, src, Offset.zero & size.toSize(), _paint);
   }
 }
