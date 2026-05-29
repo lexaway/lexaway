@@ -259,12 +259,14 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
       }
 
       // Off-screen flakes re-enter from the *opposite* edge so the wind keeps
-      // feeding the screen as the dino runs. Spawning uniformly across the
-      // full width here would drain the leading edge faster than it refills.
+      // feeding the screen as the dino runs. Use fullHeight so they enter at a
+      // random Y across the visible range — otherwise they'd respawn above the
+      // top edge and need to fall in, leaving a sparse wedge on the leading
+      // edge during sustained motion.
       if (p.x < -spriteH) {
-        _respawn(p, size, fullHeight: false, enterFromX: size.x + spriteH);
+        _respawn(p, size, fullHeight: true, enterFromX: size.x + spriteH);
       } else if (p.x > size.x + spriteH) {
-        _respawn(p, size, fullHeight: false, enterFromX: -spriteH);
+        _respawn(p, size, fullHeight: true, enterFromX: -spriteH);
       }
     }
   }
