@@ -53,5 +53,11 @@
   "notifNoPacks": "Descarga un paquete para recibir tarjetas.",
   "notifPreview": "Vista previa (toca para refrescar)",
   "notifPreviewEmpty": "Elige un idioma para ver la vista previa.",
-  "notifPickAtLeastOne": "Elige al menos un idioma."
+  "notifPickAtLeastOne": "Elige al menos un idioma.",
+  "clawPrizeNew": "¡Nuevo!",
+  "clawPrizeOwned": "Ya está en tu colección",
+  "clawLost": "¡Por poco!",
+  "clawLostDetail": "Prueba con la siguiente.",
+  "clawTryAgain": "Reintentar ({cost}c)",
+  "couldNotOpenUrl": "No se pudo abrir {url}"
 }

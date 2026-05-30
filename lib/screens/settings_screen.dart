@@ -195,7 +195,7 @@ class SettingsScreen extends ConsumerWidget {
                       );
                       if (!ok) {
                         messenger.showSnackBar(
-                          SnackBar(content: Text('Could not open $uri')),
+                          SnackBar(content: Text(l10n.couldNotOpenUrl('$uri'))),
                         );
                       }
                     } catch (_) {

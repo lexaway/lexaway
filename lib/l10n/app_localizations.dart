@@ -401,6 +401,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pick at least one language.'**
   String get notifPickAtLeastOne;
+
+  /// No description provided for @clawPrizeNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New!'**
+  String get clawPrizeNew;
+
+  /// No description provided for @clawPrizeOwned.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in your collection'**
+  String get clawPrizeOwned;
+
+  /// No description provided for @clawLost.
+  ///
+  /// In en, this message translates to:
+  /// **'So close!'**
+  String get clawLost;
+
+  /// No description provided for @clawLostDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Try the next one.'**
+  String get clawLostDetail;
+
+  /// No description provided for @clawTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again ({cost}c)'**
+  String clawTryAgain(int cost);
+
+  /// No description provided for @couldNotOpenUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open {url}'**
+  String couldNotOpenUrl(String url);
 }
 
 class _AppLocalizationsDelegate

@@ -53,5 +53,11 @@
   "notifNoPacks": "Download een pakket voor woordkaarten.",
   "notifPreview": "Voorbeeld (tik om te verversen)",
   "notifPreviewEmpty": "Kies een taal voor een voorbeeld.",
-  "notifPickAtLeastOne": "Kies ten minste één taal."
+  "notifPickAtLeastOne": "Kies ten minste één taal.",
+  "clawPrizeNew": "Nieuw!",
+  "clawPrizeOwned": "Al in je collectie",
+  "clawLost": "Net niet!",
+  "clawLostDetail": "Probeer de volgende.",
+  "clawTryAgain": "Opnieuw ({cost}c)",
+  "couldNotOpenUrl": "Kan {url} niet openen"
 }

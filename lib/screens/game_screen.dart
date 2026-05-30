@@ -14,6 +14,7 @@ import '../data/lang_codes.dart';
 import '../game/claw_machine/prize_sphere.dart';
 import '../game/events.dart';
 import '../game/lexaway_game.dart';
+import '../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../providers.dart';
 import '../widgets/claw_prompt.dart';
@@ -96,7 +97,17 @@ class _GameScreenState extends ConsumerState<GameScreen>
           ref.read(bgmSchedulerProvider).onBiomeChanged(current);
         case ClawMachineEntered(:final itemIndex):
           _onClawMachineEntered(itemIndex);
-        default:
+        // Events handled elsewhere (or not at this layer) — listed explicitly
+        // rather than via `default` so a new GameEvent subtype trips the
+        // analyzer's exhaustiveness check here instead of being silently dropped.
+        case AnswerCorrect() ||
+              AnswerWrong() ||
+              WalkStarted() ||
+              WalkSpeedChanged() ||
+              WalkStopped() ||
+              IdleChatterTriggered() ||
+              WorldExtended() ||
+              ClawMachineCompleted():
           break;
       }
     });
@@ -367,6 +378,7 @@ class _ClawResultDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Material(
       color: Colors.black.withValues(alpha: 0.45),
       child: Center(
@@ -401,7 +413,7 @@ class _ClawResultDialog extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  isNewPrize ? 'New!' : 'Already in your collection',
+                  isNewPrize ? l10n.clawPrizeNew : l10n.clawPrizeOwned,
                   style: TextStyle(
                     fontSize: 14,
                     color: isNewPrize
@@ -410,8 +422,11 @@ class _ClawResultDialog extends StatelessWidget {
                   ),
                 ),
               ] else ...[
+                // Every claw sphere carries a flag, so a win always has a
+                // prize and lands in the branch above — this branch is the
+                // loss case.
                 Text(
-                  won ? 'You got a sphere!' : 'So close!',
+                  l10n.clawLost,
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
@@ -420,7 +435,7 @@ class _ClawResultDialog extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  won ? '+1 sphere' : 'Try the next one.',
+                  l10n.clawLostDetail,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Color(0xFF3E2723),
@@ -447,9 +462,9 @@ class _ClawResultDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
-                    child: const Text(
-                      'Continue',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.continueLabel,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -472,7 +487,7 @@ class _ClawResultDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Try again (${tryAgainCost}c)',
+                      l10n.clawTryAgain(tryAgainCost),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,

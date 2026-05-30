@@ -63,5 +63,21 @@
   "notifNoPacks": "Download a pack to get vocab flashcards.",
   "notifPreview": "Preview (tap to re-roll)",
   "notifPreviewEmpty": "Pick a language to see a preview.",
-  "notifPickAtLeastOne": "Pick at least one language."
+  "notifPickAtLeastOne": "Pick at least one language.",
+  "clawPrizeNew": "New!",
+  "clawPrizeOwned": "Already in your collection",
+  "clawLost": "So close!",
+  "clawLostDetail": "Try the next one.",
+  "clawTryAgain": "Try again ({cost}c)",
+  "@clawTryAgain": {
+    "placeholders": {
+      "cost": { "type": "int" }
+    }
+  },
+  "couldNotOpenUrl": "Could not open {url}",
+  "@couldNotOpenUrl": {
+    "placeholders": {
+      "url": { "type": "String" }
+    }
+  }
 }

@@ -163,4 +163,26 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get notifPickAtLeastOne => 'Choisis au moins une langue.';
+
+  @override
+  String get clawPrizeNew => 'Nouveau !';
+
+  @override
+  String get clawPrizeOwned => 'Déjà dans ta collection';
+
+  @override
+  String get clawLost => 'Si près !';
+
+  @override
+  String get clawLostDetail => 'Tente la suivante.';
+
+  @override
+  String clawTryAgain(int cost) {
+    return 'Réessayer (${cost}c)';
+  }
+
+  @override
+  String couldNotOpenUrl(String url) {
+    return 'Impossible d\'ouvrir $url';
+  }
 }

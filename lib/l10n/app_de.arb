@@ -53,5 +53,11 @@
   "notifNoPacks": "Lade ein Paket, um Vokabel-Karten zu bekommen.",
   "notifPreview": "Vorschau (zum Neuwürfeln tippen)",
   "notifPreviewEmpty": "Wähle eine Sprache für die Vorschau.",
-  "notifPickAtLeastOne": "Wähle mindestens eine Sprache."
+  "notifPickAtLeastOne": "Wähle mindestens eine Sprache.",
+  "clawPrizeNew": "Neu!",
+  "clawPrizeOwned": "Schon in deiner Sammlung",
+  "clawLost": "Knapp daneben!",
+  "clawLostDetail": "Versuch die nächste.",
+  "clawTryAgain": "Nochmal ({cost}c)",
+  "couldNotOpenUrl": "Konnte {url} nicht öffnen"
 }

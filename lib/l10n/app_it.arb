@@ -53,5 +53,11 @@
   "notifNoPacks": "Scarica un pacchetto per ricevere le schede.",
   "notifPreview": "Anteprima (tocca per ricaricare)",
   "notifPreviewEmpty": "Scegli una lingua per vedere l'anteprima.",
-  "notifPickAtLeastOne": "Scegli almeno una lingua."
+  "notifPickAtLeastOne": "Scegli almeno una lingua.",
+  "clawPrizeNew": "Nuovo!",
+  "clawPrizeOwned": "Già nella tua collezione",
+  "clawLost": "Per un soffio!",
+  "clawLostDetail": "Prova la prossima.",
+  "clawTryAgain": "Riprova ({cost}c)",
+  "couldNotOpenUrl": "Impossibile aprire {url}"
 }
