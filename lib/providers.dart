@@ -2,6 +2,7 @@
 /// the actual definitions live in `providers/` split by domain.
 library;
 
+export 'providers/ambient.dart';
 export 'providers/bgm.dart';
 export 'providers/bootstrap.dart';
 export 'providers/character.dart';

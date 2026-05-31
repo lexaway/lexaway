@@ -4,6 +4,7 @@ import '../data/tts_cache.dart';
 import '../data/tts_manager.dart';
 import '../data/tts_service.dart';
 import '../game/audio_manager.dart';
+import 'ambient.dart';
 import 'bgm.dart';
 import 'bootstrap.dart';
 
@@ -16,9 +17,11 @@ final ttsManagerProvider = Provider<TtsManager>((ref) {
 final ttsServiceProvider = Provider<TtsService>((ref) {
   final service = TtsService(tmpDir: ref.watch(tmpDirProvider));
   final bgm = ref.watch(bgmServiceProvider);
+  final ambient = ref.watch(ambientServiceProvider);
   service.onSpeakingChange = (speaking) {
     AudioManager.instance.ttsDucking = speaking;
     bgm.setDucking(speaking);
+    ambient.setDucking(speaking);
   };
   ref.onDispose(() => service.dispose());
   return service;

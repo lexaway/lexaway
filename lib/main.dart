@@ -148,12 +148,15 @@ class _LexawayAppState extends ConsumerState<LexawayApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final bgm = ref.read(bgmServiceProvider);
+    final ambient = ref.read(ambientServiceProvider);
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) {
       unawaited(bgm.pause());
+      unawaited(ambient.pause());
     } else if (state == AppLifecycleState.resumed) {
       unawaited(bgm.resume());
+      unawaited(ambient.resume());
       // Refresh-on-open: each resume re-fills the queue so the 7-day horizon
       // stays full and any drift from DST / locale changes corrects itself.
       unawaited(ref.read(notifSettingsProvider.notifier).refresh());

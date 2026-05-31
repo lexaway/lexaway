@@ -127,6 +127,12 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   /// instead of reaching through here.
   WorldMap get worldMap => _worldMap;
 
+  /// The biome currently under the screen centre — the same probe
+  /// [ScrollController] uses to detect crossings. Exposed so the screen can
+  /// start the right ambient bed on load, before any [BiomeChanged] fires.
+  BiomeType get currentBiome =>
+      _worldMap.biomeAt(_camera.scrollOffset + size.x / 2);
+
   /// Live scroll offset. Exposed for UI bindings (minimap) and for
   /// downstream creature behaviors that don't fit the constructor-injection
   /// pattern. Sibling systems should take a [Camera] in their constructor.

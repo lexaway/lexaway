@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:audioplayers/audioplayers.dart' show AssetSource;
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,8 @@ import '../game/audio_manager.dart';
 import '../game/claw_machine/prize_sphere.dart';
 import '../game/events.dart';
 import '../game/lexaway_game.dart';
+import '../game/world/biome_registry.dart';
+import '../game/world/world_map.dart';
 import '../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../providers.dart';
@@ -96,6 +99,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
           ref.read(langStepsProvider(_activeLang!).notifier).add(count);
         case BiomeChanged(:final current):
           ref.read(bgmSchedulerProvider).onBiomeChanged(current);
+          _applyAmbient(current);
         case ClawMachineEntered(:final itemIndex):
           _onClawMachineEntered(itemIndex);
         // Events handled elsewhere (or not at this layer) — listed explicitly
@@ -112,6 +116,25 @@ class _GameScreenState extends ConsumerState<GameScreen>
           break;
       }
     });
+
+    // The starting biome never emits BiomeChanged, so kick its ambient bed
+    // once the world is loaded and the screen-centre probe is meaningful.
+    _game!.loaded.then((_) {
+      if (mounted) _applyAmbient(_game!.currentBiome);
+    });
+  }
+
+  /// Start, swap, or stop the looping ambient bed for [biome]. Beds are
+  /// declared per-biome on `BiomeDefinition.ambientLoop`; a null one means
+  /// silence (the player crossfades out).
+  void _applyAmbient(BiomeType biome) {
+    final loop = BiomeRegistry.get(biome).ambientLoop;
+    final svc = ref.read(ambientServiceProvider);
+    if (loop == null) {
+      svc.stop();
+    } else {
+      svc.playLoop('ambient/$loop', AssetSource(loop));
+    }
   }
 
   void _onClawMachineEntered(int itemIndex) {
@@ -253,6 +276,9 @@ class _GameScreenState extends ConsumerState<GameScreen>
     // but flush again in case of direct navigation without backgrounding.
     _flushGameState();
     _eventSub?.cancel();
+    // Ambient is gameplay-only — silence the bed on the way out (BGM keeps
+    // playing menu music via the route observer).
+    ref.read(ambientServiceProvider).stop();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

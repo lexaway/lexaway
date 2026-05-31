@@ -266,6 +266,12 @@ class BiomeDefinition {
   /// `null` means no overlay for this biome.
   final WeatherDef? weather;
 
+  /// Optional looping ambient bed for this biome (e.g. distant ocean waves on
+  /// the coast). Stored as an `AssetSource` path under `assets/` —
+  /// `'audio/ambient_tropics.wav'`. Crossfaded in while the biome is active and
+  /// faded out on leaving. `null` means no ambience.
+  final String? ambientLoop;
+
   /// Source position of the surface tile in the terrain sheet.
   /// Stored as `[x, y]` rather than `Vector2` to keep `const`-constructible.
   final List<double> surfaceSrcPosition;
@@ -292,6 +298,7 @@ class BiomeDefinition {
     this.maxCreatureGapTiles = 80,
     this.creatureDefs = const {},
     this.weather,
+    this.ambientLoop,
   }) : assert(diamondChance >= 0 && clusterChance >= 0),
        assert(
          diamondChance + clusterChance <= 1.0,

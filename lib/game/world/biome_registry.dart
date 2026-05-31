@@ -261,6 +261,8 @@ class BiomeRegistry {
     maxCoinGapTiles: 10,
     diamondChance: 0.15,
     clusterChance: 0.25,
+    // Distant ocean waves bed the whole coast.
+    ambientLoop: 'audio/ambient_tropics.wav',
   );
 
   static const _winter = BiomeDefinition(

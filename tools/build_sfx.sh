@@ -16,11 +16,18 @@ NA="$ASSETS/Ninja Adventure - Asset Pack/Audio/Sounds"
 
 mkdir -p "$OUT"
 
+# Skip (with a warning) when a source is missing so a pruned raw pack doesn't
+# abort the whole build — the already-built asset in assets/audio/ stays put.
+SKIPPED=0
+skip() { echo "  SKIP $2 (missing source: $1)" >&2; SKIPPED=$((SKIPPED + 1)); }
+
 # ogg -> wav (decode to canonical PCM)
-ogg() { ffmpeg -v error -y -i "$KI/$1.ogg" -ar 44100 -ac 1 -c:a pcm_s16le "$OUT/$2"; echo "  ogg  $2"; }
-jing() { ffmpeg -v error -y -i "$KJ/$1.ogg" -ar 44100 -ac 1 -c:a pcm_s16le "$OUT/$2"; echo "  jing $2"; }
+ogg() { [ -f "$KI/$1.ogg" ] || { skip "$KI/$1.ogg" "$2"; return; }; ffmpeg -v error -y -i "$KI/$1.ogg" -ar 44100 -ac 1 -c:a pcm_s16le "$OUT/$2"; echo "  ogg  $2"; }
+jing() { [ -f "$KJ/$1.ogg" ] || { skip "$KJ/$1.ogg" "$2"; return; }; ffmpeg -v error -y -i "$KJ/$1.ogg" -ar 44100 -ac 1 -c:a pcm_s16le "$OUT/$2"; echo "  jing $2"; }
 # wav -> wav (normalize container/format so all shipped SFX match)
-wav() { ffmpeg -v error -y -i "$1" -ar 44100 -ac 1 -c:a pcm_s16le "$OUT/$2"; echo "  wav  $2"; }
+wav() { [ -f "$1" ] || { skip "$1" "$2"; return; }; ffmpeg -v error -y -i "$1" -ar 44100 -ac 1 -c:a pcm_s16le "$OUT/$2"; echo "  wav  $2"; }
+# wav -> wav, ambient bed: keep stereo for width (no -ac 1 downmix)
+amb() { [ -f "$1" ] || { skip "$1" "$2"; return; }; ffmpeg -v error -y -i "$1" -ar 44100 -c:a pcm_s16le "$OUT/$2"; echo "  amb  $2"; }
 
 echo "== 8 swaps =="
 wav  "$NA/Menu/Accept5.wav"        correct.wav
@@ -72,4 +79,11 @@ wav  "$NA/Elemental/Grass.wav"     creature_flee_1.wav
 wav  "$NA/Elemental/Grass2.wav"    creature_flee_2.wav
 wav  "$NA/Jump & Bounce/Bounce.wav" fidget_hop.wav
 
-echo "Done -> $OUT"
+echo "== ambient beds =="
+amb  "$NA/Ambient/WaveFar.wav"     ambient_tropics.wav
+
+if [ "$SKIPPED" -gt 0 ]; then
+  echo "Done -> $OUT  ($SKIPPED source(s) missing — kept existing assets)"
+else
+  echo "Done -> $OUT"
+fi
