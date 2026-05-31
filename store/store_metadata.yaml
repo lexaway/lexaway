@@ -1,26 +1,21 @@
-# App Store Connect + Google Play Metadata
-# Localize each field per language. Apple / Google limits noted in comments.
+# App Store Connect + Google Play store listing — the standing (current-state)
+# metadata. Per-version "What's New" notes live in release_notes.yaml.
+#
+# One self-contained block per language. Field limits (Apple unless noted):
+#   subtitle          max 30 chars   — shown below the app name
+#   promotional_text  max 170 chars  — above description, editable without a build
+#   short_description max 80 chars   — Google Play only, above the full description
+#   description       max 4000 chars
+#   keywords          max 100 chars total, comma-separated
 
 # Same for all languages
 support_url: "https://lexaway.github.io/lexaway"
 marketing_url: "https://lexaway.github.io/lexaway"
 
-# Max 30 chars. Shown below app name on the store.
-subtitle:
-  en: "Learn languages step by step"
-  de: "Sprachen Schritt für Schritt"
-  es: "Aprende idiomas paso a paso"
-  fr: "Apprends les langues pas à pas"
-  it: "Impara le lingue passo a passo"
-  pt: "Aprenda idiomas passo a passo"
-  nl: "Leer talen stap voor stap"
-
 en:
-  # Max 170 chars. Shown above description, can be updated without a new build. (Apple)
+  subtitle: "Learn languages step by step"
   promotional_text: "A pixel-art language game. Pick a language, hatch a dino, and learn vocabulary as you walk through a world that grows with every correct answer."
-  # Max 80 chars. Google Play short description — shown above the full description.
   short_description: "Hatch a dino and learn vocabulary in a pixel-art world that grows as you play."
-  # Max 4000 chars.
   description: |
     Lexaway is a language learning game with a simple loop: answer vocabulary questions correctly and your pixel-art dino walks forward. Keep going and see what the world has in store.
 
@@ -34,10 +29,10 @@ en:
     • No ads, no accounts, no tracking
 
     Lexaway is open source. Feedback and contributions welcome at github.com/lexaway.
-  # Max 100 chars total, comma-separated.
   keywords: "language learning,vocabulary,french,spanish,german,italian,portuguese,pixel art,game,offline"
 
 de:
+  subtitle: "Sprachen Schritt für Schritt"
   promotional_text: "Ein Pixel-Art-Sprachspiel. Wähle eine Sprache, schlüpfe einen Dino und lerne Vokabeln auf dem Weg durch eine Welt, die mit jeder richtigen Antwort wächst."
   short_description: "Schlüpfe einen Dino und lerne Vokabeln in einer wachsenden Pixel-Art-Welt."
   description: |
@@ -53,9 +48,10 @@ de:
     • Keine Werbung, keine Konten, kein Tracking
 
     Lexaway ist Open Source. Feedback und Beiträge willkommen auf github.com/lexaway.
-  keywords: "Sprachen lernen,Vokabeln,Französisch,Spanisch,Deutsch,Italienisch,Portugiesisch,Pixel Art,Spiel,offline"
+  keywords: "Sprachen lernen,Vokabeln,Französisch,Spanisch,Deutsch,Italienisch,Portugiesisch,Pixel Art,offline"
 
 es:
+  subtitle: "Aprende idiomas paso a paso"
   promotional_text: "Un juego de idiomas en pixel art. Elige un idioma, eclosiona un dino y aprende vocabulario mientras recorres un mundo que crece con cada respuesta correcta."
   short_description: "Eclosiona un dino y aprende vocabulario en un mundo pixel art que crece."
   description: |
@@ -74,6 +70,7 @@ es:
   keywords: "aprender idiomas,vocabulario,francés,español,alemán,italiano,portugués,pixel art,juego,offline"
 
 fr:
+  subtitle: "Apprends les langues pas à pas"
   promotional_text: "Un jeu de langues en pixel art. Choisis une langue, fais éclore un dino et apprends du vocabulaire en traversant un monde qui grandit à chaque bonne réponse."
   short_description: "Fais éclore un dino et apprends du vocabulaire dans un monde en pixel art."
   description: |
@@ -92,6 +89,7 @@ fr:
   keywords: "apprendre langues,vocabulaire,français,espagnol,allemand,italien,portugais,pixel art,jeu,hors ligne"
 
 it:
+  subtitle: "Impara le lingue passo a passo"
   promotional_text: "Un gioco di lingue in pixel art. Scegli una lingua, schiudi un dino e impara vocaboli attraversando un mondo che cresce a ogni risposta corretta."
   short_description: "Schiudi un dino e impara vocaboli in un mondo pixel art che cresce."
   description: |
@@ -110,6 +108,7 @@ it:
   keywords: "imparare lingue,vocabolario,francese,spagnolo,tedesco,italiano,portoghese,pixel art,gioco,offline"
 
 pt:
+  subtitle: "Aprenda idiomas passo a passo"
   promotional_text: "Um jogo de idiomas em pixel art. Escolha um idioma, choque um dino e aprenda vocabulário enquanto percorre um mundo que cresce a cada resposta certa."
   short_description: "Choque um dino e aprenda vocabulário em um mundo pixel art que cresce."
   description: |
@@ -128,6 +127,7 @@ pt:
   keywords: "aprender idiomas,vocabulário,francês,espanhol,alemão,italiano,português,pixel art,jogo,offline"
 
 nl:
+  subtitle: "Leer talen stap voor stap"
   promotional_text: "Een taalspel in pixel art. Kies een taal, broed een dino uit en leer woorden terwijl je door een wereld loopt die met elk goed antwoord groeit."
   short_description: "Broed een dino uit en leer woorden in een pixel-art-wereld die meegroeit."
   description: |

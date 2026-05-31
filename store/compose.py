@@ -1,6 +1,6 @@
 """Compose marketing-ready App Store screenshots from raw captures.
 
-Reads tools/screenshot_config.yaml for screen captions and style,
+Reads store/screenshot_config.yaml for screen captions and style,
 then overlays a bottom scrim + caption text on each raw PNG.
 
 Supports per-language captions. Raw screenshots are expected at:

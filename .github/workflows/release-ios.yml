@@ -43,15 +43,21 @@ jobs:
   testflight:
     needs: check
     if: needs.check.outputs.release == 'true'
-    runs-on: macos-latest
+    # Self-hosted Apple Silicon Mac with Xcode + a valid simulator already set up.
+    runs-on: [self-hosted, macOS, ARM64, m1]
     steps:
       - uses: actions/checkout@v4
 
-      # Apple requires the iOS 26 SDK (Xcode 26+) for App Store uploads.
-      # The runner default is older, so pin the newest stable Xcode.
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+      # Fail fast (and clearly) if uv isn't on the runner's PATH — the publish
+      # step needs it. On a fresh self-hosted Mac, `brew install uv` then restart
+      # the runner so it inherits Homebrew's bin (/opt/homebrew/bin on ARM).
+      - name: Verify uv is available
+        run: |
+          if ! command -v uv >/dev/null 2>&1; then
+            echo "::error::uv not found on PATH. Install it (brew install uv) and restart the runner so it picks up /opt/homebrew/bin."
+            exit 1
+          fi
+          uv --version
 
       - uses: subosito/flutter-action@v2
         with:
@@ -118,6 +124,20 @@ jobs:
             -f build/ios/ipa/*.ipa \
             --apiKey "$ASC_KEY_ID" \
             --apiIssuer "$ASC_ISSUER_ID"
+
+      # Push the App Store listing (description, keywords, "What's New", screenshots)
+      # from store/*.yaml + screenshots/final/. This is a no-op that exits cleanly
+      # when no editable App Store version is prepped — the common case while we're
+      # only shipping to TestFlight. It updates the listing the moment a "Prepare
+      # for Submission" version exists in App Store Connect. The .p8 key written by
+      # the "Install App Store Connect API key" step above is found automatically.
+      - name: Publish App Store listing
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          uv run --with "pyjwt[crypto]" --with requests --with pyyaml \
+            store/publish_store.py --skip-if-no-version
 
       # Stamp a tag as a record of what shipped. GITHUB_TOKEN intentionally does
       # not trigger other workflows, so this can't loop back into a release.

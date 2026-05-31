@@ -1,7 +1,7 @@
 """Capture and compose marketing screenshots for iOS and Android.
 
 Usage:
-    uv run --with pyyaml tools/screenshots.py [options]
+    uv run --with pyyaml store/screenshots.py [options]
 
 Handles iOS simulators and Android emulators, with proper YAML/JSON parsing.
 """
