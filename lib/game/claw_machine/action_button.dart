@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/services.dart';
 
+import '../audio_manager.dart';
 import '../lexaway_game.dart';
 import 'cabinet.dart';
 import 'claw_session.dart';
@@ -48,6 +49,7 @@ class ActionButtonComponent extends PositionComponent
     if (!_enabled) return;
     _pressed = true;
     HapticFeedback.lightImpact();
+    AudioManager.instance.playClawDropButton();
     // Match the original 80 ms press flash, but the drop fires
     // immediately — releasing the press before the drop completes
     // would otherwise ship a stale "pressed" frame.

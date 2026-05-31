@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/question_source.dart';
+import '../game/audio_manager.dart';
 import '../game/lexaway_game.dart';
 import '../models/question.dart';
 import '../providers.dart';
@@ -88,6 +89,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
   void _onOptionTap(String option) {
     if (_answerState != _AnswerState.unanswered) return;
 
+    AudioManager.instance.playUiTap();
     final correct = option == _current.answer;
     widget.source.recordAnswer(_current, correct: correct);
 
@@ -285,7 +287,10 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                 bottom: AppSpacing.sm + MediaQuery.of(context).padding.bottom,
                 right: 0,
                 child: GestureDetector(
-                  onTap: _advance,
+                  onTap: () {
+                    AudioManager.instance.playUiConfirm();
+                    _advance();
+                  },
                   behavior: HitTestBehavior.opaque,
                   child: const Padding(
                     padding: EdgeInsets.all(AppSpacing.sm),

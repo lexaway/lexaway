@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flame/components.dart';
 
+import '../audio_manager.dart';
 import '../components/player.dart';
 import '../events.dart';
 
@@ -89,6 +90,7 @@ class AnimationController extends Component {
         _fidgetTimer = 0;
         _nextFidgetAt = _rollFidgetDelay();
         _player.play(DinoAnim.jump);
+        AudioManager.instance.playFidgetHop();
       }
     }
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../game/audio_manager.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -22,7 +23,10 @@ class HudBar extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           GestureDetector(
-            onTap: () => context.push('/settings'),
+            onTap: () {
+              AudioManager.instance.playUiClick();
+              context.push('/settings');
+            },
             behavior: HitTestBehavior.opaque,
             child: const Padding(
               padding: EdgeInsets.fromLTRB(
@@ -40,7 +44,10 @@ class HudBar extends ConsumerWidget {
           ),
           const SizedBox(width: AppSpacing.sm),
           GestureDetector(
-            onTap: () => context.push('/collection'),
+            onTap: () {
+              AudioManager.instance.playUiClick();
+              context.push('/collection');
+            },
             behavior: HitTestBehavior.opaque,
             child: Image.asset(
               'assets/images/ui/collection_icon.png',
@@ -75,7 +82,10 @@ class HudBar extends ConsumerWidget {
           ),
           const SizedBox(width: AppSpacing.sm),
           HudPill(
-            onTap: () => context.push('/packs'),
+            onTap: () {
+              AudioManager.instance.playUiClick();
+              context.push('/packs');
+            },
             child: const Icon(Icons.language, color: AppColors.textSecondary, size: 20),
           ),
         ],

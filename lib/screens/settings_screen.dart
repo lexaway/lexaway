@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/app_font.dart';
 import '../data/app_urls.dart';
 import '../data/music_manager.dart';
+import '../game/audio_manager.dart';
 import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
@@ -273,7 +274,10 @@ class _VolumeSlider extends StatelessWidget {
               child: Slider(
                 value: value,
                 onChanged: onChanged,
-                onChangeEnd: onChangeEnd,
+                onChangeEnd: (v) {
+                  AudioManager.instance.playSwitch();
+                  onChangeEnd?.call(v);
+                },
               ),
             ),
           ),
@@ -311,7 +315,10 @@ class _ToggleRow extends StatelessWidget {
           ),
           Switch(
             value: value,
-            onChanged: onChanged,
+            onChanged: (v) {
+              AudioManager.instance.playSwitch();
+              onChanged(v);
+            },
             activeThumbColor: AppColors.accentLight,
             activeTrackColor: AppColors.accentDark,
             inactiveThumbColor: AppColors.controlInactiveThumb,
@@ -338,7 +345,10 @@ class _FontPickerRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onTap,
+      onTap: () {
+        AudioManager.instance.playUiClick();
+        onTap();
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
         child: Row(
@@ -382,7 +392,10 @@ class _RadioRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onTap,
+      onTap: () {
+        AudioManager.instance.playUiClick();
+        onTap();
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
         child: Row(
@@ -615,7 +628,10 @@ class _LinkRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          AudioManager.instance.playUiClick();
+          onTap();
+        },
         child: Row(
           children: [
             Expanded(

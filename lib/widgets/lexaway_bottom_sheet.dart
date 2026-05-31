@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../game/audio_manager.dart';
 import '../theme/app_spacing.dart';
 import '../theme/scroll_physics.dart';
 import '../utils/route_pages.dart';
@@ -142,10 +143,14 @@ class _LexawayBottomSheetState extends State<LexawayBottomSheet> {
   void initState() {
     super.initState();
     _sheetController.addListener(_onSheetSizeChanged);
+    AudioManager.instance.playSheetOpen();
   }
 
   @override
   void dispose() {
+    // Universal "sheet dismissed" cue — covers drag-to-close, tap-outside,
+    // and the close button, since they all tear the route down through here.
+    AudioManager.instance.playSheetClose();
     _sheetController.removeListener(_onSheetSizeChanged);
     _sheetController.dispose();
     _bodyScrollController.dispose();

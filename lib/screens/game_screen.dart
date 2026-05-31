@@ -11,6 +11,7 @@ import '../data/app_font.dart';
 import '../data/collectibles/collectible.dart';
 import '../data/collectibles/registry.dart';
 import '../data/lang_codes.dart';
+import '../game/audio_manager.dart';
 import '../game/claw_machine/prize_sphere.dart';
 import '../game/events.dart';
 import '../game/lexaway_game.dart';
@@ -115,6 +116,9 @@ class _GameScreenState extends ConsumerState<GameScreen>
 
   void _onClawMachineEntered(int itemIndex) {
     if (_clawPhase != _ClawEncounterPhase.none) return;
+    // Warm the claw SFX now (fire-and-forget) so the clinks/zoom/jingles are
+    // decoded by the time the player accepts and the mini-game runs.
+    AudioManager.instance.preloadClawSfx();
     // Defer to a microtask: the event bus is a sync broadcast controller,
     // and pauseMovement() emits WalkStopped — re-entering emit() inside
     // its own listener throws "Controller is already firing an event".
@@ -122,6 +126,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
     scheduleMicrotask(() {
       if (!mounted || _clawPhase != _ClawEncounterPhase.none) return;
       _game?.pauseMovement();
+      AudioManager.instance.playClawPrompt();
       setState(() {
         _activeClawMachineIndex = itemIndex;
         _clawPhase = _ClawEncounterPhase.prompt;
@@ -132,6 +137,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
   void _onClawDecline() {
     final index = _activeClawMachineIndex;
     if (index == null) return;
+    AudioManager.instance.playClawDecline();
     _game?.events.emit(ClawMachineCompleted(
       itemIndex: index,
       won: false,
@@ -151,6 +157,8 @@ class _GameScreenState extends ConsumerState<GameScreen>
     final index = _activeClawMachineIndex;
     if (index == null) return;
     ref.read(coinProvider.notifier).add(-_clawMachineCoinCost);
+    AudioManager.instance.playUiConfirm();
+    AudioManager.instance.playClawZoomIn();
     setState(() {
       _clawPhase = _ClawEncounterPhase.miniGame;
     });
@@ -168,6 +176,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
     final index = _activeClawMachineIndex;
     if (index == null) return;
     ref.read(coinProvider.notifier).add(-_clawMachineCoinCost);
+    AudioManager.instance.playUiConfirm();
     setState(() {
       _clawWon = false;
       _clawSpheresWon = 0;
@@ -188,6 +197,15 @@ class _GameScreenState extends ConsumerState<GameScreen>
     final prize = result.prize;
     if (result.won && prize != null) {
       isNew = ref.read(collectionProvider.notifier).add(prize.id);
+    }
+    // A brand-new collectible gets the bigger "unlock" sting; a repeat win
+    // gets the standard win jingle; a miss gets the gentle wah-wah.
+    if (result.won) {
+      isNew
+          ? AudioManager.instance.playUnlockJingle()
+          : AudioManager.instance.playJingleWin();
+    } else {
+      AudioManager.instance.playJingleLose();
     }
     setState(() {
       _clawWon = result.won;
@@ -216,6 +234,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
       _clawPrize = null;
       _clawPrizeIsNew = false;
     });
+    AudioManager.instance.playClawZoomOut();
     await _game!.endClawEncounter();
     if (!mounted) return;
     _game?.events.emit(ClawMachineCompleted(
@@ -549,6 +568,7 @@ class _PrizePreviewState extends State<_PrizePreview>
       // Brief beat so the user registers the closed shell before it cracks.
       await Future<void>.delayed(_crackDelay);
       if (!mounted) return;
+      AudioManager.instance.playClawShellCrack();
       _ctrl.forward();
     }();
   }

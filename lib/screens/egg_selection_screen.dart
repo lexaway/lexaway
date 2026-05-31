@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../game/audio_manager.dart';
 import '../game/egg_preview_game.dart';
 import '../l10n/app_localizations.dart';
 import '../models/character.dart';
@@ -37,6 +38,14 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
   late List<AnimationController> _shakeControllers;
   late List<Animation<double>> _shakeAnimations;
 
+  // The wobble tween idles flat for the leading "quiet" weight of each cycle,
+  // then tilts. The rustle SFX fires at that flat→tilt onset. Onset lives in
+  // controller-value space (linear 0→1), so it's quietWeight / totalWeight —
+  // keep _wobbleTotalWeight equal to the sum of all the weights below.
+  static const double _wobbleQuietWeight = 55;
+  static const double _wobbleTotalWeight = 100; // 55+5+8+7+6+4+15
+  static const double _wobbleOnset = _wobbleQuietWeight / _wobbleTotalWeight;
+
   @override
   void initState() {
     super.initState();
@@ -59,7 +68,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
     });
     _shakeAnimations = _shakeControllers.map((c) {
       return TweenSequence<double>([
-        TweenSequenceItem(tween: ConstantTween(0), weight: 55),
+        TweenSequenceItem(tween: ConstantTween(0), weight: _wobbleQuietWeight),
         TweenSequenceItem(tween: Tween(begin: 0, end: -0.06), weight: 5),
         TweenSequenceItem(tween: Tween(begin: -0.06, end: 0.07), weight: 8),
         TweenSequenceItem(tween: Tween(begin: 0.07, end: -0.05), weight: 7),
@@ -75,6 +84,17 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
       c.value = _rng.nextDouble();
       c.repeat();
     }
+    // One soft rustle per cycle, driven off the first egg only — three
+    // desynced eggs each blipping would be a racket. Fires as the shake
+    // enters its active tilt (value crossing _wobbleOnset).
+    var lastShake = _shakeControllers[0].value;
+    _shakeControllers[0].addListener(() {
+      final v = _shakeControllers[0].value;
+      if (!_hatching && lastShake < _wobbleOnset && v >= _wobbleOnset) {
+        AudioManager.instance.playEggWobble();
+      }
+      lastShake = v;
+    });
 
     // Pick 3 names that are valid for both genders so toggling works.
     final pool =
@@ -111,6 +131,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
 
   void _onEggTapped(int index) {
     if (_hatching) return;
+    AudioManager.instance.playEggTap();
     setState(() {
       _selected = index;
       _hatching = true;
@@ -144,6 +165,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
   }
 
   void _onGenderChanged(String gender) {
+    AudioManager.instance.playToggle();
     ref.read(genderProvider.notifier).set(gender);
     setState(_rebuildGames);
   }

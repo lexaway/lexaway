@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../data/collectibles/collectible.dart';
 import '../../data/collectibles/registry.dart';
+import '../audio_manager.dart';
 import '../components/claw_machine.dart';
 import 'action_button.dart';
 import 'cabinet.dart';
@@ -49,6 +50,13 @@ class ClawSessionComponent extends PositionComponent {
   static const double groundFriction = 6.0;
   static const double restSpeed = 1.5;
   static const double armHalfWidth = 3.0;
+
+  // Sphere clack SFX: only fire on inbound impacts above this speed, and no
+  // more than once per interval so a frame's worth of overlaps stays a single
+  // clink instead of a buzz.
+  static const double _clinkSpeed = 14.0;
+  static const double _clinkInterval = 0.08;
+  double _clinkCooldown = 0;
 
   final ClawAttemptCallback onResultReady;
   ClawSessionComponent({required this.onResultReady}) : super(priority: 0);
@@ -181,6 +189,7 @@ class ClawSessionComponent extends PositionComponent {
   /// O(n²) all the way through — we have five spheres, so it doesn't matter.
   void _stepPhysics(double dt) {
     if (_floorSpheres.isEmpty) return;
+    if (_clinkCooldown > 0) _clinkCooldown -= dt;
     const r = SphereComponent.physicsRadius;
 
     for (final s in _floorSpheres) {
@@ -247,6 +256,12 @@ class ClawSessionComponent extends PositionComponent {
     final relVel =
         (b.velocity.x - a.velocity.x) * nx + (b.velocity.y - a.velocity.y) * ny;
     if (relVel >= 0) return;
+    // Clack only on meaningful impacts, throttled so the per-frame O(n²)
+    // pass can't machine-gun a burst of overlaps into a wall of sound.
+    if (relVel < -_clinkSpeed && _clinkCooldown <= 0) {
+      _clinkCooldown = _clinkInterval;
+      AudioManager.instance.playClawClink();
+    }
     final j = -(1 + ballRestitution) * relVel / 2;
     a.velocity.x -= j * nx;
     a.velocity.y -= j * ny;
@@ -394,6 +409,7 @@ class ClawSessionComponent extends PositionComponent {
     _cabinet.add(settled);
     _ownedSiblings.add(settled);
     doorOpen = true;
+    AudioManager.instance.playClawPrizeDrop();
     _won = true;
     _spheresWon = 1;
     if (ball is PrizeSphereComponent) _wonPrize = ball.collectible;

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/pack_manager.dart';
+import '../game/audio_manager.dart';
 import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
@@ -73,6 +74,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                       subtitle: systemEndonym,
                       selected: current == null,
                       onTap: () {
+                        AudioManager.instance.playToggle();
                         ref.read(localeProvider.notifier).setLocale(null);
                         Navigator.pop(ctx);
                       },
@@ -82,6 +84,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                         label: endonymFor(locale.languageCode),
                         selected: current?.languageCode == locale.languageCode,
                         onTap: () {
+                          AudioManager.instance.playToggle();
                           ref.read(localeProvider.notifier).setLocale(locale);
                           Navigator.pop(ctx);
                         },
@@ -117,7 +120,9 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
       await ref
           .read(localPacksProvider.notifier)
           .download(pack.lang, fromLang: pack.fromLang, includeVoice: false);
+      AudioManager.instance.playUiConfirm();
     } catch (e) {
+      AudioManager.instance.playUiError();
       if (mounted) {
         _showError(
           AppLocalizations.of(context)!.downloadFailed(e.toString()),
@@ -132,7 +137,9 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
       await ref
           .read(localPacksProvider.notifier)
           .downloadVoice(lang, modelId: modelId);
+      AudioManager.instance.playUiConfirm();
     } catch (e) {
+      AudioManager.instance.playUiError();
       if (mounted) {
         _showError(
           AppLocalizations.of(context)!.downloadFailed(e.toString()),
@@ -156,8 +163,10 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     final loaded =
         ref.read(activePackProvider).valueOrNull?.hasQuestions ?? false;
     if (loaded) {
+      AudioManager.instance.playUiConfirm();
       context.go('/game');
     } else {
+      AudioManager.instance.playUiError();
       _showError(
         AppLocalizations.of(context)!.downloadFailed('Pack failed to load'),
         onRetry: () => _select(packId),

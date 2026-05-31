@@ -1,7 +1,18 @@
 dino: https://arks.itch.io/dino-characters
 
 dino-family: https://demching.itch.io/dino-family
-sounds: https://ci.itch.io/400-sounds-pack
+
+sfx (interface): https://kenney.nl/assets/interface-sounds
+License: Creative Commons CC0
+
+sfx (jingles): https://kenney.nl/assets/music-jingles
+License: Creative Commons CC0
+
+sfx (ambient/creature/bonus): Ninja Adventure Asset Pack by Pixel-boy & AAA — https://pixel-boy.itch.io/ninja-adventure-asset-pack
+License: Creative Commons CC0
+
+egg crack: Reitanna via https://freesound.org/people/Reitanna/sounds/244736/
+License: Creative Commons CC0
 
 footsteps: Nox_Sound via https://freesound.org/people/Nox_Sound/ (repo: https://github.com/DashNothing/footsteps)
 > My sounds are in CC0, you're free to use them without any conditions.

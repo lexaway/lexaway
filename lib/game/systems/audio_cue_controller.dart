@@ -49,6 +49,10 @@ class AudioCueController extends Component {
         } else {
           audio.playCoin();
         }
+      case IdleChatterTriggered():
+        // The dino mutters to itself after a long idle — give the bubble a
+        // little voice blip.
+        audio.playVoice();
       default:
         break;
     }

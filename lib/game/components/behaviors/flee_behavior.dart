@@ -1,3 +1,4 @@
+import '../../audio_manager.dart';
 import '../../lexaway_game.dart';
 import '../creature.dart';
 import 'creature_behavior_component.dart';
@@ -44,6 +45,8 @@ class FleeBehavior extends CreatureBehaviorComponent {
 
   void _activate() {
     _activated = true;
+    // Grass-rustle one-shot as the critter bolts (not per hop).
+    AudioManager.instance.playCreatureFlee();
     _direction = parent.rng.nextBool() ? 1.0 : -1.0;
     // Sprite faces right by default. When fleeing left we flip horizontally,
     // which negates scale.x and shifts rendering by the sprite width — so
