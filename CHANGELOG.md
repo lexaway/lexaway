@@ -1,4 +1,25 @@
 ### 🇬🇧 English
+**1.11.0** — The whole world has a voice now: buttons click, eggs crack open, the claw machine clatters and chimes, and startled critters rustle off into the grass. Fresh sound effects for nearly every tap and triumph.
+
+### 🇫🇷 Français
+**1.11.0** — Le monde a désormais une voix : les boutons cliquent, les œufs s'ouvrent en craquant, la machine à pince cliquette et carillonne, et les créatures surprises détalent en froissant l'herbe. De nouveaux effets sonores pour presque chaque geste et chaque victoire.
+
+### 🇪🇸 Español
+**1.11.0** — El mundo entero tiene voz ahora: los botones hacen clic, los huevos se abren con un crujido, la máquina de garra repiquetea y tintinea, y las criaturas asustadas se escabullen entre la hierba. Nuevos efectos de sonido para casi cada toque y cada triunfo.
+
+### 🇩🇪 Deutsch
+**1.11.0** — Die ganze Welt hat jetzt eine Stimme: Knöpfe klicken, Eier knacken auf, der Greifautomat klappert und klingelt, und aufgeschreckte Kreaturen rascheln davon ins Gras. Frische Soundeffekte für fast jeden Tipp und Triumph.
+
+### 🇮🇹 Italiano
+**1.11.0** — Ora il mondo intero ha una voce: i pulsanti fanno clic, le uova si schiudono con uno scricchiolio, la macchina con la pinza tintinna e suona, e le creature spaventate sgattaiolano frusciando tra l'erba. Nuovi effetti sonori per quasi ogni tocco e ogni trionfo.
+
+### 🇵🇹 Português
+**1.11.0** — Agora o mundo inteiro tem voz: os botões clicam, os ovos racham e abrem, a máquina de garra chacoalha e tine, e as criaturas assustadas fogem farfalhando pela grama. Novos efeitos sonoros para quase cada toque e cada triunfo.
+
+### 🇳🇱 Nederlands
+**1.11.0** — De hele wereld heeft nu een stem: knoppen klikken, eieren barsten open, de grijpmachine rammelt en rinkelt, en opgeschrikte wezentjes ritselen weg door het gras. Verse geluidseffecten voor bijna elke tik en triomf.
+
+### 🇬🇧 English
 **1.10.0** — The collection screen now glints with gilded frames on a brushed-steel backdrop. New pixel-art icons that press in when tapped. Settings is now a drag-down sheet that won't interrupt the music.
 
 ### 🇫🇷 Français
