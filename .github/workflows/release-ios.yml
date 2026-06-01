@@ -43,21 +43,16 @@ jobs:
   testflight:
     needs: check
     if: needs.check.outputs.release == 'true'
-    # Self-hosted Apple Silicon Mac with Xcode + a valid simulator already set up.
-    runs-on: [self-hosted, macOS, ARM64, m1]
+    # GitHub-hosted Apple Silicon macOS runner — free + unlimited for public
+    # repos, and ships with Xcode + CocoaPods preinstalled. (Public repos can't
+    # use self-hosted runners without opting in, so hosted is the simpler path.)
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
-      # Fail fast (and clearly) if uv isn't on the runner's PATH — the publish
-      # step needs it. On a fresh self-hosted Mac, `brew install uv` then restart
-      # the runner so it inherits Homebrew's bin (/opt/homebrew/bin on ARM).
-      - name: Verify uv is available
-        run: |
-          if ! command -v uv >/dev/null 2>&1; then
-            echo "::error::uv not found on PATH. Install it (brew install uv) and restart the runner so it picks up /opt/homebrew/bin."
-            exit 1
-          fi
-          uv --version
+      # uv runs the publish step (store/publish_store.py with inline deps).
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
 
       - uses: subosito/flutter-action@v2
         with:
