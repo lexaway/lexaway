@@ -25,7 +25,7 @@ PERMISSIONS:
 You can freely use these assets for personal and commercial use. Crediting is optional, but if you'd like to, thank you very much!
 
 GUI: https://kenney.nl/assets/ui-pack-pixel-adventure
-License	Creative Commons CC0
+License: Creative Commons CC0
 
 
 coins: https://laredgames.itch.io/gems-coins-free
