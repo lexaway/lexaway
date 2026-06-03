@@ -30,8 +30,8 @@ enum DinoAnim {
 
 class Player extends SpriteAnimationGroupComponent<DinoAnim>
     with HasGameReference<LexawayGame>, CollisionCallbacks {
-  static const double _spriteSize = 24;
-  static const double _scale = LexawayGame.pixelScale * 1.1;
+  static const double _spriteSize = 48;
+  static const double _scale = LexawayGame.pixelScale * 1.1 / 2;
 
   final String spritePath;
 
@@ -66,20 +66,20 @@ class Player extends SpriteAnimationGroupComponent<DinoAnim>
     size = Vector2.all(_spriteSize * _scale);
 
     // Stand on the ground, 1/4 from left edge
-    // Sprite has ~3px transparent padding below feet, so nudge down
+    // Sprite has ~6px transparent padding below feet, so nudge down
     final groundTop = game.size.y * LexawayGame.groundLevel;
-    position = Vector2(game.size.x * 0.25, groundTop - size.y + 3 * _scale);
+    position = Vector2(game.size.x * 0.25, groundTop - size.y + 6 * _scale);
 
     // Crispy pixel art, no blur
     paint = Paint()..filterQuality = FilterQuality.none;
 
     // Hitbox — trimmed to the dino's body, skipping transparent padding.
-    // Sprite is 24×24 at _scale; body is roughly 14×18 centered horizontally,
-    // offset 3px from top (head starts there), 3px transparent at bottom.
+    // Sprite is 48×48 at _scale; body is roughly 28×36 centered horizontally,
+    // offset 6px from top (head starts there), 6px transparent at bottom.
     add(
       RectangleHitbox(
-        position: Vector2(5 * _scale, 3 * _scale),
-        size: Vector2(14 * _scale, 18 * _scale),
+        position: Vector2(10 * _scale, 6 * _scale),
+        size: Vector2(28 * _scale, 36 * _scale),
       ),
     );
   }
