@@ -8,8 +8,8 @@ import 'noise.dart';
 import 'world_map.dart';
 
 class WorldGenerator {
-  static const int _minSegmentTiles = 30;
-  static const int _maxSegmentTiles = 80;
+  static const int _minSegmentTiles = 90;
+  static const int _maxSegmentTiles = 240;
   static const double _tilePx = 16.0 * LexawayGame.pixelScale;
 
   /// Buffer applied to every collision check — entities keep at least this
