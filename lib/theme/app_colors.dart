@@ -19,12 +19,10 @@ abstract final class AppColors {
   static const tileTextSecondary = Color(0xFF6B4C30);
   static const tileTextFaint = Color(0xFF9C7B5A);
 
-  // Accent
   static final accent = Colors.amber.shade600;
   static final accentLight = Colors.amber.shade400;
   static final accentDark = Colors.amber.shade800;
 
-  // Semantic
   static const success = Colors.green;
   static final successDark = Colors.green.shade700;
   static final successLight = Colors.green.shade400;

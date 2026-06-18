@@ -213,7 +213,6 @@ void _paintShellOnly(
       ..isAntiAlias = false,
   );
 
-  // Black outline on top.
   canvas.drawCircle(
     center,
     radius,

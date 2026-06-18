@@ -35,7 +35,6 @@ void main() {
         LocaleOption(label: 'English', selected: false, onTap: () {}),
       ));
 
-      // Only the title text should be present
       expect(find.byType(Text), findsOneWidget);
     });
 

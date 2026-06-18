@@ -17,7 +17,6 @@ const Map<String, String> flagDisplayNames = {
   'cn': 'China',
   'mx': 'Mexico',
   'br': 'Brazil',
-  // Common Europe
   'be': 'Belgium',
   'ch': 'Switzerland',
   'at': 'Austria',
@@ -37,7 +36,6 @@ const Map<String, String> flagDisplayNames = {
   'rs': 'Serbia',
   'bg': 'Bulgaria',
   'ua': 'Ukraine',
-  // Common Americas
   'ca': 'Canada',
   'ar': 'Argentina',
   'cl': 'Chile',
@@ -45,7 +43,6 @@ const Map<String, String> flagDisplayNames = {
   'pe': 'Peru',
   'uy': 'Uruguay',
   'cr': 'Costa Rica',
-  // Common Asia
   'in': 'India',
   'th': 'Thailand',
   'vn': 'Vietnam',
@@ -53,20 +50,16 @@ const Map<String, String> flagDisplayNames = {
   'id': 'Indonesia',
   'my': 'Malaysia',
   'sg': 'Singapore',
-  // Oceania
   'au': 'Australia',
   'nz': 'New Zealand',
-  // Africa
   'za': 'South Africa',
   'eg': 'Egypt',
   'ma': 'Morocco',
   'ke': 'Kenya',
   'ng': 'Nigeria',
   'gh': 'Ghana',
-  // Middle East
   'tr': 'Turkey',
   'ae': 'United Arab Emirates',
-  // Wider Europe
   'ad': 'Andorra',
   'al': 'Albania',
   'am': 'Armenia',
@@ -87,7 +80,6 @@ const Map<String, String> flagDisplayNames = {
   'mt': 'Malta',
   'sm': 'San Marino',
   'va': 'Vatican City',
-  // Latin America & Caribbean
   'bb': 'Barbados',
   'bo': 'Bolivia',
   'bs': 'Bahamas',
@@ -111,7 +103,6 @@ const Map<String, String> flagDisplayNames = {
   'sv': 'El Salvador',
   'tt': 'Trinidad and Tobago',
   'vc': 'Saint Vincent',
-  // Asia
   'bd': 'Bangladesh',
   'bn': 'Brunei',
   'bt': 'Bhutan',
@@ -128,7 +119,6 @@ const Map<String, String> flagDisplayNames = {
   'tl': 'Timor-Leste',
   'tm': 'Turkmenistan',
   'uz': 'Uzbekistan',
-  // Middle East
   'bh': 'Bahrain',
   'iq': 'Iraq',
   'jo': 'Jordan',
@@ -137,7 +127,6 @@ const Map<String, String> flagDisplayNames = {
   'om': 'Oman',
   'qa': 'Qatar',
   'sa': 'Saudi Arabia',
-  // Africa
   'ao': 'Angola',
   'bf': 'Burkina Faso',
   'bi': 'Burundi',
@@ -182,7 +171,6 @@ const Map<String, String> flagDisplayNames = {
   'ug': 'Uganda',
   'zm': 'Zambia',
   'zw': 'Zimbabwe',
-  // Oceania
   'aw': 'Aruba',
   'fj': 'Fiji',
   'fm': 'Micronesia',

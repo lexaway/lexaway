@@ -17,7 +17,6 @@ final audioManagerSyncProvider = Provider<void>((ref) {
     AudioManager.instance.sfxVolume = ref.read(sfxVolumeProvider);
   }
 
-  // Seed immediately, then track subsequent slider changes.
   sync();
   ref.listen(masterVolumeProvider, (_, _) => sync());
   ref.listen(sfxVolumeProvider, (_, _) => sync());

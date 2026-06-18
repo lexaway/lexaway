@@ -120,20 +120,16 @@ class _LexawayBottomSheetState extends State<LexawayBottomSheet> {
   bool _dismissing = false;
   double _approachVelocity = 0;
 
-  // -- Dismiss --
   static const _flingDismissVelocity = 300.0;
   static const _dismissSizeThreshold = 0.5;
   static const _dismissedSize = 0.01;
 
-  // -- Sheet animations --
   static const _settleAnimDuration = Duration(milliseconds: 200);
 
-  // -- Fluid bounce animation --
   static const _bounceDipDuration = Duration(milliseconds: 80);
   static const _bounceReturnDuration = Duration(milliseconds: 160);
   static const _bounceDipMax = 0.07;
 
-  // -- Scroll-to-top detection --
   static const _approachTrackingRange = 15.0;
   static const _approachMinSpeed = 10.0;
   static const _approachDismissSpeed = 55.0;

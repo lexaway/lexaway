@@ -42,11 +42,8 @@ class BubblePainter {
 
     // Top edge (with 1px chamfer at corners)
     _hLine(canvas, borderPaint, bodyLeft + 1, bodyTop, bodyRight - 1);
-    // Bottom edge
     _hLine(canvas, borderPaint, bodyLeft + 1, bodyBottom - 1, bodyRight - 1);
-    // Left edge
     _vLine(canvas, borderPaint, bodyLeft, bodyTop + 1, bodyBottom - 1);
-    // Right edge
     _vLine(canvas, borderPaint, bodyRight - 1, bodyTop + 1, bodyBottom - 1);
 
     // Main fill (inset by 1px from border)

@@ -28,7 +28,6 @@ class AudioManager {
   // under TTS like feedback SFX but sit a touch lower.
   static const double _uiGain = 0.6;
 
-  // Random-variant pools.
   static const List<String> _uiClicks = [
     'ui_click_1.wav',
     'ui_click_2.wav',

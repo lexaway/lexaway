@@ -208,10 +208,8 @@ class TtsManager {
         ? voices.firstWhere((m) => m.modelId == modelId, orElse: () => voices.first)
         : voices.first;
 
-    // If the same model is already downloaded, nothing to do
     if (downloadedModelId(lang) == info.modelId) return;
 
-    // Reject if a download for this lang is already in flight
     if (_activeDownloads.containsKey(lang)) return;
 
     final future = _doDownloadModel(lang, info, onProgress: onProgress, onExtracting: onExtracting);
@@ -244,7 +242,6 @@ class TtsManager {
       await extractTarBz2InIsolate(tmpPath, dir);
       await File(tmpPath).delete();
     } catch (_) {
-      // Clean up partial extraction
       final partial = Directory('$dir/${info.archiveName}');
       if (await partial.exists()) await partial.delete(recursive: true);
       final tmp = File(tmpPath);

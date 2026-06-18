@@ -85,8 +85,6 @@ void main() {
       expect(find.text('French'), findsOneWidget);
     });
 
-    // -- Not downloaded state --
-
     testWidgets('shows download buttons when not downloaded', (tester) async {
       await tester.pumpWidget(wrap(buildTile(local: null)));
       await tester.pumpAndSettle();
@@ -104,8 +102,6 @@ void main() {
       await tester.tap(find.byIcon(Icons.download_rounded).first);
       expect(downloaded, isTrue);
     });
-
-    // -- Downloaded state --
 
     testWidgets('shows check icon when downloaded', (tester) async {
       await tester.pumpWidget(wrap(buildTile(local: localPack, downloadedModelId: 'siwis')));
@@ -140,8 +136,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('5.0 MB'), findsOneWidget);
     });
-
-    // -- Downloading state --
 
     testWidgets('shows spinner during pack download', (tester) async {
       await tester.pumpWidget(wrap(buildTile(packProgress: 0.5)));
@@ -221,8 +215,6 @@ void main() {
       expect(voiceDeleted, isTrue);
     });
 
-    // -- Voice swap button --
-
     testWidgets('shows swap button when multiple voices and voice downloaded',
         (tester) async {
       await tester.pumpWidget(wrap(buildTile(
@@ -271,8 +263,6 @@ void main() {
       expect(find.text('Siwis'), findsOneWidget);
     });
 
-    // -- Action button --
-
     testWidgets('shows Start when no character', (tester) async {
       await tester.pumpWidget(wrap(buildTile(hasCharacter: false)));
       await tester.pumpAndSettle();
@@ -310,8 +300,6 @@ void main() {
       await tester.tap(find.text('Start'));
       expect(selected, isFalse);
     });
-
-    // -- localOutdated state --
 
     testWidgets('localOutdated shows Update Pack, non-tappable, update action fires onUpdate',
         (tester) async {

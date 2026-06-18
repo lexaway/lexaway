@@ -28,13 +28,11 @@ void main() {
     });
 
     test('incorrect resets repetitions and interval to 1', () {
-      // Build up some state first
       var state = sm2(2.5, 0, 0, correct: true);
       state = sm2(state.easiness, state.intervalDays, state.repetitions,
           correct: true);
       expect(state.repetitions, 2);
 
-      // Now fail
       final failed = sm2(state.easiness, state.intervalDays, state.repetitions,
           correct: false);
       expect(failed.repetitions, 0);
