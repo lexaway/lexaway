@@ -79,7 +79,7 @@ class AudioManager {
                 _footstepGain)
             .clamp(0.0, 1.0);
 
-  // UI/claw taps: present but polite — duck under TTS like feedback.
+  // UI/claw taps duck under TTS like feedback, but sit a touch lower.
   double get _uiVol =>
       (taperedVolume(masterVolume) *
               taperedVolume(sfxVolume) *
@@ -163,7 +163,7 @@ class AudioManager {
   void playHatchChime() =>
       FlameAudio.play('hatch_chime.wav', volume: _feedbackVol);
 
-  // --- UI taps (duck under TTS) ---
+  // UI taps
   void playUiTap() => FlameAudio.play('ui_tap.wav', volume: _uiVol);
   void playUiConfirm() => FlameAudio.play('ui_confirm.wav', volume: _uiVol);
   void playUiClick() => _playRandom(_uiClicks, volume: _uiVol);
@@ -175,7 +175,7 @@ class AudioManager {
   void playEggTap() => FlameAudio.play('egg_tap.wav', volume: _uiVol);
   void playEggWobble() => FlameAudio.play('egg_wobble.wav', volume: _uiVol);
 
-  // --- Claw machine (duck under TTS) ---
+  // Claw machine
   void playClawPrompt() => FlameAudio.play('claw_prompt.wav', volume: _uiVol);
   void playClawDecline() => FlameAudio.play('claw_decline.wav', volume: _uiVol);
   void playClawZoomIn() => FlameAudio.play('claw_zoom_in.wav', volume: _uiVol);
@@ -188,7 +188,7 @@ class AudioManager {
       FlameAudio.play('claw_shell_crack.wav', volume: _uiVol);
   void playClawClink() => _playRandom(_clawClinks, volume: _uiVol);
 
-  // --- Jingles / voice (no TTS duck) ---
+  // Jingles / voice
   void playJingleWin() => FlameAudio.play('jingle_win.wav', volume: _jingleVol);
   void playJingleLose() =>
       FlameAudio.play('jingle_lose.wav', volume: _jingleVol);
@@ -196,7 +196,7 @@ class AudioManager {
       FlameAudio.play('jingle_unlock.wav', volume: _jingleVol);
   void playVoice() => _playRandom(_voices, volume: _jingleVol);
 
-  // --- Ambient game-world one-shots (footstep tier) ---
+  // Ambient game-world one-shots
   void playCreatureFlee() => _playRandom(_creatureFlee, volume: _footstepVol);
   void playFidgetHop() =>
       FlameAudio.play('fidget_hop.wav', volume: _footstepVol);

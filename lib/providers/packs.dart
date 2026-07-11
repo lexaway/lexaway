@@ -109,7 +109,6 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
     } finally {
       ref.read(voiceDownloadProgressProvider(lang).notifier).state = null;
     }
-    // Trigger rebuild so the UI picks up the new voice state
     ref.invalidateSelf();
   }
 
@@ -120,7 +119,6 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
     // Release TTS engine before deleting files to avoid native crash
     ref.read(ttsServiceProvider).releaseEngine();
     await ref.read(ttsManagerProvider).deleteModel(lang);
-    // Trigger rebuild so the UI picks up the removed voice state.
     ref.invalidateSelf();
   }
 
