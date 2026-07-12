@@ -2,6 +2,15 @@
 # The version key must match `version:` in pubspec.yaml (name part, no +build).
 # Apple limit: 4000 chars per locale. Dutch (nl) shipped from 1.6.0 onward.
 
+"1.12.0":
+  en: "A whole Autumn Forest has grown along the trail! Stroll beneath a fiery canopy as leaves flutter down around you, past orange pines, cozy leaf piles, and the odd curious fox. Biomes now stretch on longer too, and the tropical coast murmurs with rolling ocean waves."
+  fr: "Toute une forêt d'automne a poussé le long du sentier ! Promenez-vous sous une canopée flamboyante tandis que les feuilles voltigent autour de vous, entre pins orangés, tas de feuilles douillets et parfois un renard curieux. Les biomes s'étendent désormais plus longtemps, et la côte tropicale murmure au rythme des vagues."
+  es: "¡Todo un bosque otoñal ha crecido junto al sendero! Pasea bajo una copa ardiente mientras las hojas revolotean a tu alrededor, entre pinos anaranjados, acogedores montones de hojas y algún zorro curioso. Los biomas ahora se extienden más, y la costa tropical murmura con el vaivén de las olas."
+  de: "Ein ganzer Herbstwald ist am Weg gewachsen! Spaziere unter einem feurigen Blätterdach, während Blätter um dich herabsegeln — vorbei an orangen Kiefern, gemütlichen Laubhaufen und ab und zu einem neugierigen Fuchs. Biome erstrecken sich jetzt länger, und an der Tropenküste rauschen sanft die Wellen."
+  it: "Un'intera foresta autunnale è cresciuta lungo il sentiero! Passeggia sotto una chioma infuocata mentre le foglie ti volteggiano intorno, tra pini arancioni, soffici mucchi di foglie e qualche volpe curiosa. Ora i biomi si estendono più a lungo, e la costa tropicale mormora al ritmo delle onde."
+  pt: "Uma floresta de outono inteira cresceu ao longo da trilha! Passeie sob uma copa flamejante enquanto as folhas volteiam ao seu redor, entre pinheiros alaranjados, montinhos de folhas aconchegantes e uma raposa curiosa de vez em quando. Os biomas agora se estendem por mais tempo, e a costa tropical murmura com o vaivém das ondas."
+  nl: "Er is een compleet herfstbos langs het pad gegroeid! Wandel onder een vurig bladerdak terwijl blaadjes om je heen dwarrelen, langs oranje dennen, knusse bladerhopen en zo nu en dan een nieuwsgierige vos. Biomen strekken zich nu langer uit, en de tropische kust ruist zachtjes met de golven."
+
 "1.11.0":
   en: "The whole world has a voice now: buttons click, eggs crack open, the claw machine clatters and chimes, and startled critters rustle off into the grass. Fresh sound effects for nearly every tap and triumph."
   fr: "Le monde a désormais une voix : les boutons cliquent, les œufs s'ouvrent en craquant, la machine à pince cliquette et carillonne, et les créatures surprises détalent en froissant l'herbe. De nouveaux effets sonores pour presque chaque geste et chaque victoire."
