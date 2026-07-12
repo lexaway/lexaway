@@ -14,6 +14,7 @@ import 'claw_machine/cabinet.dart';
 import 'claw_machine/claw_session.dart';
 import 'components/biome_parallax.dart';
 import 'components/camera.dart';
+import 'components/claw_machine.dart';
 import 'components/claw_machine_manager.dart';
 import 'components/coin_manager.dart';
 import 'components/ground.dart';
@@ -368,20 +369,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
     _speechBubble.muted = true;
 
-    final completer = Completer<ClawAttemptResult>();
-    cabinet.startSession(
-      onResultReady: ({
-        required bool won,
-        required int spheresWon,
-        Collectible? prize,
-      }) {
-        if (!completer.isCompleted) {
-          completer.complete(
-            ClawAttemptResult(won: won, spheresWon: spheresWon, prize: prize),
-          );
-        }
-      },
-    );
+    final result = _runSession(cabinet);
 
     // Fit zoom: cabinet fills ~85% of the smaller viewport dimension.
     final targetZoom = min(
@@ -414,7 +402,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       curve: Curves.easeInOut,
     );
 
-    return completer.future;
+    return result;
   }
 
   /// Tear down the current session and start a fresh one on the same
@@ -426,6 +414,12 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       return const ClawAttemptResult(won: false, spheresWon: 0, prize: null);
     }
     cabinet.endSession();
+    return _runSession(cabinet);
+  }
+
+  /// Start a session on [cabinet] and resolve once the attempt has played
+  /// out. Shared by [startClawEncounter] and [restartClawSession].
+  Future<ClawAttemptResult> _runSession(ClawMachine cabinet) {
     final completer = Completer<ClawAttemptResult>();
     cabinet.startSession(
       onResultReady: ({
