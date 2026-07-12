@@ -59,15 +59,16 @@ void main() {
       );
     });
 
-    // Golden fingerprints captured from the generator before the phase-method
-    // refactor. Seeded generation is persisted world state — if one of these
-    // moves, existing players' worlds reshuffle under their feet. Only update
-    // deliberately, alongside a world-state migration story.
+    // Golden fingerprints. Seeded generation is persisted world state — if
+    // one of these moves, existing players' worlds reshuffle under their
+    // feet. Only update deliberately. Last regenerated when the autumn biome
+    // joined the _pickBiome distribution (accepted reshuffle, same call as
+    // the winter biome's introduction).
     test('seeded layout is stable across refactors', () {
       const golden = {
-        1: '44d15bc7efb6df2d',
-        1234: '38a1034ca48ba5cd',
-        987654321: '-19df35758e0e7481',
+        1: '275f3950dfd9ebbe',
+        1234: '1128616e68a91f30',
+        987654321: '-4473b712fcef133d',
       };
       for (final entry in golden.entries) {
         final map = WorldGenerator().generate(entry.key, totalTiles: 1500);

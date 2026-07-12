@@ -378,6 +378,158 @@ class BiomeRegistry {
     weather: WeatherDef.snow,
   );
 
+  static const _autumn = BiomeDefinition(
+    type: BiomeType.autumn,
+    terrainAsset: 'terrain/autumn.png',
+    entitySheet: 'entities/autumn.png',
+    entityManifest: 'assets/images/entities/autumn.json',
+    parallaxLayers: [
+      'parallax/sky.png',
+      'parallax/autumn_distant_trees.png',
+      'parallax/autumn_tree_row_far.png',
+      'parallax/autumn_tree_row_near.png',
+      'parallax/autumn_leaf_piles.png',
+      'parallax/autumn_trees.png',
+      'parallax/autumn_canopy.png',
+    ],
+    // Leafy forest floor reads closest to grass rustle.
+    footstepTerrain: Terrain.grass,
+    features: [
+      // Orange autumn pines — the signature tree, clumpy groves.
+      ScatterFeature(
+        entityName: 'autumn_tree',
+        noiseScale: 0.02,
+        threshold: 0.25,
+        minGapTiles: 7,
+        maxGapTiles: 20,
+        noiseSeedOffset: 0,
+      ),
+      // Green pines — offset noise = separate groves, color contrast.
+      ScatterFeature(
+        entityName: 'green_pine',
+        noiseScale: 0.02,
+        threshold: 0.30,
+        minGapTiles: 8,
+        maxGapTiles: 22,
+        noiseSeedOffset: 100,
+      ),
+      // Leaf bushes — frequent small tufts.
+      ScatterFeature(
+        entityName: 'leaf_bush',
+        noiseScale: 0.04,
+        threshold: 0.20,
+        minGapTiles: 5,
+        maxGapTiles: 14,
+        noiseSeedOffset: 200,
+      ),
+      // Flat leaf piles — ground litter between the trees.
+      ScatterFeature(
+        entityName: 'leaf_pile',
+        noiseScale: 0.05,
+        threshold: 0.25,
+        minGapTiles: 5,
+        maxGapTiles: 14,
+        noiseSeedOffset: 300,
+      ),
+      // Fences — sparse stretches.
+      ScatterFeature(
+        entityName: 'autumn_fence',
+        noiseScale: 0.015,
+        threshold: 0.55,
+        minGapTiles: 18,
+        maxGapTiles: 40,
+        noiseSeedOffset: 400,
+      ),
+      // Open-ended fences — bracketed standalone runs, rarer.
+      ScatterFeature(
+        entityName: 'autumn_open_fence',
+        noiseScale: 0.02,
+        threshold: 0.6,
+        minGapTiles: 20,
+        maxGapTiles: 45,
+        noiseSeedOffset: 500,
+      ),
+      // Rest area — a vending machine among the falling leaves.
+      GroupFeature(
+        kind: 'rest_area',
+        children: ['vending_machine', 'bench', 'trash_bin'],
+        minGapTiles: 60,
+        maxGapTiles: 140,
+        noiseSeedOffset: 3000,
+      ),
+    ],
+    minCoinGapTiles: 5,
+    maxCoinGapTiles: 10,
+    diamondChance: 0.15,
+    clusterChance: 0.25,
+    creatureWeights: [
+      WeightedEntity('minibunny', 2),
+      WeightedEntity('fox', 2),
+      WeightedEntity('butterfly', 1),
+    ],
+    creatureDefs: {
+      'minibunny': CreatureSpriteDef(
+        sheetPath: 'creatures/minibunny.png',
+        frameWidth: 32,
+        frameHeight: 32,
+        scale: LexawayGame.pixelScale,
+        animConfig: CreatureAnimConfig(),
+        behaviors: [
+          GroundAnchorConfig(footPadding: 1),
+          FleeConfig(),
+          IdleHopConfig(),
+        ],
+      ),
+      'fox': CreatureSpriteDef(
+        sheetPath: 'creatures/fox.png',
+        frameWidth: 32,
+        frameHeight: 32,
+        scale: LexawayGame.pixelScale,
+        animConfig: CreatureAnimConfig(hitFrames: 3, deathRow: 5, deathFrames: 4),
+        behaviors: [
+          GroundAnchorConfig(footPadding: 1),
+          FleeConfig(),
+          IdleHopConfig(),
+        ],
+      ),
+      'butterfly': CreatureSpriteDef(
+        sheetPath: 'creatures/butterfly.png',
+        frameWidth: 52,
+        frameHeight: 52,
+        scale: LexawayGame.pixelScale * 0.20,
+        sourceDownsample: 4,
+        animConfig: CreatureAnimConfig(
+          idleFrames: 8,
+          idleStepTime: 0.07,
+          hopRow: 0,
+          hopFrames: 1,
+          hitRow: 0,
+          hitFrames: 1,
+          deathRow: 0,
+          deathFrames: 1,
+        ),
+        behaviors: [
+          FlightConfig(
+            minAltitude: 40,
+            maxAltitude: 240,
+            bobAmplitude: 10,
+            bobFrequency: 1.4,
+            driftSpeed: -25,
+            swayAmplitude: 14,
+            swayFrequency: 2.2,
+          ),
+        ],
+        tintPalette: [
+          Color(0xFFFF7A3D), // monarch orange
+          Color(0xFFFFE45E), // sulphur yellow
+          Color(0xFFC75F43), // russet
+          Color(0xFFE8A03E), // amber
+        ],
+      ),
+    },
+    weather: WeatherDef.autumnLeaves,
+  );
+
   static BiomeDefinition get(BiomeType type) {
     switch (type) {
       case BiomeType.grassland:
@@ -386,6 +538,8 @@ class BiomeRegistry {
         return _tropics;
       case BiomeType.winter:
         return _winter;
+      case BiomeType.autumn:
+        return _autumn;
     }
   }
 }

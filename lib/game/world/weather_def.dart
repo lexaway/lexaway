@@ -111,4 +111,29 @@ class WeatherDef {
     maxIntensity: 1.0,
     intensitySeedOffset: 7,
   );
+
+  /// Falling autumn leaves — recolored copy of the snow strip (7 x 8x8
+  /// frames); the twinkle cycle reads as leaf flutter. Slower fall, wider
+  /// sway than snow.
+  static const autumnLeaves = WeatherDef(
+    spritePath: 'fx/leaves.png',
+    frameCount: 7,
+    frameWidth: 8,
+    frameHeight: 8,
+    frameDuration: 0.22,
+    particleCount: 60,
+    minFallSpeed: 18,
+    maxFallSpeed: 34,
+    driftAmplitude: 26,
+    driftFrequency: 0.8,
+    minOpacity: 0.7,
+    maxOpacity: 1.0,
+    scale: 0.5,
+    intensityNoiseScale: 0.03,
+    // A forest always sheds a few leaves — never fully clear.
+    minIntensity: 0.15,
+    maxIntensity: 0.9,
+    // != snow's 7 so gust fronts desync across biomes.
+    intensitySeedOffset: 11,
+  );
 }

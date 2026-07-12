@@ -9,7 +9,9 @@ import '../game/world/world_map.dart';
 
 const _biomeColors = {
   BiomeType.grassland: Color(0xFF4a8c3f),
+  BiomeType.tropics: Color(0xFFe8c87a),
   BiomeType.winter: Color(0xFFc7e6f2),
+  BiomeType.autumn: Color(0xFFc75f43),
 };
 /// Loud fallback so missing entries are obvious during development.
 const _missingBiomeColor = Color(0xFFff00ff);

@@ -111,9 +111,8 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
       _targetOpacity = 1;
       return;
     }
-    // Swap def. With only one weather biome shipping today, this branch
-    // really only fires on no-weather → weather transitions; A → B re-seeds
-    // hard, which is fine until we ship a second weather biome.
+    // Swap def. A → B re-seeds hard (e.g. a direct winter↔autumn boundary
+    // morphs in-flight particles); the 1.5s biome crossfade largely masks it.
     _activate(def, _atlases[event.current]);
     if (_currentOpacity == 0) _seedAboveScreen();
     _targetOpacity = 1;

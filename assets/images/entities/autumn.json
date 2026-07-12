@@ -1,0 +1,55 @@
+{
+  "source": "autumn.png",
+  "tileSize": 16,
+  "entities": {
+    "autumn_tree": {
+      "col": 1, "row": 1,
+      "widthTiles": 3, "heightTiles": 3,
+      "src": [16, 16], "size": [48, 48],
+      "flippable": true
+    },
+    "green_pine": {
+      "col": 5, "row": 1,
+      "widthTiles": 3, "heightTiles": 3,
+      "src": [80, 16], "size": [48, 48],
+      "flippable": true
+    },
+    "autumn_fence": {
+      "col": 9, "row": 1,
+      "widthTiles": 3, "heightTiles": 1,
+      "src": [144, 16], "size": [48, 16]
+    },
+    "autumn_open_fence": {
+      "col": 9, "row": 3,
+      "widthTiles": 4, "heightTiles": 1,
+      "src": [144, 48], "size": [64, 16]
+    },
+    "leaf_bush": {
+      "col": 1, "row": 5,
+      "widthTiles": 1, "heightTiles": 1,
+      "src": [16, 80], "size": [16, 16],
+      "flippable": true
+    },
+    "leaf_pile": {
+      "col": 3, "row": 5,
+      "widthTiles": 1, "heightTiles": 1,
+      "src": [48, 80], "size": [16, 16],
+      "flippable": true
+    },
+    "vending_machine": {
+      "source": "entities/rest_area.png",
+      "widthTiles": 2, "heightTiles": 2,
+      "src": [16, 16], "size": [32, 32]
+    },
+    "bench": {
+      "source": "entities/rest_area.png",
+      "widthTiles": 3, "heightTiles": 1,
+      "src": [48, 32], "size": [48, 16]
+    },
+    "trash_bin": {
+      "source": "entities/rest_area.png",
+      "widthTiles": 1, "heightTiles": 1,
+      "src": [96, 32], "size": [16, 16]
+    }
+  }
+}
