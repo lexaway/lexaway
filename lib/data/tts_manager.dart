@@ -210,7 +210,13 @@ class TtsManager {
 
     if (downloadedModelId(lang) == info.modelId) return;
 
-    if (_activeDownloads.containsKey(lang)) return;
+    // Join an in-flight download rather than returning early — otherwise a
+    // second caller's `finally` (e.g. resetting the progress provider) runs
+    // while the first download is still going. Mirrors downloadEspeakData.
+    // The joiner's progress callbacks aren't attached; only the first
+    // caller's report.
+    final inFlight = _activeDownloads[lang];
+    if (inFlight != null) return inFlight;
 
     final future = _doDownloadModel(lang, info, onProgress: onProgress, onExtracting: onExtracting);
     _activeDownloads[lang] = future;
