@@ -54,212 +54,46 @@ class WorldGenerator {
       final segLen = _minSegmentTiles +
           rng.nextInt(_maxSegmentTiles - _minSegmentTiles + 1);
       final segEnd = min(tile + segLen, endTile);
-      final biome = _pickBiome(rng);
-      final def = BiomeRegistry.get(biome);
-
-      // Shared collision pool for this segment. Scatters check against
-      // everything already here; region children are appended as we go.
-      final placements = <_Placement>[];
-      // Region footprints placed in this segment. Exclusive footprints block
-      // later scatters and creatures; non-exclusive ones only block other
-      // regions.
-      final footprints = <_Footprint>[];
-      final pierZones = <PierZone>[];
-
-      // Phase 1: place regions first, in declaration order.
-      for (final feature in def.features.whereType<RegionFeature>()) {
-        final walker = regionWalkers.putIfAbsent(
-          feature,
-          () => _RegionWalker(feature, seed, startTile),
-        );
-        walker.advanceTo(tile);
-
-        while (walker.startTile < segEnd) {
-          final candStart = walker.startTile;
-          final candEnd = candStart + walker.width;
-
-          // Only claim regions fully within the current segment — a candidate
-          // straddling the seam is dropped here and its next-segment twin
-          // (driven by the same walker) gets a chance instead.
-          if (candStart < tile || candEnd > segEnd) {
-            walker.advance();
-            continue;
-          }
-
-          if (_overlapsAnyFootprint(candStart, candEnd, footprints)) {
-            walker.advance();
-            continue;
-          }
-
-          footprints.add(_Footprint(
-            startTile: candStart,
-            endTile: candEnd,
-            exclusive: feature.exclusive,
-          ));
-
-          if (feature.exclusive && feature.kind == 'pier') {
-            pierZones.add(
-              PierZone(startTile: candStart, endTile: candEnd),
-            );
-          }
-
-          _layOutChildren(
-            feature: feature,
-            startPx: candStart * _tilePx,
-            endPx: candEnd * _tilePx,
-            biome: biome,
-            rng: walker.rng,
-            placements: placements,
-          );
-
-          walker.advance();
-        }
-      }
-
-      // Phase 2: groups claim their cluster footprints next, before the
-      // scatters flood the segment. If we ran scatters first, dense filler
-      // (bushes, signs) would carpet the segment and almost any 4-6-tile
-      // cluster anchor would land on something — every group would abort.
-      // Running groups first means scatters' own collision checks naturally
-      // route around the rest areas instead.
-      for (final feature in def.features.whereType<GroupFeature>()) {
-        final groupRng = Random(seed + feature.noiseSeedOffset);
-        final anchors = _poissonDisk(
-          groupRng,
-          startPx: tile * _tilePx,
-          endPx: segEnd * _tilePx,
-          minGapPx: feature.minGapTiles * _tilePx,
-          maxGapPx: feature.maxGapTiles * _tilePx,
-        );
-        for (final anchorX in anchors) {
-          _tryPlaceGroup(
-            feature: feature,
-            anchorX: anchorX,
-            segEndPx: segEnd * _tilePx,
-            biome: biome,
-            rng: groupRng,
-            placements: placements,
-            footprints: footprints,
-          );
-        }
-      }
-
-      // Phase 3: scatters fill the gaps around regions and groups.
-      for (final feature in def.features.whereType<ScatterFeature>()) {
-        final noise = Noise1D(seed + feature.noiseSeedOffset);
-        final positions = _noisePoissonDisk(
-          rng,
-          noise: noise,
-          feature: feature,
-          startPx: tile * _tilePx,
-          endPx: segEnd * _tilePx,
-        );
-        final widthTiles =
-            entityFootprints[biome]?[feature.entityName] ?? 1;
-        for (final x in positions) {
-          if (_overlapsExclusiveFootprint(x, widthTiles, footprints)) {
-            continue;
-          }
-          if (_collides(x, feature.entityName, biome, placements)) continue;
-          placements.add(_Placement(feature.entityName, x));
-        }
-      }
-
-      placements.sort((a, b) => a.worldX.compareTo(b.worldX));
-
-      final items = <PlacedItem>[];
-      final entityPositions = <double>[];
-      for (final p in placements) {
-        entityPositions.add(p.worldX);
-        items.add(PlacedItem(
-          name: p.name,
-          category: ItemCategory.entity,
-          worldX: p.worldX,
-          index: itemIndex++,
-        ));
-      }
-
-      // Coins placed in gaps between entities (unchanged).
-      final coinPositions = _placeCoinsBetweenEntities(
-        rng,
-        entityPositions: entityPositions,
-        startPx: tile * _tilePx,
-        endPx: segEnd * _tilePx,
-        def: def,
+      final ctx = _SegmentContext(
+        seed: seed,
+        rng: rng,
+        startTile: tile,
+        endTile: segEnd,
+        biome: _pickBiome(rng),
       );
-      for (final cp in coinPositions) {
-        items.add(PlacedItem(
-          name: cp.name,
-          category: ItemCategory.coin,
-          worldX: cp.worldX,
-          index: itemIndex++,
-        ));
-      }
 
-      // Claw machine encounters — sparse, biome-agnostic. Placed before
-      // creatures so creatures route around them, and respecting exclusive
-      // footprints so a cabinet doesn't materialize on a pier.
-      final clawMachineRng = Random(seed ^ 0xC1A47);
-      final clawMachinePositions = _poissonDisk(
-        clawMachineRng,
-        startPx: tile * _tilePx,
-        endPx: segEnd * _tilePx,
-        minGapPx: _clawMachineMinGapTiles * _tilePx,
-        maxGapPx: _clawMachineMaxGapTiles * _tilePx,
-      );
-      for (final x in clawMachinePositions) {
-        if (_overlapsExclusiveFootprint(
-          x,
-          _clawMachineWidthTiles,
-          footprints,
-        )) {
-          continue;
-        }
-        if (_collidesWithWidth(
-          x,
-          _clawMachineWidthTiles,
-          biome,
-          placements,
-        )) {
-          continue;
-        }
-        items.add(PlacedItem(
-          name: 'claw_machine',
-          category: ItemCategory.clawMachine,
-          worldX: x,
-          index: itemIndex++,
-        ));
-      }
+      _placeRegions(ctx, regionWalkers, startTile);
+      _placeGroups(ctx);
+      _placeScatters(ctx);
+      ctx.placements.sort((a, b) => a.worldX.compareTo(b.worldX));
 
-      // Ambient creatures — independent of entity/coin slots. Still respect
-      // exclusive footprints so a bunny doesn't stand on a pier.
-      if (def.totalCreatureWeight > 0) {
-        final creaturePositions = _poissonDisk(
-          rng,
-          startPx: tile * _tilePx,
-          endPx: segEnd * _tilePx,
-          minGapPx: def.minCreatureGapTiles * _tilePx,
-          maxGapPx: def.maxCreatureGapTiles * _tilePx,
-        );
-        for (final x in creaturePositions) {
-          if (_overlapsExclusiveFootprint(x, 1, footprints)) continue;
-          items.add(PlacedItem(
-            name: _pickWeightedCreature(rng, def),
-            category: ItemCategory.creature,
-            worldX: x,
+      // Row order matters twice over: coins fill the gaps between the
+      // (now sorted) entities, and the shared rng draws for coins and
+      // creatures must happen in this sequence for a seed to keep
+      // reproducing the same world.
+      final rows = <_ItemRow>[
+        for (final p in ctx.placements)
+          (name: p.name, category: ItemCategory.entity, worldX: p.worldX),
+        ..._coinRows(ctx),
+        ..._clawMachineRows(ctx),
+        ..._creatureRows(ctx),
+      ];
+      final items = [
+        for (final r in rows)
+          PlacedItem(
+            name: r.name,
+            category: r.category,
+            worldX: r.worldX,
             index: itemIndex++,
-          ));
-        }
-      }
-
-      items.sort((a, b) => a.worldX.compareTo(b.worldX));
+          ),
+      ]..sort((a, b) => a.worldX.compareTo(b.worldX));
 
       segments.add(WorldSegment(
-        biome: biome,
+        biome: ctx.biome,
         startTile: tile,
         endTile: segEnd,
         items: items,
-        pierZones: pierZones,
+        pierZones: ctx.pierZones,
       ));
 
       tile = segEnd;
@@ -270,6 +104,190 @@ class WorldGenerator {
       segments: segments,
       nextItemIndex: itemIndex,
     );
+  }
+
+  /// Phase 1: regions claim footprints first, in declaration order.
+  /// [baseTile] is the generate() call's start tile, used to anchor
+  /// newly-created walkers in world coordinates.
+  void _placeRegions(
+    _SegmentContext ctx,
+    Map<RegionFeature, _RegionWalker> walkers,
+    int baseTile,
+  ) {
+    for (final feature in ctx.def.features.whereType<RegionFeature>()) {
+      final walker = walkers.putIfAbsent(
+        feature,
+        () => _RegionWalker(feature, ctx.seed, baseTile),
+      );
+      walker.advanceTo(ctx.startTile);
+
+      while (walker.startTile < ctx.endTile) {
+        final candStart = walker.startTile;
+        final candEnd = candStart + walker.width;
+
+        // Only claim regions fully within the current segment — a candidate
+        // straddling the seam is dropped here and its next-segment twin
+        // (driven by the same walker) gets a chance instead.
+        if (candStart < ctx.startTile || candEnd > ctx.endTile) {
+          walker.advance();
+          continue;
+        }
+
+        if (_overlapsAnyFootprint(candStart, candEnd, ctx.footprints)) {
+          walker.advance();
+          continue;
+        }
+
+        ctx.footprints.add(_Footprint(
+          startTile: candStart,
+          endTile: candEnd,
+          exclusive: feature.exclusive,
+        ));
+
+        if (feature.exclusive && feature.kind == 'pier') {
+          ctx.pierZones.add(
+            PierZone(startTile: candStart, endTile: candEnd),
+          );
+        }
+
+        _layOutChildren(
+          feature: feature,
+          startPx: candStart * _tilePx,
+          endPx: candEnd * _tilePx,
+          biome: ctx.biome,
+          rng: walker.rng,
+          placements: ctx.placements,
+        );
+
+        walker.advance();
+      }
+    }
+  }
+
+  /// Phase 2: groups claim their cluster footprints next, before the
+  /// scatters flood the segment. If we ran scatters first, dense filler
+  /// (bushes, signs) would carpet the segment and almost any 4-6-tile
+  /// cluster anchor would land on something — every group would abort.
+  /// Running groups first means scatters' own collision checks naturally
+  /// route around the rest areas instead.
+  void _placeGroups(_SegmentContext ctx) {
+    for (final feature in ctx.def.features.whereType<GroupFeature>()) {
+      final groupRng = Random(ctx.seed + feature.noiseSeedOffset);
+      final anchors = _poissonDisk(
+        groupRng,
+        startPx: ctx.startPx,
+        endPx: ctx.endPx,
+        minGapPx: feature.minGapTiles * _tilePx,
+        maxGapPx: feature.maxGapTiles * _tilePx,
+      );
+      for (final anchorX in anchors) {
+        _tryPlaceGroup(
+          feature: feature,
+          anchorX: anchorX,
+          segEndPx: ctx.endPx,
+          biome: ctx.biome,
+          rng: groupRng,
+          placements: ctx.placements,
+          footprints: ctx.footprints,
+        );
+      }
+    }
+  }
+
+  /// Phase 3: scatters fill the gaps around regions and groups.
+  void _placeScatters(_SegmentContext ctx) {
+    for (final feature in ctx.def.features.whereType<ScatterFeature>()) {
+      final noise = Noise1D(ctx.seed + feature.noiseSeedOffset);
+      final positions = _noisePoissonDisk(
+        ctx.rng,
+        noise: noise,
+        feature: feature,
+        startPx: ctx.startPx,
+        endPx: ctx.endPx,
+      );
+      final widthTiles =
+          entityFootprints[ctx.biome]?[feature.entityName] ?? 1;
+      for (final x in positions) {
+        if (_overlapsExclusiveFootprint(x, widthTiles, ctx.footprints)) {
+          continue;
+        }
+        if (_collides(x, feature.entityName, ctx.biome, ctx.placements)) {
+          continue;
+        }
+        ctx.placements.add(_Placement(feature.entityName, x));
+      }
+    }
+  }
+
+  /// Coins placed in gaps between entities. Relies on ctx.placements being
+  /// sorted by worldX before this runs.
+  List<_ItemRow> _coinRows(_SegmentContext ctx) {
+    final coins = _placeCoinsBetweenEntities(
+      ctx.rng,
+      entityPositions: [for (final p in ctx.placements) p.worldX],
+      startPx: ctx.startPx,
+      endPx: ctx.endPx,
+      def: ctx.def,
+    );
+    return [
+      for (final c in coins)
+        (name: c.name, category: ItemCategory.coin, worldX: c.worldX),
+    ];
+  }
+
+  /// Claw machine encounters — sparse, biome-agnostic. Placed before
+  /// creatures so creatures route around them, and respecting exclusive
+  /// footprints so a cabinet doesn't materialize on a pier.
+  List<_ItemRow> _clawMachineRows(_SegmentContext ctx) {
+    final clawMachineRng = Random(ctx.seed ^ 0xC1A47);
+    final positions = _poissonDisk(
+      clawMachineRng,
+      startPx: ctx.startPx,
+      endPx: ctx.endPx,
+      minGapPx: _clawMachineMinGapTiles * _tilePx,
+      maxGapPx: _clawMachineMaxGapTiles * _tilePx,
+    );
+    return [
+      for (final x in positions)
+        if (!_overlapsExclusiveFootprint(
+              x,
+              _clawMachineWidthTiles,
+              ctx.footprints,
+            ) &&
+            !_collidesWithWidth(
+              x,
+              _clawMachineWidthTiles,
+              ctx.biome,
+              ctx.placements,
+            ))
+          (
+            name: 'claw_machine',
+            category: ItemCategory.clawMachine,
+            worldX: x,
+          ),
+    ];
+  }
+
+  /// Ambient creatures — independent of entity/coin slots. Still respect
+  /// exclusive footprints so a bunny doesn't stand on a pier.
+  List<_ItemRow> _creatureRows(_SegmentContext ctx) {
+    if (ctx.def.totalCreatureWeight <= 0) return const [];
+    final positions = _poissonDisk(
+      ctx.rng,
+      startPx: ctx.startPx,
+      endPx: ctx.endPx,
+      minGapPx: ctx.def.minCreatureGapTiles * _tilePx,
+      maxGapPx: ctx.def.maxCreatureGapTiles * _tilePx,
+    );
+    return [
+      for (final x in positions)
+        if (!_overlapsExclusiveFootprint(x, 1, ctx.footprints))
+          (
+            name: _pickWeightedCreature(ctx.rng, ctx.def),
+            category: ItemCategory.creature,
+            worldX: x,
+          ),
+    ];
   }
 
   BiomeType _pickBiome(Random rng) {
@@ -413,11 +431,8 @@ class WorldGenerator {
     BiomeType biome,
     List<_Placement> placements,
   ) {
-    for (final p in placements) {
-      final gap = (worldX - p.worldX).abs();
-      if (gap < _requiredGapPx(name, p.name, biome)) return true;
-    }
-    return false;
+    final widthTiles = entityFootprints[biome]?[name] ?? 1;
+    return _collidesWithWidth(worldX, widthTiles, biome, placements);
   }
 
   /// Variant of [_collides] for placements whose width isn't in any biome's
@@ -584,6 +599,45 @@ class WorldGenerator {
 
     return coins;
   }
+}
+
+/// A placed item before it gets its world-wide index — generate() stamps the
+/// running index so numbering stays a single-owner concern.
+typedef _ItemRow = ({String name, ItemCategory category, double worldX});
+
+/// Working state for generating one segment: its identity (span, biome) plus
+/// the shared pools the placement phases fill in turn.
+class _SegmentContext {
+  final int seed;
+
+  /// The generate()-wide RNG. Draw order is part of the deterministic
+  /// output, so phases must consume it strictly in call order.
+  final Random rng;
+  final int startTile;
+  final int endTile;
+  final BiomeType biome;
+  final BiomeDefinition def;
+
+  /// Shared collision pool for this segment. Scatters check against
+  /// everything already here; region children are appended as we go.
+  final placements = <_Placement>[];
+
+  /// Region footprints placed in this segment. Exclusive footprints block
+  /// later scatters and creatures; non-exclusive ones only block other
+  /// regions.
+  final footprints = <_Footprint>[];
+  final pierZones = <PierZone>[];
+
+  _SegmentContext({
+    required this.seed,
+    required this.rng,
+    required this.startTile,
+    required this.endTile,
+    required this.biome,
+  }) : def = BiomeRegistry.get(biome);
+
+  double get startPx => startTile * WorldGenerator._tilePx;
+  double get endPx => endTile * WorldGenerator._tilePx;
 }
 
 /// Per-RegionFeature walker. Produces a deterministic sequence of candidate
