@@ -47,9 +47,9 @@ PROJECT_DIR = SCRIPT_DIR.parent
 
 BUNDLE_ID = "com.lexaway.app"
 
-# Short code (our YAML keys) → App Store Connect locale. We match against the
-# locales that actually exist on the app, so these are the expected canonical
-# forms; a prefix match (e.g. "pt" ↔ "pt-BR") is used as a fallback.
+# Short code (our YAML keys) → canonical App Store Connect locale. Matching is
+# by exact locale or language prefix, and a short code's text is applied to
+# EVERY ASC locale of that language (en → en-US, en-GB, en-AU, en-CA, …).
 LOCALE_MAP = {
     "en": "en-US",
     "de": "de-DE",
@@ -233,18 +233,22 @@ def short_for_locale(locale):
 
 
 def version_localizations(asc, version_id):
-    """Return {short_code: localization_dict} for the version."""
+    """Return {short_code: [localization_dict, ...]} for the version.
+
+    A language can exist under several ASC locales (en-US, en-GB, en-AU, …);
+    the text for a short code applies to all of them.
+    """
     locs = asc.get_all(f"/v1/appStoreVersions/{version_id}/appStoreVersionLocalizations")
     out = {}
     for loc in locs:
         short = short_for_locale(loc["attributes"]["locale"])
         if short:
-            out[short] = loc
+            out.setdefault(short, []).append(loc)
     return out
 
 
 def appinfo_localizations(asc, app_id):
-    """Return {short_code: localization_dict} for the editable appInfo."""
+    """Return {short_code: [localization_dict, ...]} for the editable appInfo."""
     infos = asc.get_all(f"/v1/apps/{app_id}/appInfos")
     info = next((i for i in infos
                  if i["attributes"].get("appStoreState") in EDITABLE_STATES), infos[0])
@@ -253,7 +257,7 @@ def appinfo_localizations(asc, app_id):
     for loc in locs:
         short = short_for_locale(loc["attributes"]["locale"])
         if short:
-            out[short] = loc
+            out.setdefault(short, []).append(loc)
     return out
 
 
@@ -289,15 +293,18 @@ def push_metadata(asc, app_id, version_id, meta):
         if short in vlocs:
             wanted = {api: block[y] for y, api in VERSION_LOC_FIELDS.items() if y in block}
             wanted.update(shared)
-            patch_if_changed(asc, "appStoreVersionLocalizations", vlocs[short], wanted,
-                             f"{short} listing")
+            for loc in vlocs[short]:
+                patch_if_changed(asc, "appStoreVersionLocalizations", loc, wanted,
+                                 f"{loc['attributes']['locale']} listing")
         else:
             log(f"    {short}: no version localization in ASC — skipped")
         # App-info localization: subtitle
         if "subtitle" in block:
             if short in ailocs:
-                patch_if_changed(asc, "appInfoLocalizations", ailocs[short],
-                                 {"subtitle": block["subtitle"]}, f"{short} subtitle")
+                for loc in ailocs[short]:
+                    patch_if_changed(asc, "appInfoLocalizations", loc,
+                                     {"subtitle": block["subtitle"]},
+                                     f"{loc['attributes']['locale']} subtitle")
             else:
                 log(f"    {short}: no appInfo localization in ASC — subtitle skipped")
 
@@ -312,8 +319,10 @@ def push_notes(asc, version_id, notes, version):
     vlocs = version_localizations(asc, version_id)
     for short, text in entry.items():
         if short in vlocs:
-            patch_if_changed(asc, "appStoreVersionLocalizations", vlocs[short],
-                             {"whatsNew": text}, f"{short} whatsNew")
+            for loc in vlocs[short]:
+                patch_if_changed(asc, "appStoreVersionLocalizations", loc,
+                                 {"whatsNew": text},
+                                 f"{loc['attributes']['locale']} whatsNew")
         else:
             log(f"    {short}: no version localization in ASC — skipped")
 
@@ -364,7 +373,7 @@ def push_screenshots(asc, version_id):
     log("Screenshots:")
     vlocs = version_localizations(asc, version_id)
     root = PROJECT_DIR / "screenshots" / "final"
-    for short, loc in sorted(vlocs.items()):
+    for short, locales in sorted(vlocs.items()):
         lang_dir = root / short
         if not lang_dir.is_dir():
             log(f"    {short}: no screenshots/final/{short} — skipped")
@@ -378,15 +387,17 @@ def push_screenshots(asc, version_id):
             pngs = sorted(device_dir.glob("*.png"))
             if not pngs:
                 continue
-            log(f"    {short}/{device_dir.name} → {display}: {len(pngs)} shots")
-            set_id = screenshot_set(asc, loc["id"], display)
-            # Clear the set first so re-runs stay idempotent (no piling up).
-            for existing in asc.get_all(f"/v1/appScreenshotSets/{set_id}/appScreenshots") \
-                    if not str(set_id).startswith("<new") else []:
-                asc.delete(f"/v1/appScreenshots/{existing['id']}", what="clear old shot")
-            for png in pngs:
-                log(f"        {png.name}")
-                upload_screenshot(asc, set_id, png)
+            for loc in locales:
+                locale = loc["attributes"]["locale"]
+                log(f"    {locale}/{device_dir.name} → {display}: {len(pngs)} shots")
+                set_id = screenshot_set(asc, loc["id"], display)
+                # Clear the set first so re-runs stay idempotent (no piling up).
+                for existing in asc.get_all(f"/v1/appScreenshotSets/{set_id}/appScreenshots") \
+                        if not str(set_id).startswith("<new") else []:
+                    asc.delete(f"/v1/appScreenshots/{existing['id']}", what="clear old shot")
+                for png in pngs:
+                    log(f"        {png.name}")
+                    upload_screenshot(asc, set_id, png)
 
 
 # --------------------------------------------------------------------------- #
