@@ -32,3 +32,15 @@ abstract final class AppColors {
   static final controlInactive = Colors.blueGrey.shade700;
   static final controlInactiveThumb = Colors.blueGrey.shade300;
 }
+
+/// Carnival palette shared by the claw-machine prompt and result dialog.
+abstract final class ClawColors {
+  static const frame = Color(0xFFC2185B); // border, titles, accents
+  static const panel = Color(0xFFFFE0AC); // dialog background
+  static const text = Color(0xFF3E2723); // body text on the panel
+  static const textOwned = Color(0xFF8D6E63); // "already owned" hint
+  static const warning = Color(0xFFB00020); // "not enough coins" notice
+  static const action = Color(0xFFFF4081); // primary (play / try again)
+  static const actionDisabled = Color(0xFFD8B4A0);
+  static const decline = Color(0xFFE0E0E0); // "walk past" button
+}

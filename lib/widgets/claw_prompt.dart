@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 class ClawPrompt extends StatelessWidget {
   final int coinCost;
   final int currentCoins;
@@ -29,8 +31,8 @@ class ClawPrompt extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFE0AC),
-                  border: Border.all(color: const Color(0xFFC2185B), width: 3),
+                  color: ClawColors.panel,
+                  border: Border.all(color: ClawColors.frame, width: 3),
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
@@ -48,7 +50,7 @@ class ClawPrompt extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFFC2185B),
+                        color: ClawColors.frame,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -56,7 +58,7 @@ class ClawPrompt extends StatelessWidget {
                       'Try a grab for $coinCost coin${coinCost == 1 ? '' : 's'}?',
                       style: const TextStyle(
                         fontSize: 16,
-                        color: Color(0xFF3E2723),
+                        color: ClawColors.text,
                       ),
                     ),
                     if (!canAfford) ...[
@@ -65,7 +67,7 @@ class ClawPrompt extends StatelessWidget {
                         'Not enough coins (you have $currentCoins).',
                         style: const TextStyle(
                           fontSize: 13,
-                          color: Color(0xFFB00020),
+                          color: ClawColors.warning,
                         ),
                       ),
                     ],
@@ -76,15 +78,15 @@ class ClawPrompt extends StatelessWidget {
                         _PromptButton(
                           label: 'Walk past',
                           onPressed: onDecline,
-                          color: const Color(0xFFE0E0E0),
-                          textColor: const Color(0xFF3E2723),
+                          color: ClawColors.decline,
+                          textColor: ClawColors.text,
                         ),
                         _PromptButton(
                           label: canAfford ? 'Play!' : 'Need coins',
                           onPressed: canAfford ? onAccept : null,
                           color: canAfford
-                              ? const Color(0xFFFF4081)
-                              : const Color(0xFFBDBDBD),
+                              ? ClawColors.action
+                              : ClawColors.actionDisabled,
                           textColor: Colors.white,
                         ),
                       ],
