@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/music_manager.dart';
 import 'bgm.dart';
 import 'bootstrap.dart';
+import 'download_progress.dart';
 import 'packs.dart';
 
 /// Singleton MusicManager backed by the Hive box and the music directory.
@@ -47,20 +48,13 @@ class InstalledMusicNotifier extends AsyncNotifier<Set<String>> {
       orElse: () => throw StateError('Unknown music pack: $packId'),
     );
 
-    ref.read(musicDownloadProgressProvider(packId).notifier).state = 0.0;
-    try {
-      await mm.downloadPack(
+    await ref.read(musicDownloadProgressProvider(packId).notifier).track(
+      (onProgress, onExtracting) => mm.downloadPack(
         info,
-        onProgress: (p) {
-          ref.read(musicDownloadProgressProvider(packId).notifier).state = p;
-        },
-        onExtracting: () {
-          ref.read(musicDownloadProgressProvider(packId).notifier).state = -1.0;
-        },
-      );
-    } finally {
-      ref.read(musicDownloadProgressProvider(packId).notifier).state = null;
-    }
+        onProgress: onProgress,
+        onExtracting: onExtracting,
+      ),
+    );
     state = AsyncData(_readInstalled(mm));
   }
 
@@ -82,7 +76,7 @@ class InstalledMusicNotifier extends AsyncNotifier<Set<String>> {
 }
 
 /// Ephemeral download progress per music pack, keyed by pack id.
-/// `null` = idle; `0.0..1.0` = downloading; `-1.0` = extracting.
-final musicDownloadProgressProvider = StateProvider.family<double?, String>(
-  (ref, packId) => null,
+final musicDownloadProgressProvider =
+    NotifierProvider.family<DownloadProgress, double?, String>(
+  DownloadProgress.new,
 );

@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_font.dart';
 import '../data/app_urls.dart';
+import '../data/difficulty.dart';
 import '../data/music_manager.dart';
 import '../game/audio_manager.dart';
 import '../l10n/app_localizations.dart';
@@ -145,16 +146,12 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.lg),
                 _SectionHeader(label: l10n.settingsDifficulty),
                 const SizedBox(height: AppSpacing.sm),
-                for (final entry in {
-                  'beginner': l10n.difficultyBeginner,
-                  'intermediate': l10n.difficultyIntermediate,
-                  'advanced': l10n.difficultyAdvanced,
-                }.entries)
+                for (final difficulty in Difficulty.values)
                   _RadioRow(
-                    label: entry.value,
-                    selected: ref.watch(difficultyProvider) == entry.key,
+                    label: difficulty.label(l10n),
+                    selected: ref.watch(difficultyProvider) == difficulty,
                     onTap: () =>
-                        ref.read(difficultyProvider.notifier).set(entry.key),
+                        ref.read(difficultyProvider.notifier).set(difficulty),
                   ),
                 const SizedBox(height: AppSpacing.lg),
                 _SectionHeader(label: l10n.settingsFont),

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce/hive_ce.dart';
 
 import '../data/app_font.dart';
+import '../data/difficulty.dart';
 import '../data/hive_keys.dart';
 import 'bootstrap.dart';
 import 'packs.dart';
@@ -122,17 +123,21 @@ class GenderNotifier extends HiveValueNotifier<String> {
   String get defaultValue => 'female';
 }
 
-final difficultyProvider = NotifierProvider<DifficultyNotifier, String>(
+final difficultyProvider = NotifierProvider<DifficultyNotifier, Difficulty>(
   DifficultyNotifier.new,
 );
 
-class DifficultyNotifier extends HiveValueNotifier<String> {
+class DifficultyNotifier extends HiveValueNotifier<Difficulty> {
   @override
   String get key => HiveKeys.difficulty;
   @override
-  String get defaultValue => 'beginner';
+  Difficulty get defaultValue => Difficulty.beginner;
   @override
-  void onSet(String _) => ref.invalidate(activePackProvider);
+  Object encode(Difficulty v) => v.name;
+  @override
+  Difficulty decode(Object raw) => Difficulty.fromKey(raw as String);
+  @override
+  void onSet(Difficulty _) => ref.invalidate(activePackProvider);
 }
 
 final fontProvider = NotifierProvider<FontNotifier, AppFont>(FontNotifier.new);

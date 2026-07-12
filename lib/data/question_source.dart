@@ -1,12 +1,13 @@
 import 'dart:math';
 
 import '../models/question.dart';
+import 'difficulty.dart';
 import 'pack_database.dart';
 import 'sm2.dart';
 
 class QuestionSource {
   final PackDatabase? _db;
-  final String? _difficulty;
+  final Difficulty? _difficulty;
   final Random _rng = Random();
 
   List<Question> _fresh;
@@ -23,7 +24,7 @@ class QuestionSource {
     List<Question> initialFresh, {
     List<Question> initialReview = const [],
     this.reviewRatio = 0.25,
-    String? difficulty,
+    Difficulty? difficulty,
   })  : _db = db,
         _difficulty = difficulty,
         _fresh = List.of(initialFresh),

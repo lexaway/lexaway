@@ -4,6 +4,7 @@ import 'package:sqlite_async/sqlite_async.dart';
 
 import '../models/question.dart';
 import 'day_key.dart';
+import 'difficulty.dart';
 
 class PackDatabase {
   final String packsDir;
@@ -35,23 +36,24 @@ class PackDatabase {
   /// beginner → only beginner rows; intermediate → beginner + intermediate;
   /// advanced / null → no filter.
   static ({String clause, List<String> args}) _difficultyFilter(
-      String? difficulty) {
+      Difficulty? difficulty) {
     switch (difficulty) {
-      case 'beginner':
-        return (clause: 'level = ?', args: ['beginner']);
-      case 'intermediate':
+      case Difficulty.beginner:
+        return (clause: 'level = ?', args: [Difficulty.beginner.name]);
+      case Difficulty.intermediate:
         return (
           clause: 'level IN (?, ?)',
-          args: ['beginner', 'intermediate'],
+          args: [Difficulty.beginner.name, Difficulty.intermediate.name],
         );
-      default:
+      case Difficulty.advanced:
+      case null:
         return (clause: '', args: <String>[]);
     }
   }
 
   /// Load fresh (not-yet-due-for-review) questions.
   Future<List<Question>> loadQuestions({
-    String? difficulty,
+    Difficulty? difficulty,
     int limit = 200,
   }) async {
     final db = _db!;
@@ -80,7 +82,7 @@ class PackDatabase {
 
   /// Load questions that are due for review (next_review <= today).
   Future<List<Question>> loadReviewQuestions({
-    String? difficulty,
+    Difficulty? difficulty,
     int limit = 50,
   }) async {
     final db = _db!;

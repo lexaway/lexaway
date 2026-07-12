@@ -1,12 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/difficulty.dart';
 import '../data/pack_database.dart';
 import '../data/pack_manager.dart';
 import '../data/question_source.dart';
 import '../data/tts_manager.dart';
 import '../models/question.dart';
 import 'bootstrap.dart';
+import 'download_progress.dart';
 import 'settings.dart';
 import 'tts.dart';
 
@@ -43,41 +45,20 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
     final tm = ref.read(ttsManagerProvider);
     final packId = formatPackId(fromLang: fromLang, lang: lang);
 
-    final packFuture = () async {
-      ref.read(downloadProgressProvider(packId).notifier).state = 0.0;
-      try {
-        await pm.downloadPack(
-          lang,
-          fromLang: fromLang,
-          onProgress: (p) {
-            ref.read(downloadProgressProvider(packId).notifier).state = p;
-          },
-        );
-      } finally {
-        ref.read(downloadProgressProvider(packId).notifier).state = null;
-      }
-    }();
+    final packFuture =
+        ref.read(downloadProgressProvider(packId).notifier).track(
+      (onProgress, _) =>
+          pm.downloadPack(lang, fromLang: fromLang, onProgress: onProgress),
+    );
 
     final voiceFuture = (includeVoice && tm.isSupported(lang))
-        ? () async {
-            ref.read(voiceDownloadProgressProvider(lang).notifier).state = 0.0;
-            try {
-              await tm.downloadModel(
-                lang,
-                onProgress: (p) {
-                  ref.read(voiceDownloadProgressProvider(lang).notifier).state =
-                      p;
-                },
-                onExtracting: () {
-                  ref.read(voiceDownloadProgressProvider(lang).notifier).state =
-                      -1.0;
-                },
-              );
-            } finally {
-              ref.read(voiceDownloadProgressProvider(lang).notifier).state =
-                  null;
-            }
-          }()
+        ? ref.read(voiceDownloadProgressProvider(lang).notifier).track(
+            (onProgress, onExtracting) => tm.downloadModel(
+              lang,
+              onProgress: onProgress,
+              onExtracting: onExtracting,
+            ),
+          )
         : Future<void>.value();
 
     await Future.wait([packFuture, voiceFuture]);
@@ -93,22 +74,14 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
     // Release engine before replacing — avoids native crash if model files change
     ref.read(ttsServiceProvider).releaseEngine();
 
-    // Show indeterminate spinner immediately (covers URL resolution delay)
-    ref.read(voiceDownloadProgressProvider(lang).notifier).state = 0.0;
-    try {
-      await tm.downloadModel(
+    await ref.read(voiceDownloadProgressProvider(lang).notifier).track(
+      (onProgress, onExtracting) => tm.downloadModel(
         lang,
         modelId: modelId,
-        onProgress: (p) {
-          ref.read(voiceDownloadProgressProvider(lang).notifier).state = p;
-        },
-        onExtracting: () {
-          ref.read(voiceDownloadProgressProvider(lang).notifier).state = -1.0;
-        },
-      );
-    } finally {
-      ref.read(voiceDownloadProgressProvider(lang).notifier).state = null;
-    }
+        onProgress: onProgress,
+        onExtracting: onExtracting,
+      ),
+    );
     ref.invalidateSelf();
   }
 
@@ -172,14 +145,16 @@ final voiceCatalogProvider = Provider<Map<String, List<TtsModelInfo>>>((ref) {
   return merged;
 });
 
-/// Ephemeral download progress for sentence packs, keyed by lang code.
-final downloadProgressProvider = StateProvider.family<double?, String>(
-  (ref, lang) => null,
+/// Ephemeral download progress for sentence packs, keyed by pack id.
+final downloadProgressProvider =
+    NotifierProvider.family<DownloadProgress, double?, String>(
+  DownloadProgress.new,
 );
 
 /// Ephemeral download progress for voice models, keyed by lang code.
-final voiceDownloadProgressProvider = StateProvider.family<double?, String>(
-  (ref, lang) => null,
+final voiceDownloadProgressProvider =
+    NotifierProvider.family<DownloadProgress, double?, String>(
+  DownloadProgress.new,
 );
 
 final activePackProvider =
@@ -308,7 +283,7 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
     // genuine corruption (truncated file, malformed sqlite, bad phrases table)
     // usually surfaces on the first real query. Both paths share the same
     // cleanup: close the handle, scrub Hive, redirect to /packs.
-    final ({List<Question> fresh, List<Question> review, String difficulty}) loaded;
+    final ({List<Question> fresh, List<Question> review, Difficulty difficulty}) loaded;
     try {
       loaded = await _loadQuestions(packId);
     } catch (_) {
@@ -323,46 +298,30 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
       _db,
       loaded.fresh,
       initialReview: loaded.review,
-      reviewRatio: _reviewRatio(loaded.difficulty),
+      reviewRatio: loaded.difficulty.reviewRatio,
       difficulty: loaded.difficulty,
     );
-  }
-
-  /// Map difficulty to review ratio — beginners see more review to reinforce
-  /// basics; advanced players see less repetition.
-  static double _reviewRatio(String difficulty) {
-    switch (difficulty) {
-      case 'beginner':
-        return 0.33;
-      case 'intermediate':
-        return 0.25;
-      default:
-        return 0.15;
-    }
   }
 
   /// Open and query the pack database. Retries once on failure — the retry
   /// re-closes and re-opens the handle, which recovers from a partially-
   /// initialized native SQLite connection (common on cold boot).
-  Future<({List<Question> fresh, List<Question> review, String difficulty})>
+  Future<({List<Question> fresh, List<Question> review, Difficulty difficulty})>
       _loadQuestions(String packId) async {
     final difficulty = ref.read(difficultyProvider);
-    try {
-      await _db.open(packId);
-      final fresh =
-          await _db.loadQuestions(difficulty: difficulty, limit: 200);
-      final review =
-          await _db.loadReviewQuestions(difficulty: difficulty, limit: 50);
-      return (fresh: fresh, review: review, difficulty: difficulty);
-    } catch (e) {
-      assert(() { debugPrint('Pack DB first attempt failed: $e'); return true; }());
-      await _db.close();
-      await _db.open(packId);
-      final fresh =
-          await _db.loadQuestions(difficulty: difficulty, limit: 200);
-      final review =
-          await _db.loadReviewQuestions(difficulty: difficulty, limit: 50);
-      return (fresh: fresh, review: review, difficulty: difficulty);
+    for (var attempt = 0; ; attempt++) {
+      try {
+        await _db.open(packId);
+        final fresh =
+            await _db.loadQuestions(difficulty: difficulty, limit: 200);
+        final review =
+            await _db.loadReviewQuestions(difficulty: difficulty, limit: 50);
+        return (fresh: fresh, review: review, difficulty: difficulty);
+      } catch (e) {
+        if (attempt > 0) rethrow;
+        assert(() { debugPrint('Pack DB first attempt failed: $e'); return true; }());
+        await _db.close();
+      }
     }
   }
 }
