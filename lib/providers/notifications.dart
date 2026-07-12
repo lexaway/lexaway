@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce/hive_ce.dart';
 
@@ -53,9 +54,12 @@ class NotifSettings {
   );
 }
 
-/// Singleton notification service. Init'd once from `main()` before runApp.
+/// Singleton notification service. Init'd once from `main()` before runApp
+/// and injected via ProviderScope override — like the bootstrap providers,
+/// an un-overridden read is a wiring bug, so fail loudly rather than hand
+/// out an uninitialized instance whose notifications silently never fire.
 final notificationServiceProvider = Provider<NotificationService>((ref) {
-  return NotificationService();
+  throw UnimplementedError('notificationServiceProvider must be overridden');
 });
 
 final notifSettingsProvider =
@@ -86,7 +90,7 @@ class NotifSettingsNotifier extends Notifier<NotifSettings> {
     // install/delete while the app is foregrounded, which otherwise would
     // only correct itself on next resume.
     ref.listen<Set<String>>(installedL2sProvider, (prev, next) {
-      if (prev == null || _setEquals(prev, next)) return;
+      if (prev == null || setEquals(prev, next)) return;
       _reschedule();
     });
     return NotifSettings(
@@ -191,9 +195,6 @@ class NotifSettingsNotifier extends Notifier<NotifSettings> {
     await _reschedule();
   }
 }
-
-bool _setEquals(Set<String> a, Set<String> b) =>
-    a.length == b.length && a.containsAll(b);
 
 /// L2 languages (ISO 639-3) the user has installed packs for. Used to gate
 /// the language picker in settings.
