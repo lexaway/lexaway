@@ -1,0 +1,44 @@
+name: Publish App Store listing
+
+# Manually pushes the App Store listing (description, keywords, "What's New",
+# screenshots) from store/*.yaml + screenshots/final/ to the editable version
+# in App Store Connect. Use after creating the new version in the web UI —
+# the release workflow's publish step is a no-op when no editable version
+# exists yet at release time.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Report changes without writing anything
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install App Store Connect API key
+        env:
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+        run: |
+          KEYS_DIR="$HOME/.appstoreconnect/private_keys"
+          mkdir -p "$KEYS_DIR"
+          echo "$ASC_API_KEY_P8" | base64 --decode > "$KEYS_DIR/AuthKey_${ASC_KEY_ID}.p8"
+
+      - name: Publish listing
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          uv run --with "pyjwt[crypto]" --with requests --with pyyaml \
+            store/publish_store.py ${{ inputs.dry_run && '--dry-run' || '' }}
