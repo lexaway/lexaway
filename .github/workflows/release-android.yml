@@ -99,15 +99,18 @@ jobs:
           uv run --with pyyaml python - <<'EOF'
           import os, pathlib, sys, yaml
 
-          # Short code (our YAML keys) → Google Play locale.
+          # Short code (our YAML keys) → every Google Play locale of that
+          # language on the listing. Play falls back to the default language
+          # (en-US) for locales without notes, so regional variants must be
+          # listed here or their users get English.
           LOCALE_MAP = {
-              "en": "en-US",
-              "de": "de-DE",
-              "es": "es-ES",
-              "fr": "fr-FR",
-              "it": "it-IT",
-              "pt": "pt-BR",
-              "nl": "nl-NL",
+              "en": ["en-US"],
+              "de": ["de-DE"],
+              "es": ["es-ES", "es-419", "es-US"],
+              "fr": ["fr-FR", "fr-CA"],
+              "it": ["it-IT"],
+              "pt": ["pt-BR", "pt-PT"],
+              "nl": ["nl-NL"],
           }
 
           version = os.environ["VERSION"]
@@ -121,15 +124,16 @@ jobs:
               sys.exit(0)
 
           for short, text in entry.items():
-              locale = LOCALE_MAP.get(short)
-              if not locale:
+              locales = LOCALE_MAP.get(short)
+              if not locales:
                   print(f"::warning::Unmapped language '{short}' — skipped.")
                   continue
               if len(text) > 500:
                   print(f"::error::Release note for '{short}' is {len(text)} chars (Play max 500).")
                   sys.exit(1)
-              (out / f"whatsnew-{locale}").write_text(text)
-              print(f"whatsnew-{locale}: {len(text)} chars")
+              for locale in locales:
+                  (out / f"whatsnew-{locale}").write_text(text)
+                  print(f"whatsnew-{locale}: {len(text)} chars")
           EOF
 
       - name: Upload to Google Play
