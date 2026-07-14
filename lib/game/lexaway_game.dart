@@ -39,9 +39,8 @@ import 'world/world_generator.dart';
 import 'world/world_map.dart';
 import 'world/world_renderer.dart';
 
-/// Outcome of a single claw attempt, returned by [LexawayGame.startClawEncounter]
-/// and [LexawayGame.restartClawSession]. Carries the prize identity so the
-/// screen layer can show what the player won (and add it to their inventory).
+/// Outcome of a single claw attempt. Carries the prize identity so the
+/// screen layer can show and bank what the player won.
 class ClawAttemptResult {
   final bool won;
   final int spheresWon;
@@ -68,11 +67,9 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   String _fontFamily;
   String _locale;
 
-  /// The currently-rendered font family for in-game text. Updating this
-  /// forwards the change to the speech bubble so a Settings change is
-  /// picked up while the game is running. If [onLoad] hasn't completed
-  /// yet, the new value is stored and picked up when the bubble is
-  /// constructed there.
+  /// In-game text font family. Setting it forwards to the speech bubble so a
+  /// live Settings change applies; before [onLoad] the value is just stored
+  /// and picked up when the bubble is constructed.
   String get fontFamily => _fontFamily;
   set fontFamily(String value) {
     if (value == _fontFamily) return;
@@ -95,9 +92,8 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     SpeechMessages.load(value);
   }
 
-  /// Typed event bus for sibling systems. Constructed eagerly so any
-  /// component can subscribe inside its own `onLoad` without boot-order
-  /// surprises.
+  /// Typed event bus. Constructed eagerly so any component can subscribe in
+  /// its `onLoad` regardless of boot order.
   final GameEvents events = GameEvents();
 
   late final WorldMap _worldMap;
@@ -116,11 +112,9 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   late final SpeechBubble _speechBubble;
   late final MovementController _movementController;
 
-  /// Visual world subtree. Everything that renders sits under this so the
-  /// camera's zoom can be applied as a single scale-around-focus transform
-  /// (used by the in-world claw machine encounter — see [startClawEncounter]).
-  /// Logic-only controllers (event subscribers, persister, streamer) live on
-  /// the game directly so they aren't affected by the transform.
+  /// Visual world subtree. Everything rendered sits under this so camera zoom
+  /// applies as one scale-around-focus transform (see [startClawEncounter]).
+  /// Logic-only controllers live on the game directly, unaffected by it.
   late final PositionComponent _worldRoot;
 
   /// World map, exposed for read-only UI access (the minimap renders from
@@ -160,11 +154,9 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     _worldRoot = PositionComponent();
     add(_worldRoot);
 
-    // Replay previously-persisted extensions at their original seeds so
-    // _worldMap.segments matches the saved scroll offset before any
-    // components that read the map come online. [WorldStreamer.extend]
-    // is a no-op on the event bus while unmounted, so replay doesn't
-    // spuriously dirty the persister.
+    // Replay persisted extensions so _worldMap.segments matches the saved
+    // offset before any map readers come online. extend() is a no-op on the
+    // event bus while unmounted, so replay doesn't dirty the persister.
     _worldStreamer = WorldStreamer(
       worldMap: _worldMap,
       camera: _camera,
@@ -203,9 +195,8 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       ..priority = 1;
     _worldRoot.add(_creatureLayer);
 
-    // CoinManager shares the collectedCoins Set with the persister so its
-    // spawn loop can dedup against saved pickups; the persister owns the
-    // mutation lifecycle via its CoinCollected subscription.
+    // Shares the collectedCoins Set with the persister to dedup spawns; the
+    // persister owns mutation via its CoinCollected subscription.
     _coinManager = CoinManager(
       worldMap: _worldMap,
       camera: _camera,
@@ -268,12 +259,10 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       localeGetter: () => _locale,
     ));
     add(_worldStreamer);
-    // Persister is added AFTER coinManager so its CoinCollected handler
-    // runs second. CoinManager's handler reads the still-alive Coin's
-    // sprite state to spawn the fly effect; the persister then mutates
-    // collectedCoins. Reordering would still work today (sync emit, both
-    // handlers run before the next frame), but the trajectory would be
-    // first-frame race-prone — keep them in this order.
+    // Added AFTER coinManager so CoinCollected runs coinManager's handler
+    // first (it reads the still-alive Coin's sprite for the fly effect)
+    // before the persister mutates collectedCoins. Keep this order — the
+    // reverse is first-frame race-prone.
     add(_worldStatePersister);
 
     events.on<WorldExtended>().listen((_) => _loadNewBiomes());
@@ -282,17 +271,16 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     await SpeechMessages.load('en');
     if (locale != 'en') await SpeechMessages.load(locale);
 
-    // Persist the seed on first run. The persister isn't mounted yet so
-    // its per-frame dirty drain hasn't started — flush() writes directly.
+    // Persist the seed on first run; the persister isn't mounted yet, so
+    // flush() writes directly.
     if (saved == null) _worldStatePersister.flush();
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-    // Apply the camera zoom as a scale-about-focus transform on the world
-    // root. At zoom == 1 this is identity (offset zero, scale 1) — bit-
-    // identical to pre-refactor rendering.
+    // Camera zoom as a scale-about-focus transform. At zoom == 1 it's
+    // identity.
     final z = _camera.zoom;
     if (z == 1.0) {
       _worldRoot.scale.setAll(1.0);
@@ -350,12 +338,10 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
   // ─── Claw machine encounter ────────────────────────────────────────
 
-  /// Begin an in-world encounter with the cabinet at [itemIndex]. The
-  /// camera zooms into the cabinet, a [ClawSessionComponent] is mounted
-  /// onto it, and this future resolves once the player's attempt has
-  /// played out. The session components remain on-screen (zoomed in) so
-  /// the result splash can sit over them — call [endClawEncounter] to
-  /// zoom back out and tear the session down.
+  /// Begin an in-world encounter with the cabinet at [itemIndex]. Zooms in,
+  /// mounts a [ClawSessionComponent], and resolves once the attempt plays
+  /// out. Session stays on-screen (zoomed in) so the result splash can sit
+  /// over it — call [endClawEncounter] to zoom out and tear down.
   Future<ClawAttemptResult> startClawEncounter(
     int itemIndex, {
     double safeBottomInset = 0,
@@ -377,15 +363,11 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
           size.y / ClawCabinet.cabH,
         ) *
         0.85;
-    // Frame the cabinet so its bottom sits just above the bottom of the
-    // viewport (cabinet sky/parallax shows above; ground hides below).
-    // The world transform is `screen = focus + (world - focus) * z`, so
-    // for a desired screen anchor S of a world point P at zoom z:
-    //   focus = (S - P * z) / (1 - z)
-    // Anchor x: cabinet.center.x → screen center. Anchor y: cabinet
-    // bottom → screen bottom minus a small margin, plus an extra lift so
-    // the cabinet clears the home indicator / gesture bar (capped at 64px
-    // so larger safe areas don't push the cabinet too high).
+    // Frame the cabinet bottom just above the viewport bottom. Transform is
+    // `screen = focus + (world - focus) * z`, so for screen anchor S of world
+    // point P: focus = (S - P * z) / (1 - z).
+    // x: cabinet center → screen center. y: cabinet bottom → screen bottom
+    // minus a margin, plus a lift (capped 64px) to clear the gesture bar.
     const bottomMargin = 16.0;
     final extraLift = min(safeBottomInset, 64.0);
     final cabCenterX = cabinet.position.x + cabinet.size.x / 2;

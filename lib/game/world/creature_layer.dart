@@ -3,14 +3,13 @@ import 'biome_registry.dart';
 import 'scrolling_item_layer.dart';
 import 'world_map.dart';
 
-/// Streams ambient creatures from the pre-generated [WorldMap] as the player
-/// scrolls. Parallel to [WorldRenderer] but for animated critters rather
-/// than static scenery.
+/// Streams ambient creatures from the [WorldMap] as the player scrolls.
+/// Parallel to [WorldRenderer] but for animated critters, not static
+/// scenery.
 class CreatureLayer extends ScrollingItemLayer<Creature> {
-  /// Biomes whose creature sprite sheets have been pre-warmed into the
-  /// image cache. Tracked as a set (rather than a def map) because the
-  /// actual defs live on [BiomeRegistry] and are cheap to read on demand
-  /// — the only real work [_ensureBiome] does is the PNG load.
+  /// Biomes whose creature sheets are pre-warmed into the image cache. A
+  /// set, not a def map — defs live on [BiomeRegistry] and are cheap to
+  /// read; [_ensureBiome]'s real work is the PNG load.
   final Set<BiomeType> _loadedBiomes = {};
 
   CreatureLayer({required super.worldMap, required super.camera})
@@ -18,10 +17,8 @@ class CreatureLayer extends ScrollingItemLayer<Creature> {
           category: ItemCategory.creature,
           spawnMarginPx: 640,
           cullMarginPx: 128,
-          // Creatures mutate their worldX at runtime (flee, drift, etc.)
-          // so once one leaves the viewport, spawning a fresh copy at the
-          // PlacedItem's static coordinate would pop in wherever that
-          // coordinate now happens to be on-screen.
+          // Creatures mutate worldX at runtime (flee, drift), so re-spawning
+          // from the static PlacedItem coordinate would pop them in mid-view.
           cullPermanent: true,
         );
 
@@ -33,8 +30,8 @@ class CreatureLayer extends ScrollingItemLayer<Creature> {
     }
   }
 
-  /// Pre-warm every creature sheet for [biome] into Flame's image cache so
-  /// the first bunny into view doesn't stall on a sync PNG decode.
+  /// Pre-warm every creature sheet for [biome] so the first one into view
+  /// doesn't stall on a sync PNG decode.
   Future<void> _ensureBiome(BiomeType biome) async {
     if (_loadedBiomes.contains(biome)) return;
     final def = BiomeRegistry.get(biome);
@@ -44,16 +41,14 @@ class CreatureLayer extends ScrollingItemLayer<Creature> {
     _loadedBiomes.add(biome);
   }
 
-  /// Call when [WorldStreamer] extends the map into a biome that wasn't
-  /// present at startup. No-op in Phase 1 (grassland-only) but kept so the
-  /// wiring exists when Phase 2 adds new biomes.
+  /// Call when [WorldStreamer] extends the map into a biome absent at
+  /// startup.
   Future<void> ensureBiomeLoaded(BiomeType biome) => _ensureBiome(biome);
 
   @override
   void update(double dt) {
-    // Fleeing creatures can sprint off-screen faster than the cull margin
-    // catches up — mark them eagerly so they can't re-spawn during the
-    // in-flight frames. Idempotent; normal cull also marks them.
+    // Fleeing creatures can outrun the cull margin — mark eagerly so they
+    // can't re-spawn in the in-flight frames. Idempotent.
     for (final entry in activeItems.entries) {
       if (entry.value.isExcited) markCulled(entry.key);
     }

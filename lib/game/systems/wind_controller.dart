@@ -5,8 +5,7 @@ import 'package:flame/components.dart';
 import '../components/wind_lines.dart';
 import '../events.dart';
 
-/// Toggles [WindLines] on and off based on whether the dino is currently
-/// running. No `update()` — everything is event-driven.
+/// Toggles [WindLines] based on whether the dino is running.
 class WindController extends Component {
   StreamSubscription<GameEvent>? _sub;
   final WindLines _windLines;

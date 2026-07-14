@@ -36,13 +36,10 @@ abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
   /// long pause doesn't produce a frame spike.
   final int maxSpawnsPerFrame;
 
-  /// When true, any item that gets culled (or is proactively passed to
-  /// [markCulled]) is blacklisted from re-spawning for the rest of the
+  /// When true, culled items are blacklisted from re-spawning for the
   /// session. Required for entities whose on-screen `worldX` mutates away
-  /// from their static [PlacedItem.worldX] — otherwise, once they scroll
-  /// off, the still-static PlacedItem re-enters the spawn window and a
-  /// fresh copy pops in wherever the original coordinate now lies (mid-
-  /// screen for drifting creatures).
+  /// from their static [PlacedItem.worldX] — otherwise the still-static
+  /// PlacedItem re-enters the spawn window and a fresh copy pops in mid-view.
   final bool cullPermanent;
 
   /// Items currently on-screen, keyed by item index. Subclasses can read
@@ -99,15 +96,14 @@ abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
       spawned++;
     }
 
-    // Position & cull. Two-pass to avoid mutating activeItems mid-iteration.
-    // Order doesn't matter — Flame draws by component priority, not iteration
-    // order, and position updates are independent per item.
+    // Two-pass to avoid mutating activeItems mid-iteration. Order is
+    // irrelevant — Flame draws by priority and position updates are
+    // independent.
     final toRemove = <int>[];
     final viewportRight = game.size.x;
-    // Right-edge cull uses spawnMarginPx (not cullMarginPx) so freshly-spawned
-    // items in the right spawn window aren't instantly removed. The left edge
-    // can stay tight because static items only enter that zone after passing
-    // through view; the right edge sees fresh spawns directly.
+    // Right-edge cull uses spawnMarginPx (not cullMarginPx) so items freshly
+    // spawned in the right window aren't instantly removed; the left edge can
+    // stay tight since items only reach it after passing through view.
     for (final entry in activeItems.entries) {
       final item = entry.value;
       item.position.x = item.worldX - offset;

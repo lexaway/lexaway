@@ -17,7 +17,7 @@ class BubblePainter {
   static const int borderLeft = 4;
   static const int borderTop = 4;
   static const int borderRight = 4;
-  static const int borderBottom = 7; // extra room for the tail
+  static const int borderBottom = 7; // room for tail
 
   /// Tail size in pixels.
   static const int tailWidth = 5;
@@ -34,19 +34,18 @@ class BubblePainter {
     final fillPaint = Paint()..color = fill;
     final borderPaint = Paint()..color = border;
 
-    // Body rect (leaving room for tail below).
     const bodyLeft = 0;
     const bodyTop = 0;
     const bodyRight = width;
     const bodyBottom = height - tailHeight;
 
-    // Top edge (with 1px chamfer at corners)
+    // 1px chamfer at corners
     _hLine(canvas, borderPaint, bodyLeft + 1, bodyTop, bodyRight - 1);
     _hLine(canvas, borderPaint, bodyLeft + 1, bodyBottom - 1, bodyRight - 1);
     _vLine(canvas, borderPaint, bodyLeft, bodyTop + 1, bodyBottom - 1);
     _vLine(canvas, borderPaint, bodyRight - 1, bodyTop + 1, bodyBottom - 1);
 
-    // Main fill (inset by 1px from border)
+    // fill inset 1px from border
     canvas.drawRect(
       Rect.fromLTRB(
         (bodyLeft + 1).toDouble(),
@@ -70,33 +69,23 @@ class BubblePainter {
   }
 
   static void _drawTail(Canvas canvas, Paint fill, Paint border, int x, int y) {
-    // Draw a small triangular tail pointing down.
-    // Row by row, narrowing as it goes:
-    //
-    //  XFFFFX    (y+0: border left, fill, border right — connects to body)
-    //   XFFX     (y+1)
-    //    XX       (y+2)
-    //    X        (y+3: tip)
-
-    // Row 0: full width fill (already part of body), just add border sides
+    // Triangular tail narrowing to a tip (F=fill, X=border):
+    //  XFFFFX / XFFX / XX / X
     _pixel(canvas, border, x, y);
     for (var i = 1; i < tailWidth - 1; i++) {
       _pixel(canvas, fill, x + i, y);
     }
     _pixel(canvas, border, x + tailWidth - 1, y);
 
-    // Row 1
     _pixel(canvas, border, x + 1, y + 1);
     for (var i = 2; i < tailWidth - 2; i++) {
       _pixel(canvas, fill, x + i, y + 1);
     }
     _pixel(canvas, border, x + tailWidth - 2, y + 1);
 
-    // Row 2
     _pixel(canvas, border, x + 2, y + 2);
     _pixel(canvas, border, x + tailWidth - 3, y + 2);
 
-    // Row 3: tip
     _pixel(canvas, border, x + 2, y + 3);
   }
 

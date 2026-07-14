@@ -6,10 +6,8 @@ import '../components/speech_bubble.dart';
 import '../components/speech_messages.dart';
 import '../events.dart';
 
-/// Translates gameplay events into speech-bubble messages. Knows about
-/// [SpeechMessages] so that emitters don't have to — a sibling can
-/// fire `AnswerCorrect` or `IdleChatterTriggered` without understanding
-/// localization or message pools.
+/// Translates gameplay events into speech-bubble messages, so emitters
+/// don't need to know about [SpeechMessages], localization, or message pools.
 class DialogueController extends Component {
   StreamSubscription<GameEvent>? _sub;
   final SpeechBubble _bubble;

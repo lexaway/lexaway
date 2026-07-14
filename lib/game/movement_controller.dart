@@ -58,9 +58,8 @@ class MovementController extends Component {
         ? LexawayGame.walkTarget * _runDistanceMultiplier
         : LexawayGame.walkTarget;
     if (_isPaused) {
-      // Buffer the distance so [resume] picks it up — the dino shouldn't
-      // start walking through the claw cabinet just because the user kept
-      // answering vocab in the background.
+      // Buffer for [resume] — don't walk through the cabinet just because the
+      // user kept answering during the encounter.
       _pausedRemaining += distance;
       if (shouldRun) _pausedRunning = true;
       _events.emit(AnswerCorrect(streak, answer));

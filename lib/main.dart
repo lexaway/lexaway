@@ -121,19 +121,16 @@ class _LexawayAppState extends ConsumerState<LexawayApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Mirror the merged voice catalog into TtsManager so non-Riverpod
-    // playback paths see manifest-supplied voices. `fireImmediately` covers
-    // the initial baseline + any synchronously-available cached manifest.
+    // Mirror the merged voice catalog into TtsManager so non-Riverpod playback
+    // paths see manifest-supplied voices. `fireImmediately` covers the baseline
+    // + any synchronously-available cached manifest.
     ref.listenManual(voiceCatalogProvider, (_, next) {
       ref.read(ttsManagerProvider).setVoiceCatalog(next);
     }, fireImmediately: true);
-    // Keep the AudioManager SFX singleton in sync with the volume sliders.
-    // Subscribing here (not watching) instantiates the side-effect provider
-    // and keeps it alive for the whole app lifetime without forcing rebuilds.
+    // Subscribe (not watch) to instantiate the side-effect provider and keep it
+    // alive for the app lifetime without forcing rebuilds.
     ref.listenManual(audioManagerSyncProvider, (_, _) {});
-    // Refresh the notification queue on startup. Reads the current settings
-    // and schedules (or cancels) accordingly. Delayed by one frame so the
-    // provider has time to build from Hive.
+    // Delayed one frame so notifSettingsProvider has built from Hive first.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(ref.read(notifSettingsProvider.notifier).refresh());
     });

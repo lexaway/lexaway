@@ -70,9 +70,8 @@ class ClawEncounterState {
 /// over the zoomed view → continue zooms back out and emits
 /// [ClawMachineCompleted].
 ///
-/// Same shape as `TtsController`: owned by the screen's state, handed the
-/// screen's [ref] and an [isMounted] probe so async continuations can bail
-/// after unmount.
+/// Like `TtsController`: owned by the screen's state, handed [ref] and an
+/// [isMounted] probe so async continuations can bail after unmount.
 class ClawEncounterController extends ChangeNotifier {
   final LexawayGame game;
   final WidgetRef ref;

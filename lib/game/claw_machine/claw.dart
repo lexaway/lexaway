@@ -7,9 +7,8 @@ import '../lexaway_game.dart';
 import 'cabinet.dart';
 import 'claw_session.dart';
 
-/// The cable that hangs from the cabinet ceiling down to the top of the
-/// claw head. Reads each frame from the active session. Coloured to match
-/// the cream rod that hook_base.png draws above the spool bulb (the bulb
+/// Cable from the cabinet ceiling to the top of the claw head. Coloured to
+/// match the cream rod hook_base.png draws above the spool bulb (the bulb
 /// itself is the [ClawHeadComponent] slice).
 class CableComponent extends PositionComponent
     with HasGameReference<LexawayGame>, ZoomFaded {
@@ -35,9 +34,9 @@ class CableComponent extends PositionComponent
   }
 }
 
-/// The compact "spool" head — the pink bulb at the bottom of hook_base.png
-/// (the cream rod above it is drawn by [CableComponent]). The sheet is 2×,
-/// so the bulb lives in the 36×36 sub-rect below the rod.
+/// The "spool" head — pink bulb at the bottom of hook_base.png (the rod
+/// above it is [CableComponent]). Sheet is 2×, so the bulb lives in the
+/// 36×36 sub-rect below the rod.
 class ClawHeadComponent extends PositionComponent
     with HasGameReference<LexawayGame>, ZoomFaded {
   final ClawSessionComponent session;
@@ -79,11 +78,9 @@ class ClawHeadComponent extends PositionComponent
   }
 }
 
-/// One of the two claw prongs. Pivots around its top-center (the
-/// "shoulder") via [Anchor.topCenter]. The new art ships a mirrored pair
-/// (hook_left / hook_right), each already drawn for its side, so there's
-/// no horizontal flip and no separate open/closed frame — the prongs just
-/// splay out (open) or draw together (closed) by rotation alone.
+/// One of the two claw prongs. Pivots around its top-center "shoulder" via
+/// [Anchor.topCenter]. Art is a mirrored pair (hook_left / hook_right) with
+/// no open/closed frame — open/closed is rotation alone.
 class ClawArmComponent extends PositionComponent
     with HasGameReference<LexawayGame>, ZoomFaded {
   final ClawSessionComponent session;

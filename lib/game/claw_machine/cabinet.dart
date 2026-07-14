@@ -6,16 +6,12 @@ import 'package:flutter/painting.dart';
 
 import '../lexaway_game.dart';
 
-/// Cabinet-local geometry shared by every claw subcomponent. Lifted from
-/// the old standalone `ClawMachineGame` so positions stay pixel-for-pixel
-/// the same after the in-world refactor.
+/// Cabinet-local geometry shared by every claw subcomponent.
 class ClawCabinet {
   static const double cabW = 88;
   static const double cabH = 136;
   // Glass window bounds, measured from the opaque region of
-  // cabinet_mask.png (which marks the playable window): L9 T18 R78 B76 in
-  // the 88×136 art. Spheres and the claw live inside this rect; the
-  // exterior frame masks anything that leaks past the edges.
+  // cabinet_mask.png: L9 T18 R78 B76 in the 88×136 art.
   static const double glassTop = 18;
   static const double glassLeft = 9;
   static const double glassRight = 78;
@@ -32,9 +28,8 @@ class ClawCabinet {
   static const double clawDropY =
       glassFloorY - (headH - armOverlap) - armH;
   static const double captureRadius = 10;
-  // How far the claw must stay clear of the glass walls. Without this the
-  // player can drive the claw flush to the edge and the splayed prongs bleed
-  // out past the cabinet frame.
+  // Keeps the claw clear of the walls so splayed prongs don't bleed past
+  // the frame.
   static const double clawWallPadding = 6;
   static const double clawMinX = glassLeft + clawWallPadding;
   static const double clawMaxX = glassRight - clawWallPadding;
@@ -60,26 +55,19 @@ class ClawCabinet {
   static const double starH = 12;
 }
 
-/// Shapes the raw [LexawayGame.zoomBlend] (which is linear in zoom) into the
-/// alpha used to fade the cabinet and its interior in. An ease-out-cubic
-/// curve front-loads the fade: the art rushes toward opaque early in the
-/// zoom, then eases the last stretch — so the machine reads as "here" almost
-/// as soon as the transition starts. Used by both [ExteriorComponent] and
-/// [ZoomFaded] so the cabinet and its guts stay in perfect lockstep.
+/// Ease-out-cubic mapping of [LexawayGame.zoomBlend] to fade alpha —
+/// front-loads the fade so the cabinet reads as "here" early. Shared by
+/// [ExteriorComponent] and [ZoomFaded] so they stay in lockstep.
 double cabinetFadeAlpha(double blend) {
   final t = blend.clamp(0.0, 1.0);
   final inv = 1.0 - t;
   return 1.0 - inv * inv * inv;
 }
 
-/// Fades a component's entire render output in and out with the camera's
-/// world↔encounter zoom blend. The big [ExteriorComponent] sprite already
-/// crossfades on [LexawayGame.zoomBlend]; the interior pieces (claw, arms,
-/// cable, door, star, controls, spheres) used to render at full alpha the
-/// instant they mounted, so they "popped in" while the cabinet was still
-/// fading. Mixing this in makes them ride the same blend — at blend 0 they
-/// don't draw at all, at blend 1 they're fully opaque, and in between the
-/// whole subtree is composited through a single opacity layer.
+/// Fades a component's whole render subtree with the camera zoom blend, so
+/// interior pieces ride the same fade as the exterior instead of popping in
+/// at full alpha the instant they mount. Composited through one opacity
+/// layer.
 mixin ZoomFaded on PositionComponent {
   double get _zoomBlend {
     final g = findGame();
@@ -103,15 +91,13 @@ mixin ZoomFaded on PositionComponent {
   }
 }
 
-/// Cabinet exterior — drawn ON TOP of all play-area content (spheres,
-/// claws, head, captured sphere) so the painted frame masks anything
-/// that would otherwise leak past the window edges. The window cutout
-/// in cabinet.png is transparent, so the playfield shows through it.
+/// Cabinet exterior — drawn ON TOP of all play-area content so the painted
+/// frame masks anything leaking past the window edges (the cutout in
+/// cabinet.png is transparent, so the playfield shows through).
 ///
-/// Renders two variants and crossfades between them based on the camera's
-/// zoom blend: a chunky low-detail sprite for world view (zoom == 1) and
-/// the full detailed cabinet for encounter view (zoom > 1). Both stretch
-/// to the same 88×136 footprint so the ground anchor and hitbox stay put.
+/// Crossfades on zoom blend between a chunky low-detail sprite (world view)
+/// and the full cabinet (encounter view). Both stretch to the same 88×136
+/// footprint so the ground anchor and hitbox stay put.
 class ExteriorComponent extends PositionComponent
     with HasGameReference<LexawayGame> {
   late final Image _bigImage;
@@ -140,10 +126,8 @@ class ExteriorComponent extends PositionComponent
     final blend = game.zoomBlend;
     final dst = Offset.zero & size.toSize();
     if (blend < 1.0) {
-      // Fit the little sprite inside the cabinet footprint at its native
-      // aspect ratio, anchored to the bottom so it sits on the ground.
-      // Stretching it to fill 88×136 distorts the artwork (the source is
-      // a 36×36 square).
+      // Fit at native aspect ratio, bottom-anchored — the source is a
+      // 36×36 square, so stretching to 88×136 would distort it.
       final imgW = _littleImage.width.toDouble();
       final imgH = _littleImage.height.toDouble();
       final scale = min(size.x / imgW, size.y / imgH);
@@ -152,8 +136,8 @@ class ExteriorComponent extends PositionComponent
       final littleDst = Rect.fromLTWH((size.x - w) / 2, size.y - h, w, h);
       _littlePaint.color =
           Color.fromRGBO(255, 255, 255, 1.0 - cabinetFadeAlpha(blend));
-      // Mirror across the vertical center axis so the joystick lands on the
-      // right, matching the big cabinet (cabinet.png) it crossfades into.
+      // Mirror so the joystick lands on the right, matching the big cabinet
+      // it crossfades into.
       canvas.save();
       canvas.translate(littleDst.center.dx, 0);
       canvas.scale(-1, 1);
@@ -183,11 +167,9 @@ class ExteriorComponent extends PositionComponent
   }
 }
 
-/// Subtle diagonal highlight over the window cutout. Renders a gradient
-/// then composites the artist's `cabinet_mask.png` (opaque pixels mark
-/// the window region) with [BlendMode.dstIn], so the gradient survives
-/// only where the mask is opaque. Saves us from hand-tuning the window
-/// rect in code.
+/// Diagonal highlight over the window cutout. A gradient masked by
+/// `cabinet_mask.png` via [BlendMode.dstIn] survives only where the mask
+/// is opaque, avoiding a hand-tuned window rect in code.
 class GlassShineComponent extends PositionComponent
     with HasGameReference<LexawayGame>, ZoomFaded {
   late final Image _maskImage;
@@ -240,9 +222,8 @@ class GlassShineComponent extends PositionComponent
   }
 }
 
-/// Cosmetic star on the console, nestled between the joystick and the drop
-/// button. Purely decorative — drawn above the exterior so it reads as
-/// part of the control panel.
+/// Cosmetic star between the joystick and drop button. Drawn above the
+/// exterior so it reads as part of the control panel.
 class ConsoleStarComponent extends PositionComponent
     with HasGameReference<LexawayGame>, ZoomFaded {
   late final Sprite _star;

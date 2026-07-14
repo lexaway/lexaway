@@ -24,7 +24,6 @@ class WorldRenderer extends ScrollingItemLayer<Entity> {
 
   @override
   Future<void> onLoad() async {
-    // Pre-load entity sprites for every biome present in the world.
     final biomes = worldMap.segments.map((s) => s.biome).toSet();
     for (final biome in biomes) {
       await _loadBiomeDefs(biome);

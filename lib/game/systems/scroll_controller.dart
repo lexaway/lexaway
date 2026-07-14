@@ -10,11 +10,8 @@ import '../walk_state.dart';
 import '../world/world_map.dart';
 
 /// Owns anything that scrolls: parallax velocity, camera scroll speed, and
-/// gentle cloud drift. Subscribes to walk events and translates them into
-/// parallax base-velocity + camera scroll-speed changes.
-///
-/// Also detects biome boundaries and triggers parallax crossfades via
-/// [BiomeParallax.transitionTo].
+/// cloud drift. Also detects biome boundaries and triggers parallax
+/// crossfades via [BiomeParallax.transitionTo].
 class ScrollController extends Component with HasGameReference<LexawayGame> {
   StreamSubscription<GameEvent>? _sub;
 

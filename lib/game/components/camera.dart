@@ -4,10 +4,9 @@ import 'package:flame/components.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/foundation.dart';
 
-/// Single source of truth for "where in the world are we?". Owns the world
-/// scroll offset, the per-frame scroll speed, and the world zoom (used by
-/// in-world encounters like the claw machine to focus the camera on a
-/// world entity without dimming the rest of the scene).
+/// Single source of truth for world position. Owns scroll offset, scroll
+/// speed, and zoom (used by in-world encounters like the claw machine to
+/// focus on an entity without dimming the scene).
 class Camera extends Component {
   final ValueNotifier<double> scrollNotifier;
   final ValueNotifier<double> zoomNotifier;
@@ -33,10 +32,9 @@ class Camera extends Component {
 
   set scrollSpeed(double speed) => _scrollSpeed = speed;
 
-  /// Crossfade factor for sprites that swap between a world-view variant
-  /// and a zoomed-encounter variant. 0 == fully world (zoom == 1), 1 ==
-  /// fully encounter (zoom == the most recent non-1 target). Tracks the
-  /// live zoom value so the blend rides whatever curve the tween uses.
+  /// Crossfade factor for sprites swapping between world and zoomed-encounter
+  /// variants. 0 = fully world (zoom 1), 1 = fully encounter (zoom == most
+  /// recent non-1 target). Derived from live zoom so it rides the tween curve.
   double get zoomBlend {
     if (_encounterZoom == 1.0) return 0;
     return ((zoom - 1.0) / (_encounterZoom - 1.0)).clamp(0.0, 1.0);

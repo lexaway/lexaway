@@ -267,12 +267,10 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                     onRetry: () => ref.invalidate(manifestProvider),
                   ),
                   data: (m) {
-                    // Sort: active pack first, then other downloaded packs,
-                    // then undownloaded. Tie-break on the manifest index so
-                    // packs within each group stay in remote order even though
-                    // List.sort isn't guaranteed stable. Surfaces what the
-                    // user actually plays at the top so swapping between packs
-                    // avoids scrolling.
+                    // Active pack first, then downloaded, then the rest — so
+                    // the played pack is at the top and swapping avoids
+                    // scrolling. Tie-break on manifest index since List.sort
+                    // isn't guaranteed stable.
                     final source = m.packsFor(nativeLang);
                     int rank(PackInfo p) {
                       if (p.packId == activePackId) return 0;

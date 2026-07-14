@@ -10,15 +10,14 @@ class SpeechBubble extends PositionComponent {
   static const double _padding = 2; // inner padding at native pixel res
   static const double _showDuration = 2.5;
 
-  /// The component the bubble hovers over. Injected so the bubble doesn't
-  /// need to know about `game.player` (or anything else in the game tree).
+  /// Component the bubble hovers over. Injected so the bubble needn't know
+  /// about `game.player` or the rest of the game tree.
   final PositionComponent follow;
 
   String _fontFamily;
 
-  /// The currently-rendered font family. Setting this rebuilds the paragraph
-  /// in place so a font swap from Settings is reflected mid-game without
-  /// waiting for the next [show] call.
+  /// Rendered font family. Setting it rebuilds the paragraph in place so a
+  /// Settings font swap shows immediately, not on the next [show] call.
   String get fontFamily => _fontFamily;
   set fontFamily(String value) {
     if (value == _fontFamily) return;
@@ -117,7 +116,7 @@ class SpeechBubble extends PositionComponent {
   void update(double dt) {
     super.update(dt);
 
-    // Track the follow — nudged right so the tail sits under its head.
+    // Nudged right so the tail sits under the follow's head.
     position = Vector2(
       follow.position.x + follow.size.x * 0.3,
       follow.position.y - size.y + follow.size.y * 0.1,
@@ -134,7 +133,7 @@ class SpeechBubble extends PositionComponent {
   void render(ui.Canvas canvas) {
     if (!_visible || _text.isEmpty) return;
 
-    // Draw at native pixel resolution, then scale up for crunch.
+    // Draw at native res, then scale up for crunch.
     canvas.save();
     canvas.scale(_scale);
 

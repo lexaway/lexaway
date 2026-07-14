@@ -5,16 +5,13 @@ import '../world/scrolling_item_layer.dart';
 import '../world/world_map.dart';
 import 'claw_machine.dart';
 
-/// Materializes claw machines from the pre-generated [WorldMap] as the
-/// player scrolls. Mirrors [CoinManager], with one twist: machines are
-/// marked "used" on [ClawMachineCompleted] (whether the player won, lost,
-/// or declined the prompt) so they never re-spawn for the rest of the
-/// session — and the persister writes that set to disk so they don't
-/// re-spawn across restarts either.
+/// Materializes claw machines from the [WorldMap] as the player scrolls.
+/// Mirrors [CoinManager]; machines are marked "used" on
+/// [ClawMachineCompleted] (win, lose, or decline) so they never re-spawn.
+/// The persister writes that set to disk, deduping across restarts too.
 class ClawMachineManager extends ScrollingItemLayer<ClawMachine> {
-  /// Indices already used this run. Shared with the persister, exactly like
-  /// [CoinManager.collectedCoins] — the persister owns mutation, this layer
-  /// reads it during spawn to dedup.
+  /// Indices used this run, shared with the persister (which owns mutation);
+  /// this layer reads it during spawn to dedup. Like [CoinManager.collectedCoins].
   final Set<int> usedClawMachines;
 
   final GameEvents _events;
@@ -52,10 +49,9 @@ class ClawMachineManager extends ScrollingItemLayer<ClawMachine> {
   void _handle(GameEvent event) {
     switch (event) {
       case ClawMachineCompleted(:final itemIndex):
-        // Pull the cabinet off-screen immediately so the dino isn't blocked
-        // by a still-colliding hitbox after the encounter resolves. The
-        // persister writes itemIndex into [usedClawMachines] — shared
-        // mutable Set — so this layer's spawn loop dedups across restarts.
+        // Cull immediately so a still-colliding hitbox doesn't block the dino
+        // after the encounter resolves. The persister writes itemIndex into
+        // the shared [usedClawMachines] set for restart dedup.
         markCulled(itemIndex);
         activeItems.remove(itemIndex)?.removeFromParent();
       default:

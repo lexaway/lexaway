@@ -7,19 +7,17 @@ import '../lexaway_game.dart';
 import '../world/biome_registry.dart';
 import '../world/world_map.dart';
 
-/// Manages per-biome parallax backgrounds with crossfade transitions.
+/// Per-biome parallax backgrounds with crossfade transitions.
 ///
-/// Holds preloaded [Parallax] objects keyed by [BiomeType]. When the active
-/// biome changes, the old parallax fades out while the new one fades in over
-/// [_fadeDuration] seconds. Outside of transitions, the active parallax is
-/// rendered directly with no saveLayer overhead.
+/// Holds preloaded [Parallax] keyed by [BiomeType], crossfading over
+/// [_fadeDuration]. Outside transitions the active parallax renders directly,
+/// avoiding saveLayer overhead.
 class BiomeParallax extends PositionComponent
     with HasGameReference<LexawayGame> {
   static const double _fadeDuration = 1.5;
 
-  /// Initial scroll position used to pick the correct starting biome.
-  /// Passed in from the saved game state so the parallax matches the
-  /// player's actual location, not always the first segment.
+  /// Scroll position for picking the starting biome, from saved state so the
+  /// parallax matches the player's actual location, not the first segment.
   final double initialScrollOffset;
 
   final WorldMap worldMap;
@@ -71,7 +69,7 @@ class BiomeParallax extends PositionComponent
       _outgoing = null;
     }
 
-    // Carry over the current scroll velocity so the new parallax moves in sync.
+    // Carry scroll velocity so the new parallax moves in sync.
     if (_active != null) {
       next.baseVelocity.setFrom(_active!.baseVelocity);
     }

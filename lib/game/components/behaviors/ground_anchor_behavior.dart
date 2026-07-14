@@ -4,10 +4,8 @@ import 'creature_behavior_component.dart';
 /// Pins the creature's feet to the ground line. Runs in [onLoad] (awaited
 /// by [Creature.onLoad]) so `position.y` is correct on the first frame.
 ///
-/// [footPadding] is the number of transparent source pixels below the
-/// creature's feet in its sprite frame. Multiplied by the parent's sprite
-/// scale and subtracted so the visible feet sit on the ground instead of
-/// hovering.
+/// [footPadding] (transparent source pixels below the feet) is scaled and
+/// subtracted so the visible feet sit on the ground rather than hovering.
 class GroundAnchorBehavior extends CreatureBehaviorComponent {
   final double footPadding;
 

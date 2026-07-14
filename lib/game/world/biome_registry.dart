@@ -22,7 +22,7 @@ class BiomeRegistry {
     ],
     footstepTerrain: Terrain.grass,
     features: [
-      // Bushes — everywhere, the bread and butter of grassland foliage.
+      // Bushes — dense, everywhere.
       ScatterFeature(
         entityName: 'bush',
         noiseScale: 0.04,
@@ -85,10 +85,9 @@ class BiomeRegistry {
         maxGapTiles: 45,
         noiseSeedOffset: 300,
       ),
-      // Flower meadow — a dense patch of mingling wildflowers, all four colors
-      // sharing the same region so they interleave naturally instead of
-      // forming mono-color blobs. `allowChildOverlap` lets colors sit on
-      // adjacent tiles; scatters may still place inside (non-exclusive).
+      // Flower meadow — four colors in one region so they interleave instead
+      // of forming mono-color blobs. `allowChildOverlap` lets colors sit on
+      // adjacent tiles; non-exclusive, so scatters may place inside.
       RegionFeature(
         kind: 'flower_meadow',
         minSpacingTiles: 40,
@@ -106,7 +105,6 @@ class BiomeRegistry {
         ],
       ),
       // Rest area — vending machine, bench, trash bin in a shuffled cluster.
-      // Whimsically out of place in a meadow, which is the whole charm.
       GroupFeature(
         kind: 'rest_area',
         children: ['vending_machine', 'bench', 'trash_bin'],
@@ -190,9 +188,8 @@ class BiomeRegistry {
     ],
     footstepTerrain: Terrain.dirt,
     features: [
-      // Piers — exclusive coastal platforms; their footprints are exported to
-      // `WorldSegment.pierZones` so the terrain renderer can swap tiles.
-      // No entity children for now; the pier is purely a terrain feature.
+      // Piers — exclusive; footprints exported to `WorldSegment.pierZones`
+      // so the terrain renderer can swap tiles. No children; terrain-only.
       RegionFeature(
         kind: 'pier',
         minSpacingTiles: 15,
@@ -248,7 +245,7 @@ class BiomeRegistry {
           RegionChild(entityName: 'flower_blue', weight: 0.20, minGapTiles: 1),
         ],
       ),
-      // Rest area — beach concession vibes between the palms.
+      // Rest area.
       GroupFeature(
         kind: 'rest_area',
         children: ['vending_machine', 'bench', 'trash_bin'],
@@ -261,7 +258,6 @@ class BiomeRegistry {
     maxCoinGapTiles: 10,
     diamondChance: 0.15,
     clusterChance: 0.25,
-    // Distant ocean waves bed the whole coast.
     ambientLoop: 'audio/ambient_tropics.wav',
   );
 
@@ -278,7 +274,7 @@ class BiomeRegistry {
     ],
     footstepTerrain: Terrain.snow,
     features: [
-      // Snowy pines — light blue conifers, the iconic winter silhouette.
+      // Snowy pines.
       ScatterFeature(
         entityName: 'snow_pine',
         noiseScale: 0.02,
@@ -332,7 +328,7 @@ class BiomeRegistry {
         maxGapTiles: 45,
         noiseSeedOffset: 500,
       ),
-      // Rest area — a vending machine in the snow, because absurd is delightful.
+      // Rest area.
       GroupFeature(
         kind: 'rest_area',
         children: ['vending_machine', 'bench', 'trash_bin'],
@@ -395,7 +391,7 @@ class BiomeRegistry {
     // Leafy forest floor reads closest to grass rustle.
     footstepTerrain: Terrain.grass,
     features: [
-      // Orange autumn pines — the signature tree, clumpy groves.
+      // Orange autumn pines — clumpy groves.
       ScatterFeature(
         entityName: 'autumn_tree',
         noiseScale: 0.02,
@@ -449,7 +445,7 @@ class BiomeRegistry {
         maxGapTiles: 45,
         noiseSeedOffset: 500,
       ),
-      // Rest area — a vending machine among the falling leaves.
+      // Rest area.
       GroupFeature(
         kind: 'rest_area',
         children: ['vending_machine', 'bench', 'trash_bin'],

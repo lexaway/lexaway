@@ -1,9 +1,7 @@
-/// English display names for flag collectibles, keyed by ISO 3166-1 alpha-2
-/// code. Intentionally a curated subset — every code present in
-/// `assets/flags/` not listed here falls back to its uppercase code (handled
-/// in [CollectibleRegistry]). Easy to extend; localization is a follow-up.
+/// English flag display names, keyed by ISO 3166-1 alpha-2 code. Curated
+/// subset — codes in `assets/flags/` but absent here fall back to their
+/// uppercase code (see [CollectibleRegistry]).
 const Map<String, String> flagDisplayNames = {
-  // Major learning-language flags
   'us': 'United States',
   'gb': 'United Kingdom',
   'fr': 'France',

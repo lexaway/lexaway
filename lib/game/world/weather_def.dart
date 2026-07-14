@@ -1,12 +1,10 @@
-/// Declarative config for a "stuff falling from the sky" effect — snow,
-/// sakura petals, fireflies, dust motes, anything that's a small drifting
-/// sprite. Held by [BiomeDefinition.weather] so a biome opts in by adding
-/// one line to its registry entry.
+/// Declarative config for a falling-sky effect (snow, petals, fireflies,
+/// motes). Held by [BiomeDefinition.weather] so a biome opts in with one
+/// registry line.
 ///
-/// Field types are kept primitive (String/int/double) so the surrounding
-/// biome literal stays `const`-constructible — Flame's [Vector2] is mutable
-/// and can't appear in const context, matching the rationale on
-/// [CreatureSpriteDef].
+/// Fields stay primitive so the biome literal stays `const`-constructible —
+/// Flame's mutable [Vector2] can't appear in const context (same rationale
+/// as [CreatureSpriteDef]).
 class WeatherDef {
   /// Sprite sheet path relative to `assets/images/`. Expected layout: a
   /// horizontal strip of [frameCount] frames, each [frameWidth] x [frameHeight].
@@ -29,8 +27,7 @@ class WeatherDef {
   final double maxFallSpeed;
 
   /// Horizontal sway: `x += sin(t * driftFrequency + phase) * driftAmplitude * dt`.
-  /// Pure sin-wave, no coupling to player run speed (that would conflict
-  /// visually with [WindLines], which already shows running motion).
+  /// No coupling to run speed — that's [WindLines]'s job and would clash.
   final double driftAmplitude;
   final double driftFrequency;
 
@@ -42,19 +39,15 @@ class WeatherDef {
   /// pixel-art chunky 1:1, or fractional for "distant" specks.
   final double scale;
 
-  /// Noise frequency in *tiles* (16 logical px each) for varying density
-  /// across the biome — small values = broad weather "fronts", larger values
-  /// = patchy gusts. `0` disables variation and locks intensity at
-  /// [maxIntensity]. Heaviness modulates visible flake count and a small
-  /// fraction of fall speed, so the biome reads as light flurries in some
-  /// stretches and thicker squalls in others.
+  /// Density-variation noise frequency in tiles (16 px each) — small = broad
+  /// fronts, large = patchy gusts. `0` disables variation and locks intensity
+  /// at [maxIntensity]. Modulates flake count and a bit of fall speed.
   final double intensityNoiseScale;
 
-  /// Intensity range when noise is active. The active sample is mapped into
-  /// `[minIntensity, maxIntensity]` and gates per-particle visibility. Low
-  /// values aren't a linear "fewer flakes" — most flakes have low visibility
-  /// thresholds, so e.g. `0.15` still shows a sparse drift, while `0` lets
-  /// noise troughs read as completely clear sky. `1.0` reveals the full pool.
+  /// Intensity range when noise is active; the sample maps into
+  /// `[minIntensity, maxIntensity]` and gates per-particle visibility. Not
+  /// linear — most flakes have low thresholds, so `0.15` still drifts sparse
+  /// while `0` reads as clear sky and `1.0` reveals the full pool.
   final double minIntensity;
   final double maxIntensity;
 

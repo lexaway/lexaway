@@ -23,8 +23,7 @@ class EggSelectionScreen extends ConsumerStatefulWidget {
 
 class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
     with TickerProviderStateMixin {
-  /// The character names are chosen once; switching gender keeps the same names
-  /// but swaps the sprite set.
+  /// Chosen once; gender swaps keep the names but swap the sprite set.
   late List<String> _eggNames;
   late List<CharacterInfo> _eggs;
   final Map<int, EggPreviewGame> _games = {};
@@ -137,7 +136,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
       _hatching = true;
     });
 
-    // Stop all egg shakes (reset to 0 so eggs aren't stuck mid-tilt)
+    // Reset to 0 so eggs aren't stuck mid-tilt.
     for (final c in _shakeControllers) {
       c
         ..stop()
@@ -158,7 +157,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
     final character = _eggs[_selected!];
     ref.read(characterProvider(lang).notifier).set(character.key);
 
-    // Brief pause to admire the new dino, then go
+    // Brief pause to admire the new dino before navigating.
     Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) context.go('/game');
     });
@@ -218,9 +217,9 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                       final shouldFade = _selected != null && !isSelected;
 
                       const triad = [
-                        Alignment(0, -0.35), // top centre
-                        Alignment(-0.45, 0.3), // bottom left
-                        Alignment(0.45, 0.3), // bottom right
+                        Alignment(0, -0.35),
+                        Alignment(-0.45, 0.3),
+                        Alignment(0.45, 0.3),
                       ];
                       final alignment = _hatching && isSelected
                           ? Alignment.center

@@ -30,12 +30,10 @@ Future<String> ttsUrl(String path) async {
   return '$_resolvedTtsBase/$path';
 }
 
-/// Probes each base URL with a HEAD request. Returns the first that responds
-/// with a non-error status. Falls through on definitive failures (HTTP 5xx,
-/// DNS resolution errors); on timeout, sticks with the URL being probed
-/// since a slow primary is still more likely to work than a non-existent
-/// fallback. If every URL fails definitively, returns the last as a final
-/// fallback so callers always get *something* to attempt.
+/// HEAD-probes each base URL, returning the first with a non-error status.
+/// Definitive failures (5xx, DNS) fall through to the next; a timeout sticks
+/// with the current URL (a slow primary beats a non-existent fallback). If all
+/// fail definitively, returns the last so callers always have something to try.
 Future<String> _probe(List<String> baseUrls) async {
   for (var i = 0; i < baseUrls.length; i++) {
     try {

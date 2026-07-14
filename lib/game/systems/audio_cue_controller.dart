@@ -7,10 +7,6 @@ import '../components/coin.dart' show CoinType;
 import '../events.dart';
 
 /// Listens to gameplay events and plays the matching SFX.
-///
-/// Pure event consumer — no `game.*` reach-through, no `update()`.
-/// `AudioManager` is a singleton so this system doesn't even need a
-/// reference to it, just the events stream.
 class AudioCueController extends Component {
   StreamSubscription<GameEvent>? _sub;
   final GameEvents _events;
@@ -39,9 +35,8 @@ class AudioCueController extends Component {
       case AnswerWrong():
         audio.playWrong();
       case StepTaken(:final terrain):
-        // One chirp per step event regardless of count — matches the
-        // previous behavior where `finishMovement` skipped ahead without
-        // spamming footstep sounds in the same frame.
+        // One chirp per step event regardless of count, so skip-ahead
+        // movement doesn't spam footstep sounds in the same frame.
         audio.playFootstep(terrain: terrain);
       case CoinCollected(:final type):
         if (type == CoinType.diamond) {
@@ -50,8 +45,6 @@ class AudioCueController extends Component {
           audio.playCoin();
         }
       case IdleChatterTriggered():
-        // The dino mutters to itself after a long idle — give the bubble a
-        // little voice blip.
         audio.playVoice();
       default:
         break;

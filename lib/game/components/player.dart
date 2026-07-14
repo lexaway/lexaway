@@ -65,17 +65,14 @@ class Player extends SpriteAnimationGroupComponent<DinoAnim>
     current = DinoAnim.idle;
     size = Vector2.all(_spriteSize * _scale);
 
-    // Stand on the ground, 1/4 from left edge
-    // Sprite has ~3px transparent padding below feet, so nudge down
+    // 1/4 from left; +3px nudges feet down past sprite's transparent padding
     final groundTop = game.size.y * LexawayGame.groundLevel;
     position = Vector2(game.size.x * 0.25, groundTop - size.y + 3 * _scale);
 
-    // Crispy pixel art, no blur
     paint = Paint()..filterQuality = FilterQuality.none;
 
-    // Hitbox — trimmed to the dino's body, skipping transparent padding.
-    // Sprite is 24×24 at _scale; body is roughly 14×18 centered horizontally,
-    // offset 3px from top (head starts there), 3px transparent at bottom.
+    // Hitbox trimmed to the body (~14×18 in the 24×24 frame), skipping the
+    // transparent padding: 3px top, 3px bottom.
     add(
       RectangleHitbox(
         position: Vector2(5 * _scale, 3 * _scale),

@@ -59,7 +59,7 @@ class WindLines extends Component with HasGameReference<LexawayGame> {
 
   _WindLine _spawn(double scale) {
     final groundTop = game.size.y * LexawayGame.groundLevel;
-    // Spawn in the upper portion of the scene (above ground)
+    // keep above ground
     final y = 20 + _rng.nextDouble() * (groundTop - 40);
     final w = (_minWidth + _rng.nextDouble() * (_maxWidth - _minWidth)) * scale;
     final x = game.size.x + _rng.nextDouble() * 40;

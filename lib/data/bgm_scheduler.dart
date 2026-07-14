@@ -9,22 +9,17 @@ import 'music_manager.dart';
 
 /// Decides which background track plays right now.
 ///
-/// On menus we loop the bundled main theme. During gameplay we maintain a
-/// runtime catalog of [ResolvedTrack]s sourced from whichever music packs
-/// the user has downloaded — picking biome-matched tracks for the current
-/// biome, falling back to "filler" tracks (empty `biomes` list) when no
-/// match is available. When the catalog is empty (no music pack installed),
-/// gameplay is silent — the main theme is reserved for menus.
+/// Menus loop the bundled main theme. Gameplay picks from a runtime catalog of
+/// [ResolvedTrack]s (downloaded music packs), preferring biome-matched tracks
+/// and falling back to fillers (empty `biomes`). Empty catalog → gameplay is
+/// silent; the main theme is menus-only.
 class BgmScheduler {
-  /// Bundled main-theme identifier and source. Always playable, no download
-  /// required. Plays on menus only — gameplay without a music pack installed
-  /// stays silent.
+  /// Bundled main theme — always playable, menus only.
   static const String mainThemeId = 'bgm/bgm_main_theme.m4a';
   static final Source _mainThemeSource = AssetSource(mainThemeId);
 
-  /// Minimum time between biome-driven rerolls. Without this, logging in a
-  /// few steps from a biome edge — or crossing two narrow zones back to
-  /// back — would yank the track before it had a chance to breathe.
+  /// Min time between biome-driven rerolls — stops back-to-back boundaries from
+  /// yanking a track before it can breathe.
   static const Duration _biomeRerollCooldown = Duration(seconds: 60);
 
   final BgmService service;
@@ -44,18 +39,14 @@ class BgmScheduler {
     });
   }
 
-  /// Replace the gameplay catalog. Called by the Riverpod wiring whenever
-  /// the installed music packs change.
+  /// Replace the gameplay catalog (installed music packs changed).
   ///
-  /// In gameplay we're conservative about yanking the playing track — letting
-  /// it finish naturally feels less disruptive than a hard cut on every pack
-  /// swap. But two cases force a reroll:
-  ///   1. The currently-playing track was just removed (pack uninstalled
-  ///      mid-gameplay) — its file is gone from disk, so anything that
-  ///      retries playback (volume unmute, app resume) would fail silently.
-  ///   2. Nothing is currently playing in gameplay and the catalog is now
-  ///      non-empty — covers the user just installed a pack mid-gameplay,
-  ///      and any other "no track + tracks available" state self-heals.
+  /// Normally we let the playing track finish rather than hard-cut on a pack
+  /// swap. Two cases force a reroll:
+  ///   1. The playing track was removed (pack uninstalled) — its file is gone,
+  ///      so retried playback (unmute, resume) would fail silently.
+  ///   2. Nothing playing but catalog now non-empty — pack installed
+  ///      mid-gameplay; also self-heals any "no track + tracks available" state.
   void setCatalog(List<ResolvedTrack> tracks) {
     _catalog = tracks;
     if (!_inGameplay) return;
@@ -70,28 +61,22 @@ class BgmScheduler {
     if (tracks.isNotEmpty) _rollNextTrack();
   }
 
-  /// Play the menu/title theme (looping). Clears the gameplay track so the
-  /// next `/game` entry picks fresh — keeps "fresh session" semantics if the
-  /// user uninstalled a music pack and is starting over.
+  /// Play the looping menu theme. Clears the gameplay track so the next
+  /// gameplay entry picks fresh.
   void startMain() {
     _inGameplay = false;
     _currentGameplayTrack = null;
     service.playLoop(mainThemeId, _mainThemeSource);
   }
 
-  /// Enter gameplay mode and pick a fresh track. With a populated catalog,
-  /// picks a one-shot from the biome-appropriate pool. With an empty catalog
-  /// (no music pack installed), gameplay is silent.
+  /// Enter gameplay mode and pick a fresh track. Empty catalog → silent.
   void startGameplay() {
     _inGameplay = true;
     _rollNextTrack();
   }
 
-  /// Player crossed a biome boundary — reroll, the boundary is the cue.
-  /// Suppressed if we just swapped within [_biomeRerollCooldown] so a fresh
-  /// track gets time to breathe before another boundary preempts it. Also a
-  /// no-op when no music pack is installed (catalog empty) — the main theme
-  /// is already a single looping track.
+  /// Biome boundary is the reroll cue. Suppressed within [_biomeRerollCooldown]
+  /// of the last swap. No-op with an empty catalog.
   void onBiomeChanged(BiomeType current) {
     _currentBiome = current;
     if (!_inGameplay) return;
@@ -110,8 +95,7 @@ class BgmScheduler {
 
   void _rollNextTrack() {
     if (_catalog.isEmpty) {
-      // No pack installed — gameplay is silent. Stop whatever was playing
-      // (likely the main theme that carried over from the menu).
+      // No pack installed — silent. Stop whatever carried over from the menu.
       _currentGameplayTrack = null;
       service.stop();
       return;
@@ -128,11 +112,9 @@ class BgmScheduler {
     );
   }
 
-  /// Build a pool of candidates for the current biome and pick one at random,
-  /// avoiding the currently-playing track when possible. Biome-matched tracks
-  /// share the pool with fillers — abundance favors biome matches naturally
-  /// (more tagged tracks → higher pick odds), without forcing exclusivity in
-  /// biomes that have only a track or two of their own.
+  /// Pick a random candidate for the current biome, avoiding the current track.
+  /// Biome-matched tracks share the pool with fillers so abundance favors
+  /// matches without forcing exclusivity in thinly-tagged biomes.
   ResolvedTrack _pickNext() {
     final biome = _currentBiome;
     final matched = biome == null
@@ -145,8 +127,7 @@ class BgmScheduler {
         .toList(growable: false);
 
     final pool = [...matched, ...fillers];
-    // Fall back to the full catalog if both buckets are empty (e.g. every
-    // installed track is biome-tagged and none match the current biome).
+    // Both buckets empty (all tracks biome-tagged, none match) → full catalog.
     final effective = pool.isNotEmpty ? pool : _catalog;
 
     if (effective.length == 1) return effective.first;

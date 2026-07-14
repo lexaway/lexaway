@@ -13,16 +13,14 @@ import '../world/world_map.dart';
 import 'camera.dart';
 
 /// Reusable "stuff falling from the sky" overlay. One instance handles every
-/// biome — each biome's [WeatherDef] (or `null`) is read from the registry
-/// and the active def swaps when the player crosses biome boundaries.
+/// biome; the active [WeatherDef] (or `null`) is read from the registry and
+/// swaps at biome boundaries.
 ///
-/// Renders a flat particle pool with `canvas.drawImageRect` from a single
-/// preloaded atlas (one per biome), matching [WindLines]'s custom-render
-/// approach. No per-particle component overhead.
+/// Flat particle pool rendered via `canvas.drawImageRect` from a per-biome
+/// atlas (like [WindLines]) — no per-particle component overhead.
 ///
-/// Frames cycle on a single shared timer. Each particle gets a random
-/// `frameOffset` so the population reads as desynced twinkle instead of
-/// pulsing in unison.
+/// Frames cycle on one shared timer; each particle's random `frameOffset`
+/// desyncs the twinkle so the population doesn't pulse in unison.
 class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
   /// Picked from saved scroll so the right biome is active on cold start.
   final double initialScrollOffset;
@@ -38,10 +36,9 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
     this.initialScrollOffset = 0,
   }) : _events = events;
 
-  /// 0.6s gives a snappy fade. `BiomeChanged` fires at *screen center*
-  /// crossing (see `ScrollController.update`), so by the time we react the
-  /// right half of the screen is already in the new biome — a slow fade
-  /// would leave us still ramping in well past the boundary.
+  /// Snappy fade. `BiomeChanged` fires at *screen-center* crossing (see
+  /// `ScrollController.update`), so the right half is already in the new
+  /// biome; a slow fade would still be ramping well past the boundary.
   static const double _fadeDuration = 0.6;
 
   static final _rng = Random();
@@ -59,17 +56,15 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
   int _sharedFrame = 0;
   double _driftClock = 0;
   double _intensity = 1;
-  // Last-seen world scroll, so each frame we can shift particles by the
-  // delta — keeps flakes anchored to world space (they slide leftward as the
-  // dino runs forward), not to the screen.
+  // Last-seen scroll; per-frame delta shifts particles so flakes stay anchored
+  // to world space (sliding left as the dino runs), not the screen.
   double _lastScrollOffset = 0;
 
   StreamSubscription<GameEvent>? _sub;
 
   @override
   Future<void> onLoad() async {
-    // Preload atlases for every biome already in the world. Streamer-added
-    // biomes are loaded lazily via [ensureBiomeLoaded] from `_loadNewBiomes`.
+    // Streamer-added biomes load lazily via [ensureBiomeLoaded].
     final biomes = worldMap.segments.map((s) => s.biome).toSet();
     for (final biome in biomes) {
       await _loadAtlas(biome);
@@ -80,9 +75,8 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
     if (def != null) {
       _activate(def, _atlases[initialBiome]);
       _seedPrewarmed();
-      // Cold-start with weather visible immediately — skip the fade. Both
-      // current and target must be set; otherwise the fade tick in update()
-      // would immediately walk opacity down toward the default-zero target.
+      // Cold-start fully visible, skipping the fade. Must set both current
+      // and target, else update()'s fade tick walks opacity to the zero target.
       _currentOpacity = 1;
       _targetOpacity = 1;
     }
@@ -103,7 +97,7 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
   void _onBiomeChanged(BiomeChanged event) {
     final def = BiomeRegistry.get(event.current).weather;
     if (def == null) {
-      // Fading out — keep current particles but stop spawning new defs.
+      // Fade out; keep current particles.
       _targetOpacity = 0;
       return;
     }
@@ -111,8 +105,8 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
       _targetOpacity = 1;
       return;
     }
-    // Swap def. A → B re-seeds hard (e.g. a direct winter↔autumn boundary
-    // morphs in-flight particles); the 1.5s biome crossfade largely masks it.
+    // Def swap re-seeds hard (e.g. direct winter↔autumn morphs in-flight
+    // particles); the 1.5s biome crossfade largely masks it.
     _activate(def, _atlases[event.current]);
     if (_currentOpacity == 0) _seedAboveScreen();
     _targetOpacity = 1;
@@ -133,14 +127,10 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
       _particles.removeRange(count, _particles.length);
     } else {
       while (_particles.length < count) {
-        // Stable random visibility threshold per particle. Intensity gates
-        // which flakes render — low thresholds appear even in light flurries,
-        // high-threshold ones only in heavy squalls.
-        //
-        // Skewed toward zero with `pow(u, 1.8)` because value noise rarely
-        // peaks near 1.0 — uniform thresholds would leave a long tail of
-        // particles that never render. Skewing keeps the pool actually
-        // useful while preserving the rare-flake feel for the high tail.
+        // Stable per-particle threshold; intensity gates which flakes render
+        // (low = light flurries, high = heavy squalls). Skewed toward zero
+        // via pow(u, 1.8) because value noise rarely peaks near 1.0 —
+        // uniform thresholds would leave many flakes that never render.
         final u = _rng.nextDouble();
         _particles
             .add(_Particle()..visibilityThreshold = pow(u, 1.8).toDouble());
@@ -175,15 +165,14 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
     final def = _activeDef!;
     p.x = enterFromX ?? _rng.nextDouble() * size.x;
     if (fullHeight) {
-      // Spread across the *full* lifecycle — from staged above the screen
-      // all the way down to ground level. If we only seeded the visible
-      // range, every flake would land within a few seconds and then there'd
-      // be a gap until the next wave fell back in from above.
+      // Spread across the full lifecycle (staged above screen down to ground).
+      // Seeding only the visible range would land every flake within seconds,
+      // then gap until the next wave fell in from above.
       final groundTop = size.y * LexawayGame.groundLevel;
       final spawnTop = -size.y * 0.5;
       p.y = spawnTop + _rng.nextDouble() * (groundTop - spawnTop);
     } else {
-      // Stagger above the top edge so they don't all enter at the same instant.
+      // Stagger above the top edge so they don't all enter at once.
       p.y = -_rng.nextDouble() * size.y * 0.5 - def.frameHeight * def.scale;
     }
     p.fallSpeed = def.minFallSpeed +
@@ -197,7 +186,6 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
 
   @override
   void update(double dt) {
-    // Tick opacity toward target.
     if (_currentOpacity != _targetOpacity) {
       final step = dt / _fadeDuration;
       if (_currentOpacity < _targetOpacity) {
@@ -207,7 +195,6 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
       }
     }
 
-    // Nothing to update if there's no active def or we've fully faded out.
     if (_activeDef == null || (_currentOpacity == 0 && _targetOpacity == 0)) {
       return;
     }
@@ -216,9 +203,8 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
     final scale = LexawayGame.pixelScale;
     final size = game.size;
     final spriteH = def.frameHeight * def.scale * scale;
-    // Snow lands on top of the platform — recycle the moment a flake's
-    // bottom edge crosses ground level, so nothing renders below the dino's
-    // feet line.
+    // Recycle when a flake's bottom crosses ground level so nothing renders
+    // below the dino's feet line.
     final landY = size.y * LexawayGame.groundLevel - spriteH;
 
     _driftClock += dt;
@@ -229,14 +215,13 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
       _frameTimer -= advance * def.frameDuration;
     }
 
-    // Track scroll delta so flakes drift with world space, not screen
-    // space. Read once and reuse below.
+    // Scroll delta so flakes drift with world space, not screen space.
     final scrollOffset = camera.scrollOffset;
     final scrollDelta = scrollOffset - _lastScrollOffset;
     _lastScrollOffset = scrollOffset;
 
-    // Sample intensity from world position so weather varies as you walk.
-    // Sample is stable per scroll offset — pause anywhere and it sits still.
+    // Intensity from world position, stable per scroll offset (pause and it
+    // sits still), so weather varies as you walk.
     if (_intensityNoise != null) {
       final tileX = scrollOffset / (16 * scale);
       final n = _intensityNoise!.sample(tileX, scale: def.intensityNoiseScale);
@@ -247,8 +232,7 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
 
     for (final p in _particles) {
       p.y += p.fallSpeed * scale * dt;
-      // Pure sin-wave horizontal sway plus the world-scroll delta so flakes
-      // appear to live in world coordinates and slide past as the dino runs.
+      // Sin-wave sway plus scroll delta so flakes live in world coords.
       p.x += sin(_driftClock * def.driftFrequency + p.phase) * p.drift * dt
           - scrollDelta;
 
@@ -257,11 +241,9 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
         continue;
       }
 
-      // Off-screen flakes re-enter from the *opposite* edge so the wind keeps
-      // feeding the screen as the dino runs. Use fullHeight so they enter at a
-      // random Y across the visible range — otherwise they'd respawn above the
-      // top edge and need to fall in, leaving a sparse wedge on the leading
-      // edge during sustained motion.
+      // Re-enter from the opposite edge to keep feeding the screen. fullHeight
+      // enters at a random visible Y; respawning above the top instead would
+      // leave a sparse wedge on the leading edge during sustained motion.
       if (p.x < -spriteH) {
         _respawn(p, size, fullHeight: true, enterFromX: size.x + spriteH);
       } else if (p.x > size.x + spriteH) {
@@ -282,8 +264,7 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
     final spriteH = def.frameHeight * def.scale * scale;
 
     for (final p in _particles) {
-      // Smooth visibility fade across the threshold — no hard pop-in as
-      // intensity rises through a particle's threshold.
+      // Smooth fade across the threshold, no hard pop-in.
       final visibility = ((_intensity - p.visibilityThreshold) * 4)
           .clamp(0.0, 1.0);
       if (visibility <= 0) continue;
@@ -295,7 +276,7 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
         def.frameWidth,
         def.frameHeight,
       );
-      // Snap to pixel grid so the art reads crisp at integer scale.
+      // Snap to pixel grid for crisp art at integer scale.
       final px = (p.x / scale).round() * scale;
       final py = (p.y / scale).round() * scale;
       final dst = ui.Rect.fromLTWH(px, py, spriteW, spriteH);

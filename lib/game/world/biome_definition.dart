@@ -41,8 +41,7 @@ class ScatterFeature extends Feature {
   final int maxGapTiles;
 
   /// Offset added to the world seed so this scatter samples different noise
-  /// than its siblings. Just needs to be unique — the actual value doesn't
-  /// matter.
+  /// than its siblings. Only needs to be unique.
   final int noiseSeedOffset;
 
   const ScatterFeature({
@@ -56,9 +55,8 @@ class ScatterFeature extends Feature {
        assert(threshold >= 0 && threshold < 1.0);
 }
 
-/// A contiguous span that is placed once, claims a footprint, and lays out
-/// its own child entities internally. Flower meadows, palm groves, pier
-/// zones, and future composite content all share this shape.
+/// A contiguous span placed once that claims a footprint and lays out its
+/// own child entities. Used by flower meadows, palm groves, pier zones.
 class RegionFeature extends Feature {
   /// Stable identifier used to tag resulting footprints. Terrain/renderer code
   /// filters on this (e.g. `kind == 'pier'` drives the pier tile sprite).
@@ -105,11 +103,10 @@ class RegionFeature extends Feature {
        assert(minWidthTiles > 0);
 }
 
-/// A small themed cluster of distinct entities placed together at a single
-/// anchor point — e.g. a rest area (vending machine + bench + trash bin) or
-/// a campfire scene. Each anchor lays down one of every child, in a shuffled
-/// order, with adjacent size-aware spacing. Aborts the whole group if any
-/// child can't fit, so partial clusters never appear.
+/// A themed cluster of distinct entities placed at one anchor — e.g. a rest
+/// area (vending machine + bench + trash bin). Each anchor lays down one of
+/// every child in shuffled order with size-aware spacing. Aborts the whole
+/// group if any child can't fit, so partial clusters never appear.
 class GroupFeature extends Feature {
   /// Stable identifier (informational; useful for debugging/logging).
   final String kind;
@@ -266,10 +263,9 @@ class BiomeDefinition {
   /// `null` means no overlay for this biome.
   final WeatherDef? weather;
 
-  /// Optional looping ambient bed for this biome (e.g. distant ocean waves on
-  /// the coast). Stored as an `AssetSource` path under `assets/` —
-  /// `'audio/ambient_tropics.wav'`. Crossfaded in while the biome is active and
-  /// faded out on leaving. `null` means no ambience.
+  /// Looping ambient bed, an asset path under `assets/` (e.g.
+  /// `'audio/ambient_tropics.wav'`). Crossfaded in/out with the biome.
+  /// `null` = no ambience.
   final String? ambientLoop;
 
   /// Source position of the surface tile in the terrain sheet.

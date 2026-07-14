@@ -4,12 +4,9 @@ import 'package:hive_ce/hive_ce.dart';
 import 'hive_keys.dart';
 import 'world_state.dart';
 
-/// The one and only code path that reads or writes persistent world state.
-///
-/// One instance per target language — each language pack gets its own dino
-/// world (position, biome, picked-up coins). Game code should never touch
-/// [HiveKeys.world] directly — go through this repository so persistence
-/// concerns stay in one place.
+/// Sole read/write path for persistent world state. One instance per target
+/// language (each pack has its own dino world). Game code must go through here,
+/// never [HiveKeys.world] directly.
 class WorldStateRepository {
   final Box _box;
   final String _lang;
@@ -18,10 +15,8 @@ class WorldStateRepository {
 
   String get _key => HiveKeys.world(_lang);
 
-  /// Returns the saved world state, or null if no save exists or the stored
-  /// value is corrupt. On corruption this logs and treats it as a fresh
-  /// start — silent progress loss is worse than loud, but crashing at boot
-  /// is worse still.
+  /// Returns saved world state, or null if absent/corrupt. Corruption logs and
+  /// falls back to a fresh start (loud loss beats a boot crash).
   WorldState? load() {
     final Object? raw;
     try {

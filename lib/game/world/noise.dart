@@ -1,9 +1,6 @@
-/// Seed-deterministic 1D value noise with smooth interpolation.
-///
-/// Each [Noise1D] instance produces a repeatable stream of smooth, continuous
-/// values in [0, 1] for any real-valued coordinate. Different seeds (or seed
-/// offsets) yield uncorrelated patterns — perfect for stacking independent
-/// spawn layers, Minecraft-style.
+/// Seed-deterministic 1D value noise with smooth interpolation. Produces a
+/// repeatable stream of continuous values in [0, 1] for any coordinate;
+/// different seeds yield uncorrelated patterns for stacking spawn layers.
 class Noise1D {
   final int _seed;
 

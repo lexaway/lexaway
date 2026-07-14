@@ -105,7 +105,7 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
 
     await pm.deletePack(packId);
 
-    // Only delete voice model if no other installed pack shares the target language.
+    // Keep the voice model if another installed pack shares the target lang.
     final remaining = pm.getLocalPacks();
     final sharedVoice = remaining.values.any((p) => p.lang == targetLang);
     if (!sharedVoice) {
@@ -114,8 +114,8 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
 
     state = AsyncData(remaining);
 
-    // If we just deleted the active pack, clear it.
-    // Skip if a switchPack is already in flight (state would be loading).
+    // Clear if we deleted the active pack. Skip if a switchPack is in flight
+    // (state would be loading).
     final activeNotifier = ref.read(activePackProvider.notifier);
     if (activeNotifier.activePackId == packId && !ref.read(activePackProvider).isLoading) {
       await activeNotifier.clear();
@@ -162,27 +162,18 @@ final activePackProvider =
       ActivePackNotifier.new,
     );
 
-/// Reactive view of [ActivePackNotifier.activeLang]. The lang lives on the
-/// notifier (derived from `_activePackId`), but `_activePackId` only ever
-/// changes alongside a state transition — so watching the state reliably
-/// catches every change without exposing the "watch then read notifier"
-/// dance at call sites.
+/// Reactive view of [ActivePackNotifier.activeLang]. `_activePackId` only
+/// changes alongside a state transition, so watching state catches every
+/// change without the "watch then read notifier" dance at call sites.
 final activeLangProvider = Provider<String?>((ref) {
   ref.watch(activePackProvider);
   return ref.read(activePackProvider.notifier).activeLang;
 });
 
 /// The active lang *if* TTS can speak for it — null otherwise. Non-null iff
-///   1. there is an active lang, AND
-///   2. the engine supports it, AND
-///   3. a voice model has been downloaded for it.
-///
-/// Rebuilds when the active lang changes or when a voice model is added /
-/// removed (both of which flow through [localPacksProvider]).
-///
-/// Returning the lang instead of a bool lets callers do a single read and
-/// use the non-null value directly, avoiding a second `activeLangProvider`
-/// read plus a bang-assertion at each call site.
+/// there is an active lang, the engine supports it, and a voice model is
+/// downloaded. Returns the lang (not a bool) so callers read once and use the
+/// non-null value directly.
 final activeTtsLangProvider = Provider<String?>((ref) {
   final lang = ref.watch(activeLangProvider);
   if (lang == null || !ref.read(ttsManagerProvider).isSupported(lang)) return null;

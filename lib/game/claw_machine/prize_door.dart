@@ -7,11 +7,9 @@ import '../lexaway_game.dart';
 import 'cabinet.dart';
 import 'claw_session.dart';
 
-/// Prize hatch on the cabinet console. Driven by the active session's
-/// [doorOpen] flag. The art is a single 3-frame sheet (84×20, three 28×20
-/// cells: open / half / closed), so instead of snapping between two images
-/// we ease a 0→1 progress toward the flag and pick the matching frame —
-/// giving a quick two-step open/close animation.
+/// Prize hatch, driven by the session's [doorOpen] flag. 3-frame sheet
+/// (84×20, three 28×20 cells: open / half / closed); eases a 0→1 progress
+/// toward the flag and picks the matching frame for a two-step animation.
 class PrizeDoorComponent extends PositionComponent
     with HasGameReference<LexawayGame>, ZoomFaded {
   final ClawSessionComponent session;
@@ -22,7 +20,7 @@ class PrizeDoorComponent extends PositionComponent
   double _progress = 0;
   static const double _cellW = 28;
   static const double _cellH = 20;
-  // ~6 units/sec → a full open or close takes ~0.17s (a frame each way).
+  // ~6 units/sec → full open or close in ~0.17s.
   static const double _animSpeed = 6.0;
 
   PrizeDoorComponent({required this.session})

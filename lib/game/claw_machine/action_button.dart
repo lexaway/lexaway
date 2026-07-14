@@ -10,9 +10,8 @@ import '../lexaway_game.dart';
 import 'cabinet.dart';
 import 'claw_session.dart';
 
-/// "Drop the claw" button. Tap-down triggers the drop sequence (and a
-/// haptic blip); tap-up restores the unpressed sprite. Sprite sheet is
-/// 24×8, 2 cells of 12×8 — col 0 is unpressed, col 1 pressed.
+/// "Drop the claw" button. Sprite sheet is 24×8, 2 cells of 12×8 — col 0
+/// unpressed, col 1 pressed.
 class ActionButtonComponent extends PositionComponent
     with HasGameReference<LexawayGame>, TapCallbacks, ZoomFaded {
   final ClawSessionComponent session;
@@ -50,9 +49,8 @@ class ActionButtonComponent extends PositionComponent
     _pressed = true;
     HapticFeedback.lightImpact();
     AudioManager.instance.playClawDropButton();
-    // Match the original 80 ms press flash, but the drop fires
-    // immediately — releasing the press before the drop completes
-    // would otherwise ship a stale "pressed" frame.
+    // 80 ms press flash; drop fires immediately so this can't strand a
+    // stale "pressed" frame.
     Future<void>.delayed(const Duration(milliseconds: 80), () {
       _pressed = false;
     });

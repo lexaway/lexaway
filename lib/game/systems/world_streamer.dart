@@ -7,24 +7,15 @@ import '../world/entity_footprints.dart';
 import '../world/world_generator.dart';
 import '../world/world_map.dart';
 
-/// Owns lazy world extension. Watches the player's progress through the
-/// [WorldMap] and, when the player gets within ~200 tiles of the end,
-/// appends another 1000-tile chunk using a derived seed.
+/// Lazy world extension: when the player gets within [_lookaheadTiles] of the
+/// end, appends another chunk using seed `worldMap.seed + extensions`. The
+/// counter and seed must stay in lockstep.
 ///
-/// Pulled out of `LexawayGame.update` so the game loop doesn't have to know
-/// about world generation. The extension counter lives here because it's
-/// only meaningful alongside the extension logic — the seed formula is
-/// `worldMap.seed + extensions`, so the two must stay in lockstep.
-///
-/// On boot, [LexawayGame] replays previously-persisted extensions by calling
-/// [extend] in a loop before adding this component to the tree, which keeps
-/// worldMap.segments consistent with the saved scroll offset.
+/// On boot, [LexawayGame] replays persisted extensions by calling [extend] in
+/// a loop before mounting this component, keeping worldMap.segments consistent
+/// with the saved scroll offset.
 class WorldStreamer extends Component {
-  /// How close (in tiles) to the end of the generated world before we
-  /// trigger another extension.
   static const int _lookaheadTiles = 200;
-
-  /// How many tiles to generate per extension batch.
   static const int _extensionTiles = 1000;
 
   final WorldMap worldMap;
@@ -43,16 +34,12 @@ class WorldStreamer extends Component {
         _events = events,
         _entityFootprints = entityFootprints;
 
-  /// How many extension batches have been appended so far. Read by the
-  /// world-state snapshot so reboots can replay the same sequence.
+  /// Extension batches appended so far. Read by the world-state snapshot so
+  /// reboots can replay the same sequence.
   int get extensions => _extensions;
 
-  /// Generate and append one more extension chunk. Emits [WorldExtended]
-  /// once mounted so [WorldStatePersister] picks up the change.
-  ///
-  /// Safe to call during boot replay before the streamer is mounted:
-  /// the event emit is skipped pre-mount, which is exactly what we want
-  /// during replay (the on-disk state already reflects these segments).
+  /// Generate and append one more extension chunk. Emits [WorldExtended] only
+  /// once mounted, so boot replay (already reflected on disk) skips the emit.
   void extend() {
     _extensions++;
     final extensionSeed = worldMap.seed + _extensions;

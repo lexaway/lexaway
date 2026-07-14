@@ -11,13 +11,11 @@ import 'settings.dart';
 /// master slider so the player tracks user changes live, and music ducks
 /// proportionally with everything else when master is pulled down.
 ///
-/// Lifecycle invariant: this provider must outlive [bgmSchedulerProvider].
-/// The scheduler caches the service via `ref.watch` and listens to its
-/// completion stream — if the service is rebuilt without rebuilding the
-/// scheduler, the old service keeps playing while the new one stays silent.
-/// Today neither provider has rebuildable dependencies, so they're stable
-/// for the app's lifetime; keep it that way unless you also coordinate
-/// disposal.
+/// Lifecycle invariant: this provider must outlive [bgmSchedulerProvider],
+/// which caches the service via `ref.watch` and listens to its completion
+/// stream — rebuilding the service without the scheduler leaves the old one
+/// playing while the new one stays silent. Neither has rebuildable deps today;
+/// keep it that way unless you also coordinate disposal.
 final bgmServiceProvider = Provider<BgmService>((ref) {
   final service = BgmService();
   double effective() =>
@@ -31,11 +29,9 @@ final bgmServiceProvider = Provider<BgmService>((ref) {
 });
 
 /// Picks which track plays right now (main theme on menus, biome-aware
-/// gameplay tracks from installed music packs in `/game`). The catalog is
-/// recomputed reactively whenever the installed pack set or the manifest
-/// catalog changes — the scheduler doesn't yank the current track when the
-/// catalog swaps; the next biome change or song completion pulls from the
-/// fresh list.
+/// gameplay tracks from installed music packs). Catalog recomputes reactively
+/// on pack-set/manifest changes; a swap doesn't yank the current track — the
+/// next biome change or song completion pulls from the fresh list.
 final bgmSchedulerProvider = Provider<BgmScheduler>((ref) {
   final scheduler = BgmScheduler(service: ref.watch(bgmServiceProvider));
 

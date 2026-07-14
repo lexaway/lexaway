@@ -9,22 +9,14 @@ import '../events.dart';
 import '../world/world_map.dart';
 import 'world_streamer.dart';
 
-/// Owns persistable world state: collected coin indices, the dirty flag,
-/// and the writer. Subscribes to the events that mutate persistable
-/// state — [CoinCollected], [WalkStopped], [WorldExtended] — coalesces
-/// writes to one per frame in [update], and exposes [flush] for lifecycle
-/// hooks that can't wait for the next tick.
-///
-/// Pulled out of `LexawayGame` so the game class stops being a kitchen
-/// sink for persistence state. [CoinManager] still holds a reference to
-/// [collectedCoins] (shared mutable Set) so its spawn loop can skip items
-/// that have already been collected.
+/// Owns persistable world state. Coalesces writes to one per frame in
+/// [update]; [flush] forces an immediate write for lifecycle hooks that
+/// can't wait for the next tick.
 class WorldStatePersister extends Component {
   final WorldStateRepository repository;
 
-  /// Collected coin item indices. Shared with [CoinManager] — it reads
-  /// this Set in its spawn loop to dedup against saved pickups. We mutate
-  /// it here in the [CoinCollected] handler.
+  /// Collected coin item indices. Shared mutable Set — [CoinManager] reads
+  /// it in its spawn loop to dedup against saved pickups.
   final Set<int> collectedCoins;
 
   /// Used claw machine item indices. Shared with [ClawMachineManager],
@@ -82,13 +74,9 @@ class WorldStatePersister extends Component {
     if (_dirty) _write();
   }
 
-  /// Immediate synchronous write. Call from lifecycle hooks (pause,
-  /// dispose) where [update] may never run again before the process is
-  /// torn down, or from boot to persist initial state.
-  ///
-  /// Safe to call before this component has been mounted — all
-  /// collaborators are passed in at construction, so the snapshot doesn't
-  /// depend on any `late` field being initialized first.
+  /// Immediate synchronous write, for lifecycle hooks (pause, dispose) where
+  /// [update] may never run again before teardown, or to persist boot state.
+  /// Safe to call pre-mount: all collaborators are passed at construction.
   void flush() {
     _write();
   }

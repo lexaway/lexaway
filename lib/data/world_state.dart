@@ -1,7 +1,5 @@
-/// Immutable snapshot of persistable world state.
-///
-/// Produced by [LexawayGame] when it's time to persist, and consumed when the
-/// game boots to restore the player's last position.
+/// Immutable snapshot of persistable world state, saved by [LexawayGame] and
+/// restored on boot.
 class WorldState {
   final int seed;
   final int extensions;
@@ -25,9 +23,8 @@ class WorldState {
         'used_claw_machines': usedClawMachines,
       };
 
-  /// Parse a raw Hive map. Returns null if [raw] is null or any field has an
-  /// unexpected type; corrupt data is treated as "no save" rather than
-  /// crashing boot. Missing optional fields fall back to defaults.
+  /// Parse a raw Hive map. Null on null/bad-type input (corrupt = "no save",
+  /// not a boot crash). Missing optional fields default.
   static WorldState? fromMap(Map? raw) {
     if (raw == null) return null;
     final seed = raw['seed'];

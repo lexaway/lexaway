@@ -56,10 +56,9 @@ class TrackInfo {
   }
 }
 
-/// One downloadable music pack — a tarball containing every track in [tracks]
-/// at its top level. Naming mirrors `TtsModelInfo`: `archive_name` is the
-/// stem used for both the remote `.tar.bz2` artifact and the local extraction
-/// directory.
+/// One downloadable music pack — a tarball with every [tracks] file at top
+/// level. `archiveName` is the stem for both the remote `.tar.bz2` and the
+/// local extraction dir.
 class MusicPackInfo {
   final String id;
   final String displayName;
@@ -104,10 +103,9 @@ class MusicPackInfo {
   }
 }
 
-/// A track that is *currently installed on disk* and ready to hand to
-/// [BgmService.playLoop]. The [identifier] is what BgmService keys position
-/// tracking and `onTrackComplete` on, so it must stay stable per-track across
-/// rebuilds of the catalog.
+/// A track installed on disk, ready for [BgmService.playLoop]. [identifier]
+/// keys BgmService's position tracking and `onTrackComplete`, so it must stay
+/// stable per-track across catalog rebuilds.
 class ResolvedTrack {
   final TrackInfo info;
   final String packId;
@@ -122,10 +120,8 @@ class ResolvedTrack {
   });
 }
 
-/// Bundled-baseline catalog. Lets the settings screen render the deluxe
-/// pack tile before the remote manifest has loaded — same idea as
-/// `kBaselineVoiceCatalog`. The manifest's `music` array overrides this when
-/// it arrives.
+/// Bundled-baseline catalog so settings can render the pack tile before the
+/// manifest loads. Manifest's `music` array overrides this when it arrives.
 const kBaselineMusicCatalog = <MusicPackInfo>[
   MusicPackInfo(
     id: 'towballs_crossing_deluxe',
@@ -190,8 +186,8 @@ class MusicManager {
       final url = await packsUrl('${info.archiveName}.tar.bz2');
       await downloadToFile(url, tmpPath, onProgress: onProgress);
       onExtracting?.call();
-      // Tarball entries are flat (top-level slug.m4a); extract into the
-      // pack-specific directory so [packDir]/[installedTracks] can find them.
+      // Flat tarball (top-level slug.m4a) → pack-specific dir so
+      // [packDir]/[installedTracks] can find the files.
       await extractTarBz2InIsolate(tmpPath, '$musicDir/${info.archiveName}');
       await File(tmpPath).delete();
     } catch (_) {
@@ -225,9 +221,8 @@ class MusicManager {
     _box.put(HiveKeys.musicPacks, installed);
   }
 
-  /// Resolve every installed track in [catalog] to a [ResolvedTrack]. Tracks
-  /// whose files are missing on disk are silently skipped — defensive against
-  /// partial-extraction state without forcing callers to handle nulls.
+  /// Resolve installed tracks in [catalog] to [ResolvedTrack]s. Missing-on-disk
+  /// tracks are skipped (defends against partial-extraction state).
   List<ResolvedTrack> installedTracks(List<MusicPackInfo> catalog) {
     final out = <ResolvedTrack>[];
     for (final pack in catalog) {

@@ -6,14 +6,12 @@ import 'biome_registry.dart';
 import 'world_map.dart';
 
 /// Entity widthTiles per biome, parsed from each biome's entity manifest.
-/// The [WorldGenerator] uses this for collision-aware placement — e.g. so a
-/// 3-tile-wide palm tree knows to stay clear of a pier zone, not just its
-/// center point.
+/// Drives collision-aware placement so a 3-tile palm clears a pier zone by
+/// its full width, not just its center.
 typedef EntityFootprints = Map<BiomeType, Map<String, int>>;
 
-/// Parses every biome's entity manifest and returns the widthTiles of each
-/// entity, keyed by biome and entity name. Call once at boot before kicking
-/// off world generation.
+/// Parses every biome's entity manifest into widthTiles keyed by biome and
+/// entity name. Call once at boot before world generation.
 Future<EntityFootprints> loadEntityFootprints() async {
   final result = <BiomeType, Map<String, int>>{};
   for (final biome in BiomeType.values) {

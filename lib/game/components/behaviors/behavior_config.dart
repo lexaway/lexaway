@@ -13,8 +13,8 @@ abstract class BehaviorConfig {
 
 /// Config for [GroundAnchorBehavior].
 class GroundAnchorConfig extends BehaviorConfig {
-  /// Transparent source-pixel rows beneath the creature's feet in its
-  /// sprite frame. Compensated so the feet land on the ground line.
+  /// Transparent rows beneath the feet in the sprite frame; compensated so
+  /// the feet land on the ground line.
   final double footPadding;
 
   const GroundAnchorConfig({this.footPadding = 0});
@@ -67,8 +67,7 @@ class FlightConfig extends BehaviorConfig {
   /// (toward the player), positive drifts rightward (ahead of the player).
   final double driftSpeed;
 
-  /// Extra sinusoidal wobble on the horizontal axis — gives butterflies
-  /// that meandering, non-linear flutter.
+  /// Horizontal sinusoidal wobble for a meandering, non-linear flutter.
   final double swayAmplitude;
   final double swayFrequency;
 

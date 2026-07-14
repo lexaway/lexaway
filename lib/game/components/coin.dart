@@ -55,7 +55,7 @@ class Coin extends SpriteAnimationComponent
     size = Vector2.all(16 * scale);
     paint = Paint()..filterQuality = FilterQuality.none;
 
-    // Sit on the ground surface (no padding offset — coins fill their frame)
+    // no padding offset — coins fill their frame
     final groundTop = game.size.y * LexawayGame.groundLevel;
     position.y = groundTop - size.y;
 
@@ -72,9 +72,8 @@ class Coin extends SpriteAnimationComponent
     collected = true;
 
     final value = type == CoinType.diamond ? 3 : 1;
-    // Sync event — CoinManager reads this coin's position/animation/size
-    // from its handler (before removeFromParent propagates) to spawn the
-    // fly-to-counter visual effect.
+    // Sync emit: CoinManager reads position/animation/size in its handler
+    // before removeFromParent propagates, to spawn the fly-to-counter effect.
     game.events.emit(CoinCollected(type, value, itemIndex));
     removeFromParent();
   }

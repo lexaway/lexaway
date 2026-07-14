@@ -12,10 +12,9 @@ import 'behaviors/creature_behavior_component.dart';
 
 enum CreatureAnim { idle, hop, hit, death }
 
-/// An ambient animated critter that rides world scroll. Behavior is driven
-/// entirely by composable child components (see `behaviors/`). This class
-/// is just the visual shell: sprite sheet, animation playback, and a small
-/// API that behaviors call into.
+/// Ambient animated critter that rides world scroll. Behavior lives in
+/// composable child components (see `behaviors/`); this class is just the
+/// visual shell — sprite sheet, animation playback, and an API behaviors call.
 class Creature extends SpriteAnimationGroupComponent<CreatureAnim>
     with HasGameReference<LexawayGame>, ScrollingWorldItem {
   final String sheetPath;

@@ -1,23 +1,18 @@
-/// Shared spine for prizes the player can collect from cabinets, chests,
-/// quests, etc. Today the only [Collectible] kind is [FlagCollectible],
-/// but the rest of the system (cabinet loadout, inventory persistence,
-/// collection screen) talks to this abstraction so new kinds slot in
-/// without rewiring.
+/// Shared abstraction for collectible prizes. Only [FlagCollectible] exists
+/// today; the cabinet/persistence/collection code talks to this so new kinds
+/// slot in without rewiring.
 abstract class Collectible {
-  /// Globally-unique id, namespaced by kind (e.g. `flag:fr`). Used as the
-  /// persistence key and the identity carried through game events.
+  /// Globally-unique id, namespaced by kind (e.g. `flag:fr`). Persistence key
+  /// and identity through game events.
   String get id;
 
-  /// Category id this collectible belongs to (e.g. `flags`). The cabinet
-  /// rolls its loadout from a single category at spawn time.
+  /// Category id (e.g. `flags`). Cabinets roll a loadout from one category.
   String get categoryId;
 
-  /// Player-facing display name (English for now — localization is a
-  /// follow-up).
+  /// Player-facing display name (English for now).
   String get displayName;
 
-  /// Bundled asset path for the sprite, used by in-game rendering and the
-  /// collection screen.
+  /// Bundled sprite asset path.
   String get spriteAsset;
 }
 

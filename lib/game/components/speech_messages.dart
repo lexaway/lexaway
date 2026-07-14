@@ -52,7 +52,7 @@ class SpeechMessages {
       // Asset file doesn't exist for this locale — fall back to 'en'.
       return false;
     } catch (e, st) {
-      // Malformed JSON or schema mismatch — log and fall back rather than crash.
+      // Fall back rather than crash on malformed JSON / schema mismatch.
       debugPrint('SpeechMessages: failed to parse $locale.json: $e\n$st');
       return false;
     }
@@ -97,8 +97,7 @@ class SpeechMessages {
 
   static String pickIdleMessage({String locale = 'en'}) {
     final voice = _voice(locale);
-    // Even-weight all idle buckets (weights default to 1 for unlisted keys).
-    // New buckets added to JSON are auto-included with weight 1.
+    // Empty weights → every bucket weight 1, so new JSON buckets auto-include.
     return _pickFromBuckets(voice.idle, const {}) ?? '...';
   }
 

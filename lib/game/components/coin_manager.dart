@@ -13,9 +13,8 @@ import 'coin_fly_effect.dart';
 /// owns the "fly to HUD counter" visual effect spawned on pickup — this keeps
 /// HUD layout knowledge out of [Coin].
 class CoinManager extends ScrollingItemLayer<Coin> {
-  /// Screen-space offset of the coin counter inside the HUD. Centralized
-  /// here (not on [Coin]) so only one place in the game code knows where
-  /// the counter lives.
+  /// HUD coin-counter offset. Kept here (not on [Coin]) so only one place
+  /// knows where the counter lives.
   static final Vector2 _hudCounterOffset = Vector2(-60, 50);
 
   final Set<int> collectedCoins;
@@ -52,14 +51,9 @@ class CoinManager extends ScrollingItemLayer<Coin> {
   void _handle(GameEvent event) {
     switch (event) {
       case CoinCollected(:final itemIndex):
-        // [WorldStatePersister] also listens to CoinCollected and owns
-        // the collectedCoins mutation + dirty flag. We just handle the
-        // visual pickup effect here.
-        //
-        // Event is delivered synchronously, so the Coin is still
-        // attached and its sprite state is still readable — spawn the
-        // fly effect here rather than forcing Coin to know HUD
-        // coordinates.
+        // [WorldStatePersister] owns the collectedCoins mutation; here we
+        // only spawn the pickup effect. Synchronous delivery means the Coin
+        // is still attached and its sprite state readable.
         final coin = activeItems.remove(itemIndex);
         if (coin != null && coin.animation != null) {
           game.add(

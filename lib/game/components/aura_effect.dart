@@ -6,9 +6,8 @@ import 'package:flame/effects.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/animation.dart';
 
-/// Super-saiyan-style aura that flashes around the dino when the streak
-/// hits 3 — i.e. the moment he starts running. Plays once and removes
-/// itself.
+/// Super-saiyan-style aura flashed around the dino when the streak hits 3
+/// (the moment he starts running). One-shot, self-removing.
 class AuraEffect extends SpriteAnimationComponent {
   static const double _frameW = 25.0;
   static const double _frameH = 24.0;

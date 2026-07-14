@@ -45,12 +45,11 @@ class FleeBehavior extends CreatureBehaviorComponent {
 
   void _activate() {
     _activated = true;
-    // Grass-rustle one-shot as the critter bolts (not per hop).
+    // one-shot on bolt, not per hop
     AudioManager.instance.playCreatureFlee();
     _direction = parent.rng.nextBool() ? 1.0 : -1.0;
-    // Sprite faces right by default. When fleeing left we flip horizontally,
-    // which negates scale.x and shifts rendering by the sprite width — so
-    // compensate by nudging worldX so the creature doesn't visually teleport.
+    // Flipping negates scale.x, shifting rendering by the sprite width;
+    // nudge worldX to compensate so the creature doesn't visually teleport.
     if (_direction < 0) {
       parent.moveWorldX(parent.size.x);
       parent.setFlip(true);

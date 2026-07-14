@@ -7,9 +7,8 @@ import '../creature.dart';
 /// [ParentIsA] mixin.
 abstract class CreatureBehaviorComponent extends Component
     with ParentIsA<Creature> {
-  /// Whether this behavior has taken exclusive control of the creature
-  /// (e.g. fleeing, charging). Other behaviors should yield when any
-  /// sibling is exclusive, and the creature layer uses this to suppress
+  /// Whether this behavior has exclusive control (e.g. fleeing). Siblings
+  /// yield when any is exclusive; the creature layer uses it to suppress
   /// respawning.
   bool get isExclusive => false;
 }

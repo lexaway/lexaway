@@ -1,4 +1,4 @@
-/// Systematic spacing scale for consistent layout throughout the app.
+/// Spacing scale for consistent layout.
 final class AppSpacing {
   AppSpacing._();
 

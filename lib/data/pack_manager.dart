@@ -12,10 +12,9 @@ import 'hive_keys.dart';
 import 'music_manager.dart';
 import 'tts_manager.dart';
 
-/// Pack IDs are `<fromLang>-<lang>`. Both halves are ISO 639-3 codes today
-/// (always 3 letters, no internal hyphens). The split is exposed via this
-/// helper so future code that relaxes the format — script tags, region tags,
-/// versioned IDs — only has to update one place.
+/// Pack IDs are `<fromLang>-<lang>` (ISO 639-3, 3 letters, no internal
+/// hyphens). Centralised here so relaxing the format (script/region/version
+/// tags) is a one-place change.
 ({String fromLang, String lang}) parsePackId(String packId) {
   final i = packId.indexOf('-');
   if (i < 0) {

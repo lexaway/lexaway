@@ -9,10 +9,8 @@ import 'claw_session.dart';
 
 enum _StickPose { center, right, left }
 
-/// Aim control. Drag horizontally — left half steers the claw left,
-/// right half steers it right, middle releases. The dirty-fraction
-/// threshold (0.4 / 0.6) and the three-pose look match the previous
-/// Flutter overlay exactly.
+/// Aim control. Drag horizontally — left half steers left, right half
+/// right, middle releases. Thresholds at 0.4 / 0.6.
 class ClawJoystickComponent extends PositionComponent
     with HasGameReference<LexawayGame>, DragCallbacks, ZoomFaded {
   final ClawSessionComponent session;
@@ -20,8 +18,7 @@ class ClawJoystickComponent extends PositionComponent
   late final Paint _paint;
   _StickPose _pose = _StickPose.center;
 
-  // Sheet layout: a single row of 3 cells, 28×20 each. Cols 0/1/2 are
-  // center (upright) / right-lean / left-lean.
+  // Single row of 3 cells, 28×20 each. Cols 0/1/2 = center / right / left.
   static const double _cellW = 28;
   static const double _cellH = 20;
 

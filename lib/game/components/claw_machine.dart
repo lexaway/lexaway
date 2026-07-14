@@ -8,16 +8,13 @@ import '../lexaway_game.dart';
 import '../world/scrolling_item_layer.dart';
 import 'player.dart';
 
-/// World-side claw machine cabinet. Static, scrolls with the world like any
-/// other [ScrollingWorldItem]; emits [ClawMachineEntered] when the dino
-/// bumps into it. Uses a `_triggered` latch so the event fires exactly once
-/// per encounter — the manager culls the machine when the screen flow marks
-/// it complete.
+/// World-side claw machine cabinet. Scrolls like any [ScrollingWorldItem];
+/// emits [ClawMachineEntered] on dino contact. `_triggered` latches the event
+/// to once per encounter (the manager culls the machine when flow completes).
 ///
-/// Idle state: just an [ExteriorComponent] child. During an encounter,
-/// [startSession] mounts a [ClawSessionComponent] (which adds its play
-/// subcomponents as siblings here, using priorities to interleave with
-/// the exterior); [endSession] tears the whole subtree down again.
+/// Idle: just an [ExteriorComponent] child. [startSession] mounts a
+/// [ClawSessionComponent] whose play subcomponents mount as siblings here
+/// (priorities interleave them with the exterior); [endSession] tears it down.
 class ClawMachine extends PositionComponent
     with
         HasGameReference<LexawayGame>,
@@ -29,11 +26,9 @@ class ClawMachine extends PositionComponent
   @override
   final int itemIndex;
 
-  /// Which collectible category this cabinet pulls prizes from. Today the
-  /// only category is `flags`; cabinets are otherwise visually identical
-  /// but the category decides which spheres roll inside. The session
-  /// itself re-rolls a fresh loadout on each `startSession` so try-again
-  /// shuffles the spheres.
+  /// Collectible category this cabinet pulls prizes from (only `flags` today).
+  /// Decides which spheres roll inside; the session re-rolls a fresh loadout
+  /// each `startSession` so try-again shuffles them.
   final String categoryId;
 
   bool _triggered = false;

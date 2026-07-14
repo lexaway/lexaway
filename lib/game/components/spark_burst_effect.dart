@@ -9,10 +9,8 @@ import 'package:flutter/animation.dart';
 
 import '../lexaway_game.dart';
 
-/// A short burst of twinkling sparks around the dino, used as the visual
-/// reward for hitting a streak milestone (every multiple of 10). Spawns a
-/// handful of staggered, randomly-placed Spark sprites that each play
-/// their twinkle animation once and clean themselves up.
+/// Burst of twinkling sparks around the dino, rewarding streak milestones
+/// (every multiple of 10). Staggered one-shot sparks that self-remove.
 class SparkBurstEffect extends PositionComponent {
   static const double _frameW = 45.0;
   static const double _frameH = 35.0;
@@ -75,8 +73,7 @@ class SparkBurstEffect extends PositionComponent {
         ..priority = 3
         ..playing = false;
 
-      // Stagger the start of each sparkle so the burst reads as a
-      // shimmer rather than a single hard pop.
+      // Stagger starts so the burst shimmers instead of a single hard pop.
       spark.add(
         TimerComponent(
           period: delay,
@@ -98,7 +95,7 @@ class SparkBurstEffect extends PositionComponent {
       add(spark);
     }
 
-    // Self-remove once every staggered sparkle has had time to finish.
+    // Self-remove after the last staggered sparkle finishes.
     add(
       TimerComponent(
         period: lifeTime + _sparkCount * _stagger + 0.1,

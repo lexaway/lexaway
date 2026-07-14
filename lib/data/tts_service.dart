@@ -159,10 +159,9 @@ class TtsService {
     return completer.future;
   }
 
-  /// Play pre-generated WAV bytes. Cancels any current playback.
-  ///
-  /// Writes to a temp .wav file rather than using BytesSource because
-  /// AVPlayer on iOS can't determine the format from extensionless cache files.
+  /// Play pre-generated WAV bytes, cancelling current playback. Writes a temp
+  /// .wav rather than BytesSource — iOS AVPlayer can't sniff format from
+  /// extensionless cache files.
   Future<void> playBytes(Uint8List wavBytes, {double volume = 1.0}) async {
     final myId = ++_playbackId;
 
@@ -183,10 +182,9 @@ class TtsService {
         if (!completer.isCompleted) completer.complete();
       });
 
-      // Safety net: on iOS `onPlayerComplete` (and even `play`) can fail to
-      // fire, which would leave `_speaking` stuck true and the BGM/SFX ducked
-      // forever. Fall back to the clip's own duration plus a margin so the
-      // duck always releases. The margin keeps long utterances from being cut.
+      // iOS: `onPlayerComplete`/`play` can fail to fire, leaving `_speaking`
+      // stuck true and BGM/SFX ducked forever. Time out on the clip's duration
+      // plus a margin (margin avoids cutting long utterances) so the duck releases.
       final timeout = _wavDuration(wavBytes) + const Duration(seconds: 2);
 
       try {

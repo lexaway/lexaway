@@ -42,8 +42,8 @@ class VocabRow {
 }
 
 /// One greeting from `assets/greetings/greetings_<iso2>.csv`. [times] is the
-/// set of time-of-day buckets the greeting is appropriate for (morning,
-/// afternoon, evening, night). An empty set means "any time".
+/// set of time-of-day buckets it fits (morning/afternoon/evening/night);
+/// empty means "any time".
 class Greeting {
   final String text;
   final Set<String> times;
@@ -130,11 +130,9 @@ String timeBucketForHour(int hour) {
   return 'night';
 }
 
-/// Minimal RFC4180-style CSV parser: handles `"`-quoted fields containing
-/// commas, newlines, or escaped quotes (`""`). Returns one list of fields per
-/// row. Empty trailing lines are dropped.
-///
-/// Exposed (not private) for unit testing.
+/// Minimal RFC4180-style CSV parser: `"`-quoted fields with commas, newlines,
+/// or escaped quotes (`""`). One list of fields per row; empty trailing lines
+/// dropped. Public for unit testing.
 List<List<String>> parseCsv(String input) {
   final rows = <List<String>>[];
   final field = StringBuffer();

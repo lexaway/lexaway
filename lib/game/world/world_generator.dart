@@ -12,19 +12,17 @@ class WorldGenerator {
   static const int _maxSegmentTiles = 240;
   static const double _tilePx = 16.0 * LexawayGame.pixelScale;
 
-  /// Buffer applied to every collision check — entities keep at least this
-  /// many tiles of breathing room so sprites don't visually kiss.
+  /// Min tiles of breathing room in every collision check, so sprites don't
+  /// visually kiss.
   static const int _bufferTiles = 1;
 
-  /// Claw machine cabinet footprint and spacing. Hardcoded here (rather than
-  /// piped through entity manifests) since claw machines aren't a per-biome
-  /// scatter — they're a global, sparse encounter category.
+  /// Claw machine footprint and spacing. Hardcoded, not manifest-driven —
+  /// claw machines are a global sparse encounter, not a per-biome scatter.
   static const int _clawMachineWidthTiles = 5;
   static const int _clawMachineMinGapTiles = 18;
   static const int _clawMachineMaxGapTiles = 36;
 
-  /// widthTiles for every placeable entity, per biome. Drives size-aware
-  /// collision — a 3-tile palm tree needs more room than a 1-tile flower.
+  /// widthTiles per biome, driving size-aware collision.
   final EntityFootprints entityFootprints;
 
   WorldGenerator({this.entityFootprints = const {}});
@@ -319,14 +317,12 @@ class WorldGenerator {
           feature.children.fold<double>(0, (s, c) => s + c.weight);
       if (totalWeight <= 0) return;
 
-      // Inner noise gives each meadow its own bumpy density field, so some
-      // stretches are clumpy and some are sparse rather than every flower
-      // sitting on a uniform grid. Seed it from the walker RNG so each placed
-      // region gets a distinct pattern.
+      // Per-meadow density field so flowers clump instead of gridding.
+      // Seeded from the walker RNG so each region gets a distinct pattern.
       final innerNoise = Noise1D(rng.nextInt(0x7FFFFFFF));
       const innerNoiseScale = 0.025;
-      // Edge feather width — flowers thin out within this many pixels of the
-      // meadow edges, so patches fade instead of ending hard.
+      // Edge feather — flowers thin within this many px of the edges so
+      // patches fade instead of ending hard.
       final feather = _tilePx * 3;
 
       var x = startPx;
@@ -336,8 +332,7 @@ class WorldGenerator {
         final edgeFactor = (distFromEdge / feather).clamp(0.0, 1.0);
         final density = n * edgeFactor;
 
-        // Emit gate — low-density spots get skipped entirely, creating real
-        // gaps between clumps instead of evenly-spaced flowers.
+        // Emit gate — skip low-density spots so real gaps form between clumps.
         if (density > 0.25 && rng.nextDouble() < density * 1.2) {
           final child =
               _pickWeightedChild(rng, feature.children, totalWeight);
@@ -347,10 +342,8 @@ class WorldGenerator {
           ));
         }
 
-        // Stride scales inversely with density: dense spots → ~0.7 tiles
-        // between candidates (flowers land on consecutive tiles), sparse
-        // spots → ~2.5 tiles, leaving visible gaps. Extra jitter breaks up
-        // any remaining regularity.
+        // Stride scales inversely with density: dense ~0.7 tiles, sparse
+        // ~2.5. Jitter breaks up remaining regularity.
         final densityFactor = 1.0 - density;
         final gapPx = _tilePx * (0.6 + densityFactor * 1.8);
         x += gapPx + rng.nextDouble() * _tilePx * 0.4;
@@ -611,8 +604,8 @@ typedef _ItemRow = ({String name, ItemCategory category, double worldX});
 class _SegmentContext {
   final int seed;
 
-  /// The generate()-wide RNG. Draw order is part of the deterministic
-  /// output, so phases must consume it strictly in call order.
+  /// The generate()-wide RNG. Draw order is part of deterministic output, so
+  /// phases must consume it strictly in call order.
   final Random rng;
   final int startTile;
   final int endTile;
@@ -641,18 +634,16 @@ class _SegmentContext {
   double get endPx => endTile * WorldGenerator._tilePx;
 }
 
-/// Per-RegionFeature walker. Produces a deterministic sequence of candidate
-/// `(startTile, width)` pairs anchored in world coordinates, so adjacent
-/// segments of the same biome don't double-place or tile-align against each
-/// other at seams. State lives for the duration of one `generate()` call.
+/// Per-RegionFeature walker. Emits a deterministic sequence of candidate
+/// `(startTile, width)` pairs anchored in world coordinates so same-biome
+/// segments don't double-place or tile-align at seams. Lives for one
+/// `generate()` call.
 ///
-/// Walkers are keyed by `RegionFeature` identity, and the biome registry
-/// declares each feature const, so grassland and tropics get distinct walkers
-/// even when both declare a `flower_meadow`. A walker only advances during
-/// segments of its owning biome; other biomes' segments are skipped over
-/// lazily by `advanceTo` on the next visit, which means a pier walker's
-/// spacing is coherent across all tropics segments but undefined across the
-/// grassland stretches between them — that's intentional.
+/// Keyed by `RegionFeature` identity (each feature is const), so grassland
+/// and tropics get distinct walkers even when both declare `flower_meadow`.
+/// A walker only advances during its own biome's segments; others are
+/// skipped lazily via `advanceTo`. Spacing is coherent within a biome but
+/// undefined across intervening stretches — intentional.
 class _RegionWalker {
   final RegionFeature feature;
   final Random rng;

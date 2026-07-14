@@ -5,16 +5,14 @@ import 'package:flutter/foundation.dart';
 
 /// Crossfading background music player.
 ///
-/// Owns two [AudioPlayer] instances that swap roles on every track change so
-/// transitions can fade out the old track while the new one fades in. Volume
-/// is the product of [setVolume] (user slider) and a duck multiplier driven
-/// by [setDucking] (TTS overlay).
+/// Owns two [AudioPlayer] instances that swap roles per track change to
+/// fade out the old track while the new one fades in. Volume is [setVolume]
+/// (user slider) times the [setDucking] multiplier (TTS overlay).
 ///
-/// Tracks are addressed by an opaque [identifier] string plus a [Source] —
-/// the identifier is the stable key for position caching and completion
-/// events, while the Source is what audioplayers actually plays. This split
-/// lets bundled assets ([AssetSource]) and downloaded files
-/// ([DeviceFileSource]) flow through the same playback pipeline.
+/// Tracks are keyed by an opaque [identifier] (stable across catalog rebuilds,
+/// used for position caching and completion events) plus a [Source] (what
+/// audioplayers plays). The split lets assets and downloaded files share one
+/// pipeline.
 class BgmService {
   static const double _duckMultiplier = 0.3;
   static const Duration _rampInterval = Duration(milliseconds: 50);
@@ -32,34 +30,29 @@ class BgmService {
   double _currentVol = 0;
   double _previousVol = 0;
 
-  /// Last known playback position per track id, captured whenever we
-  /// crossfade away. Lets users hop into Settings and back without losing
-  /// their place. Capped at [_positionsCap] entries with FIFO eviction so
-  /// long sessions across many tracks don't accumulate forever; identifiers
-  /// belonging to an uninstalled pack are explicitly dropped via
+  /// Last playback position per track id, captured on crossfade-away so users
+  /// can hop to Settings and back without losing their place. FIFO-capped at
+  /// [_positionsCap]; uninstalled-pack ids dropped via
   /// [forgetPositionsWithPrefix].
   static const int _positionsCap = 128;
   final Map<String, Duration> _positions = {};
 
-  /// Serializes [playLoop] and [stop] calls. Without this, an in-flight
-  /// stop() — which awaits stop() on the same AudioPlayer instances that
-  /// playLoop() is about to swap and play on — can race a follow-up
-  /// playLoop() and leave the new player muted/stuck.
+  /// Serializes [playLoop] and [stop]. Without it, an in-flight stop() racing a
+  /// follow-up playLoop() (same AudioPlayer instances) can leave the new player
+  /// muted/stuck.
   Future<void>? _transitionLock;
 
-  /// True between an unmute kick being scheduled and its [playLoop]
-  /// completing. Suppresses redundant kicks during mute/unmute thrash —
-  /// the in-flight playLoop will read the latest [_userVolume] when it
-  /// dequeues, so a second kick is just wasted swap-and-play work.
+  /// True while an unmute kick's [playLoop] is in flight. Suppresses redundant
+  /// kicks during mute/unmute thrash — the in-flight playLoop reads the latest
+  /// [_userVolume] when it dequeues.
   bool _unmutePending = false;
 
   int _transitionId = 0;
   Timer? _rampTimer;
   Timer? _duckRampTimer;
 
-  /// Fires the identifier of a non-looping track when it reaches its natural
-  /// end. The scheduler uses this to pick the next gameplay track only at
-  /// song boundaries, instead of cutting in mid-phrase on a timer.
+  /// Fires a non-looping track's identifier at its natural end, so the
+  /// scheduler advances at song boundaries rather than on a timer.
   final StreamController<String> _completeCtrl =
       StreamController<String>.broadcast();
   Stream<String> get onTrackComplete => _completeCtrl.stream;
@@ -127,21 +120,18 @@ class BgmService {
       await _current.setReleaseMode(releaseMode);
       await _current.setVolume(0);
 
-      // Lifecycle or mute could have flipped during the awaits above (the
-      // swap, stop, setReleaseMode, setVolume all yielded). Bail before
-      // committing to playback; resume()/setVolume() will redo this leg.
+      // Pause/mute may have flipped across the awaits above; bail before
+      // committing. resume()/setVolume() will redo this leg.
       if (_paused || _userVolume == 0) return;
 
-      // audioplayers' _completePrepared waits for a platform "prepared" event
-      // that occasionally never fires on iOS — the bare await would hang for
-      // 30s and surface as an unhandled TimeoutException. Wrap with our own
-      // 5s timeout, throw the stuck player away, and retry once with a fresh
-      // instance.
+      // audioplayers' _completePrepared can hang ~30s on iOS when the platform
+      // "prepared" event never fires. Our own 5s timeout, then discard the
+      // stuck player and retry once with a fresh instance.
       if (!await _tryPlay(_current, source)) {
         final stuck = _current;
         unawaited(() async {
-          // stop() first so a late-arriving prepared event doesn't briefly
-          // emit audio between play() resolving and dispose() landing.
+          // stop() first so a late prepared event can't emit audio between
+          // play() resolving and dispose() landing.
           try {
             await stuck.stop().timeout(const Duration(seconds: 1));
           } catch (_) {}
@@ -152,9 +142,7 @@ class BgmService {
         _current = AudioPlayer();
         await _current.setReleaseMode(releaseMode);
         await _current.setVolume(0);
-        // Lifecycle or mute could have flipped during the awaits above;
-        // bail without starting audio if so. resume()/setVolume() will
-        // redo this leg.
+        // Pause/mute may have flipped; bail. resume()/setVolume() redoes it.
         if (_paused || _userVolume == 0) return;
         await _tryPlay(_current, source);
       }
@@ -170,9 +158,8 @@ class BgmService {
         }
       }
 
-      // Re-attach the completion listener to whichever player is now
-      // _current (post-swap, possibly post-recovery). Looping tracks
-      // never fire onPlayerComplete, so only subscribe for one-shot loops.
+      // Re-attach completion listener to the current player (post-swap/recovery).
+      // Looping tracks never fire onPlayerComplete, so only subscribe for one-shots.
       _completeSub?.cancel();
       _completeSub = null;
       if (!loop) {
@@ -191,9 +178,9 @@ class BgmService {
     }
   }
 
-  /// User-facing volume (0..1). Updated live as the slider moves. A drop to
-  /// zero pauses playback so we're not decoding silent audio; rising back
-  /// up off zero kicks the deferred track back into play.
+  /// User-facing volume (0..1), live from the slider. Dropping to zero pauses
+  /// playback (no decoding silent audio); rising off zero kicks the deferred
+  /// track back into play.
   void setVolume(double v) {
     final newVol = v.clamp(0.0, 1.0);
     final wasZero = _userVolume == 0;
@@ -214,9 +201,8 @@ class BgmService {
       final id = _currentId;
       final source = _currentSource;
       if (id != null && source != null && !_paused && !_unmutePending) {
-        // Coalesce against slider thrash: a single kick will pick up the
-        // latest _userVolume when its playLoop dequeues, so additional
-        // mute→unmute cycles don't need to stack their own playLoops.
+        // Coalesce against slider thrash: one kick picks up the latest
+        // _userVolume on dequeue, so extra mute→unmute cycles needn't stack.
         _unmutePending = true;
         final wasLoop = _currentLoop;
         _currentId = null; // force playLoop's same-id guard to relent
@@ -233,9 +219,8 @@ class BgmService {
     _pushVolumeIfIdle();
   }
 
-  /// Toggle the TTS-driven duck. Going *down* is instant — a ramp would lag
-  /// behind a short utterance. Coming back *up* eases over ~300ms so the
-  /// music doesn't pop in at full volume the moment TTS finishes.
+  /// Toggle the TTS-driven duck. Down is instant (a ramp would lag a short
+  /// utterance); up eases over ~300ms so music doesn't pop back at full volume.
   void setDucking(bool ducking) {
     if (_ducking == ducking) return;
     _ducking = ducking;
@@ -250,9 +235,8 @@ class BgmService {
     }
   }
 
-  /// Stop playback and clear the active track. Unlike [pause], this forgets
-  /// what was playing so [resume] won't restart it — used when the scheduler
-  /// wants gameplay to be silent (no music pack installed).
+  /// Stop and clear the active track. Unlike [pause], forgets what was playing
+  /// so [resume] won't restart it — used to make gameplay silent.
   Future<void> stop() async {
     final prev = _transitionLock;
     final completer = Completer<void>();
@@ -275,9 +259,8 @@ class BgmService {
     }
   }
 
-  /// Drop saved positions for any track id starting with [prefix]. Called
-  /// when a music pack is uninstalled so a future reinstall doesn't seek
-  /// into a stale position from a now-replaced file.
+  /// Drop saved positions for track ids starting with [prefix] (pack
+  /// uninstalled), so a reinstall doesn't seek into a stale position.
   void forgetPositionsWithPrefix(String prefix) {
     _positions.removeWhere((id, _) => id.startsWith(prefix));
   }
@@ -300,10 +283,9 @@ class BgmService {
     await _previous.pause();
   }
 
-  /// Resume the active track. If `playLoop` was called while paused, this
-  /// kicks off the deferred play instead. A pause taken mid-crossfade won't
-  /// resume the outgoing track — it stays silent and gets cleaned up on the
-  /// next [playLoop].
+  /// Resume the active track, or start the deferred play if [playLoop] ran
+  /// while paused. A pause mid-crossfade won't resume the outgoing track — it
+  /// stays silent and is cleaned up on the next [playLoop].
   Future<void> resume() async {
     if (!_paused) return;
     _paused = false;
@@ -313,7 +295,7 @@ class BgmService {
     if (_userVolume == 0) return; // setVolume() will start it on unmute
 
     if (_currentVol == 0 && _previousVol == 0) {
-      // We never actually started — playLoop deferred during pause.
+      // Never started — playLoop deferred during pause.
       final wasLoop = _currentLoop;
       _currentId = null; // force playLoop to do its thing
       await playLoop(id, source, loop: wasLoop);

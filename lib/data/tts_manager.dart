@@ -46,11 +46,9 @@ class TtsModelInfo {
 }
 
 /// Bundled fallback catalog of Piper VITS models, keyed by ISO 639-3 lang code.
-///
-/// Used at cold start before the remote manifest loads, when the manifest fetch
-/// fails with no cache, and as the source for legacy Hive migrations. The
-/// runtime catalog merges this with `Manifest.voices` (manifest wins per-lang),
-/// so adding new voices to the manifest ships them without an app update.
+/// Used at cold start, on manifest-fetch failure with no cache, and for legacy
+/// Hive migrations. Runtime catalog merges this with `Manifest.voices`
+/// (manifest wins per-lang).
 const kBaselineVoiceCatalog = <String, List<TtsModelInfo>>{
   'eng': [
     TtsModelInfo(modelId: 'hfc_male', displayName: 'HFC Male', archiveName: 'vits-piper-en_US-hfc_male-medium', onnxFile: 'en_US-hfc_male-medium.onnx', approximateSizeMB: 61),
@@ -95,18 +93,14 @@ class TtsManager {
   final Box _box;
   final String modelsDir;
 
-  /// Live voice catalog (baseline merged with manifest overrides). Starts at
-  /// the bundled baseline so cold-start callers — including TTS playback
-  /// before the manifest has loaded — get a working answer. Mutated only via
-  /// [setVoiceCatalog]; the Riverpod `voiceCatalogProvider` listener pushes
-  /// the merged view in whenever the manifest changes.
+  /// Live voice catalog (baseline + manifest overrides). Starts at the baseline
+  /// so cold-start callers get a working answer. Mutated only via
+  /// [setVoiceCatalog].
   Map<String, List<TtsModelInfo>> _voiceCatalog = kBaselineVoiceCatalog;
 
   Map<String, List<TtsModelInfo>> get voiceCatalog => _voiceCatalog;
 
-  /// Replace the catalog. Stores an unmodifiable view so accidental mutation
-  /// from callers can't leak into the runtime — only the next `setVoiceCatalog`
-  /// call rotates the view.
+  /// Replace the catalog, stored unmodifiable so caller mutation can't leak in.
   void setVoiceCatalog(Map<String, List<TtsModelInfo>> next) {
     _voiceCatalog = Map.unmodifiable(next);
   }
@@ -130,7 +124,7 @@ class TtsManager {
   Future<void> downloadEspeakData() async {
     if (isEspeakDataDownloaded) return;
 
-    // Serialize concurrent calls — only one download at a time
+    // Serialize concurrent calls — one download at a time.
     if (_espeakDownload != null) {
       return _espeakDownload!.future;
     }
@@ -210,11 +204,9 @@ class TtsManager {
 
     if (downloadedModelId(lang) == info.modelId) return;
 
-    // Join an in-flight download rather than returning early — otherwise a
-    // second caller's `finally` (e.g. resetting the progress provider) runs
-    // while the first download is still going. Mirrors downloadEspeakData.
-    // The joiner's progress callbacks aren't attached; only the first
-    // caller's report.
+    // Join an in-flight download rather than returning early — else a second
+    // caller's `finally` (e.g. resetting progress) runs while the first is
+    // still going. Only the first caller's progress callbacks are attached.
     final inFlight = _activeDownloads[lang];
     if (inFlight != null) return inFlight;
 

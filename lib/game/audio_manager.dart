@@ -79,7 +79,6 @@ class AudioManager {
                 _footstepGain)
             .clamp(0.0, 1.0);
 
-  // UI/claw taps duck under TTS like feedback, but sit a touch lower.
   double get _uiVol =>
       (taperedVolume(masterVolume) *
               taperedVolume(sfxVolume) *

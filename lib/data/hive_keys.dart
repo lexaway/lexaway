@@ -1,7 +1,4 @@
-/// Centralised Hive box key constants.
-///
-/// Every string key used with [Box.get], [Box.put], or [Box.delete] lives here
-/// so typos become compile errors instead of silent bugs.
+/// Centralised Hive box key constants — one place so typos are compile errors.
 abstract final class HiveKeys {
   static const hiveSchemaVersion = 'hive_schema_version';
 
@@ -26,7 +23,6 @@ abstract final class HiveKeys {
   static const stepsToday = 'steps_today';
   static const stepsDayKey = 'steps_day_key';
 
-  // World state (per-language)
   static String world(String lang) => 'world_$lang';
 
   // Per-language lifetime steps — display-only counter for the pack tile.

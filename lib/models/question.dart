@@ -43,9 +43,8 @@ class Question {
 
   String get after => phrase.substring(blankIndex + answer.length);
 
-  /// Individual words in the phrase (non-whitespace runs), matching the
-  /// tokens rendered by [PhraseText]. Used by the TTS prefetcher so its
-  /// cache keys line up with the ones the tap handler requests.
+  /// Non-whitespace runs, matching the tokens rendered by [PhraseText], so the
+  /// TTS prefetcher's cache keys line up with what the tap handler requests.
   List<String> get words =>
       splitPhraseWords(phrase).map((w) => w.text).toList();
 }

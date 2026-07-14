@@ -132,10 +132,9 @@ class StepsNotifier extends Notifier<StepsState> {
     final currentKey = todayKey();
     ref.onDispose(() => _midnightTimer?.cancel());
     _scheduleMidnightRollover();
-    // Stale-day detection: return rolled-over state but don't persist here.
-    // Riverpod build() should be side-effect-free; the stored values stay
-    // stale until the next add() or the midnight timer fires, both of
-    // which persist. Build-time read is self-correcting on every session.
+    // Return rolled-over state but don't persist: build() must be
+    // side-effect-free. Stored values stay stale until the next add() or the
+    // midnight timer persists; the build-time read self-corrects each session.
     if (storedDayKey != currentKey) {
       return StepsState(lifetime: lifetime, today: 0, dayKey: currentKey);
     }

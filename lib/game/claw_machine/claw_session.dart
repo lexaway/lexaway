@@ -17,8 +17,7 @@ import 'prize_door.dart';
 import 'prize_sphere.dart';
 import 'sphere.dart';
 
-/// Phases of a single attempt. Same enum the standalone game used —
-/// preserves feel across the in-world refactor.
+/// Phases of a single attempt.
 enum ClawPhase { aiming, dropping, grabbing, retracting, delivering, result }
 
 /// Surface only the gameplay outcome; the screen layers `coinsSpent`
@@ -31,19 +30,17 @@ typedef ClawAttemptCallback = void Function({
 });
 
 /// Logic holder for a single in-world claw encounter. Mounted as a child
-/// of the [ClawMachine] cabinet — its play subcomponents are added as
-/// siblings of the session (also under the cabinet) so they can use
-/// priorities to interleave with the cabinet's exterior sprite.
+/// of the [ClawMachine] cabinet; its play subcomponents are added as
+/// siblings so priorities can interleave them with the exterior sprite.
 ///
-/// Renders nothing itself. Drives clawX/Y/closed, sphere physics, and
-/// the drop-grab-retract-deliver sequence.
+/// Renders nothing itself. Drives clawX/Y/closed, sphere physics, and the
+/// drop-grab-retract-deliver sequence.
 class ClawSessionComponent extends PositionComponent {
-  // Old overlay used 0.8 px per ~16 ms tick. In continuous time that's
-  // ~50 px/s — keep the same on-screen feel.
+  // 0.8 px per ~16 ms tick ≈ 50 px/s.
   static const double stickSpeedPerSec = 50.0;
 
-  // Physics tuning. Cabinet is 80×128 px so values are small in absolute
-  // terms — gravity pulls a sphere across the cabinet floor in ~0.6 s.
+  // Physics tuning. Cabinet is 80×128 px so values are small — gravity
+  // pulls a sphere across the floor in ~0.6 s.
   static const double gravityPerSec2 = 220.0;
   static const double wallRestitution = 0.35;
   static const double ballRestitution = 0.55;
@@ -92,16 +89,14 @@ class ClawSessionComponent extends PositionComponent {
   Future<void> onLoad() async {
     final cabinet = _cabinet;
 
-    // Five flag spheres on the floor of the glass, lightly jittered. Drop
-    // them from a few px above the floor with a tiny random velocity so the
-    // opening jostle feels lively. Loadout is re-rolled each session so a
-    // try-again attempt sees a fresh set of flags.
+    // Five flag spheres dropped from a few px above the floor with a tiny
+    // random velocity for an opening jostle. Loadout re-rolled each session
+    // so try-again sees a fresh set.
     final rng = math.Random();
     final loadout = CollectibleRegistry.instance
         .randomFromCategory(cabinet.categoryId, 5, rng: rng);
-    // Preload every sprite up front so each sphere's first render has a
-    // decoded bitmap to draw (otherwise the first frames would show the
-    // shell-only ball with no sprite inside).
+    // Preload sprites so each sphere's first render has a decoded bitmap —
+    // otherwise the first frames show a shell-only ball.
     for (final c in loadout) {
       await CollectibleRegistry.instance.loadSprite(c.spriteAsset);
     }
@@ -185,8 +180,8 @@ class ClawSessionComponent extends PositionComponent {
   // ─── Physics ────────────────────────────────────────────────────────
 
   /// Integrate gravity, resolve sphere-sphere overlap, clamp to glass walls,
-  /// and let the claw arms (segment colliders) shove spheres aside. Cheap
-  /// O(n²) all the way through — we have five spheres, so it doesn't matter.
+  /// and let the claw arms shove spheres aside. O(n²) throughout — fine at
+  /// five spheres.
   void _stepPhysics(double dt) {
     if (_floorSpheres.isEmpty) return;
     if (_clinkCooldown > 0) _clinkCooldown -= dt;
@@ -256,8 +251,7 @@ class ClawSessionComponent extends PositionComponent {
     final relVel =
         (b.velocity.x - a.velocity.x) * nx + (b.velocity.y - a.velocity.y) * ny;
     if (relVel >= 0) return;
-    // Clack only on meaningful impacts, throttled so the per-frame O(n²)
-    // pass can't machine-gun a burst of overlaps into a wall of sound.
+    // Throttled so a frame's burst of overlaps stays one clink, not a buzz.
     if (relVel < -_clinkSpeed && _clinkCooldown <= 0) {
       _clinkCooldown = _clinkInterval;
       AudioManager.instance.playClawClink();
@@ -378,12 +372,11 @@ class ClawSessionComponent extends PositionComponent {
       duration: 0.7,
     );
 
-    // Two-layer "drop into the chute" hack:
-    //  1. Open the claw, hand the captured sphere off to a free-falling
-    //     tween. Its priority (5) is below the cabinet exterior (6), so the
-    //     moment it crosses the glass floor it disappears behind the body.
-    //  2. After a beat, open the prize door and spawn a "settled" sphere at
-    //     priority 9 (above the door at 8) so it appears inside the hatch.
+    // "Drop into the chute" in two layers:
+    //  1. Free-fall tween at priority 5 (below exterior 6) so the ball
+    //     vanishes behind the body once it clears the glass floor.
+    //  2. Open the door and spawn a "settled" sphere at priority 9 (above
+    //     the door at 8) so it appears inside the hatch.
     clawClosed = false;
     final ball = capturedSphere!;
     capturedSphere = null;
@@ -439,10 +432,8 @@ class ClawSessionComponent extends PositionComponent {
   }
 
   SphereComponent? _findCaughtSphere() {
-    // Mouth of the closed claw — between the two arm tips, just below the
-    // shoulders. Spheres that are within `captureRadius` of this point get
-    // caught. Using a 2-D distance keeps airborne (jostled) spheres
-    // catchable, not just the row sitting on the floor.
+    // Mouth of the closed claw, between the arm tips. 2-D distance so
+    // airborne (jostled) spheres stay catchable, not just floor-resting ones.
     final mouthX = clawX;
     final mouthY = clawY +
         ClawCabinet.headH -
@@ -468,10 +459,9 @@ class ClawSessionComponent extends PositionComponent {
     onResultReady(won: _won, spheresWon: _spheresWon, prize: _wonPrize);
   }
 
-  /// Spawn a new sphere of the same kind as [source] at [position] with
-  /// the given [priority]. For prize spheres this hands the source's
-  /// already-decoded sprite + composed shell to the clone, so the new
-  /// sphere renders on the same frame it's added.
+  /// Spawn a new sphere of the same kind as [source] at [position]. Prize
+  /// spheres reuse the source's decoded sprite + composed shell so the clone
+  /// renders on its first frame.
   SphereComponent _cloneSphere(
     SphereComponent source,
     Vector2 position,
@@ -520,9 +510,8 @@ class ClawSessionComponent extends PositionComponent {
   }
 }
 
-/// One-shot tween advanced by the Flame tick. `tick` returns `null` when
-/// the tween has completed (matching the pattern of consuming a `_Anim?`
-/// field, so the field self-clears).
+/// One-shot tween advanced by the Flame tick. `tick` returns `null` on
+/// completion so a `_Anim?` field self-clears.
 class _Anim {
   final double from;
   final double to;
