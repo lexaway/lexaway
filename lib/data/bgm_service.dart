@@ -17,8 +17,8 @@ class BgmService {
   static const double _duckMultiplier = 0.3;
   static const Duration _rampInterval = Duration(milliseconds: 50);
 
-  AudioPlayer _current = AudioPlayer(playerId: 'bgm_a');
-  AudioPlayer _previous = AudioPlayer(playerId: 'bgm_b');
+  AudioPlayer _current = AudioPlayer();
+  AudioPlayer _previous = AudioPlayer();
 
   String? _currentId;
   Source? _currentSource;

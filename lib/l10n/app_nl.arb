@@ -59,5 +59,6 @@
   "clawLost": "Net niet!",
   "clawLostDetail": "Probeer de volgende.",
   "clawTryAgain": "Opnieuw ({cost}c)",
+  "collection": "Collectie",
   "couldNotOpenUrl": "Kan {url} niet openen"
 }

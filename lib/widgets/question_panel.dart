@@ -38,8 +38,8 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
 
   late final TtsController _tts;
 
-  late AnimationController _shakeController;
-  late Animation<double> _shakeAnimation;
+  late final AnimationController _shakeController;
+  late final Animation<double> _shakeAnimation;
 
   @override
   void initState() {
@@ -284,7 +284,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                 // the decorative frame, and on gesture-nav devices Android adds
                 // another inset on top of that. Lift the FAB by both so it
                 // clears the system handle.
-                bottom: AppSpacing.sm + MediaQuery.of(context).padding.bottom,
+                bottom: AppSpacing.sm + MediaQuery.paddingOf(context).bottom,
                 right: 0,
                 child: GestureDetector(
                   onTap: () {

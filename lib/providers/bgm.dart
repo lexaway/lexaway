@@ -22,8 +22,8 @@ final bgmServiceProvider = Provider<BgmService>((ref) {
       taperedVolume(ref.read(masterVolumeProvider)) *
       taperedVolume(ref.read(bgmVolumeProvider));
   service.setVolume(effective());
-  ref.listen<double>(bgmVolumeProvider, (_, __) => service.setVolume(effective()));
-  ref.listen<double>(masterVolumeProvider, (_, __) => service.setVolume(effective()));
+  ref.listen<double>(bgmVolumeProvider, (_, _) => service.setVolume(effective()));
+  ref.listen<double>(masterVolumeProvider, (_, _) => service.setVolume(effective()));
   ref.onDispose(service.dispose);
   return service;
 });
@@ -42,10 +42,10 @@ final bgmSchedulerProvider = Provider<BgmScheduler>((ref) {
   }
 
   refreshCatalog();
-  ref.listen<AsyncValue<Set<String>>>(installedMusicProvider, (_, __) {
+  ref.listen<AsyncValue<Set<String>>>(installedMusicProvider, (_, _) {
     refreshCatalog();
   });
-  ref.listen<List<MusicPackInfo>>(musicCatalogProvider, (_, __) {
+  ref.listen<List<MusicPackInfo>>(musicCatalogProvider, (_, _) {
     refreshCatalog();
   });
 

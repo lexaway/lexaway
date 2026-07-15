@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flame/components.dart';
 
 import '../components/biome_parallax.dart';
-import '../components/camera.dart';
+import '../components/world_camera.dart';
 import '../events.dart';
 import '../lexaway_game.dart';
 import '../walk_state.dart';
@@ -12,18 +12,18 @@ import '../world/world_map.dart';
 /// Owns anything that scrolls: parallax velocity, camera scroll speed, and
 /// cloud drift. Also detects biome boundaries and triggers parallax
 /// crossfades via [BiomeParallax.transitionTo].
-class ScrollController extends Component with HasGameReference<LexawayGame> {
+class WorldScrollController extends Component with HasGameReference<LexawayGame> {
   StreamSubscription<GameEvent>? _sub;
 
-  final Camera _camera;
+  final WorldCamera _camera;
   final BiomeParallax _biomeParallax;
   final WorldMap _worldMap;
   final GameEvents _events;
 
   late BiomeType _currentBiome;
 
-  ScrollController({
-    required Camera camera,
+  WorldScrollController({
+    required WorldCamera camera,
     required BiomeParallax biomeParallax,
     required WorldMap worldMap,
     required GameEvents events,

@@ -432,6 +432,12 @@ abstract class AppLocalizations {
   /// **'Try again ({cost}c)'**
   String clawTryAgain(int cost);
 
+  /// No description provided for @collection.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection'**
+  String get collection;
+
   /// No description provided for @couldNotOpenUrl.
   ///
   /// In en, this message translates to:

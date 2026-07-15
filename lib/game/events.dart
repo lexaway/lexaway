@@ -33,7 +33,7 @@ class WalkSpeedChanged extends GameEvent {
 
 class WalkStopped extends GameEvent {
   /// Non-zero only when [MovementController.finishMovement] caused the stop —
-  /// ScrollController uses it to fast-forward the ground scroll offset.
+  /// WorldScrollController uses it to fast-forward the ground scroll offset.
   final double skipDistance;
   const WalkStopped({this.skipDistance = 0});
 }

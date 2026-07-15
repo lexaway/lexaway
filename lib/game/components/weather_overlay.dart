@@ -10,7 +10,7 @@ import '../world/biome_registry.dart';
 import '../world/noise.dart';
 import '../world/weather_def.dart';
 import '../world/world_map.dart';
-import 'camera.dart';
+import 'world_camera.dart';
 
 /// Reusable "stuff falling from the sky" overlay. One instance handles every
 /// biome; the active [WeatherDef] (or `null`) is read from the registry and
@@ -26,7 +26,7 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
   final double initialScrollOffset;
 
   final WorldMap worldMap;
-  final Camera camera;
+  final WorldCamera camera;
   final GameEvents _events;
 
   WeatherOverlay({
@@ -37,7 +37,7 @@ class WeatherOverlay extends Component with HasGameReference<LexawayGame> {
   }) : _events = events;
 
   /// Snappy fade. `BiomeChanged` fires at *screen-center* crossing (see
-  /// `ScrollController.update`), so the right half is already in the new
+  /// `WorldScrollController.update`), so the right half is already in the new
   /// biome; a slow fade would still be ramping well past the boundary.
   static const double _fadeDuration = 0.6;
 

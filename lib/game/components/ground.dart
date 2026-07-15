@@ -4,7 +4,7 @@ import 'package:flame/components.dart';
 import '../lexaway_game.dart';
 import '../world/biome_registry.dart';
 import '../world/world_map.dart';
-import 'camera.dart';
+import 'world_camera.dart';
 
 class _TerrainSprites {
   final Sprite surface;
@@ -57,7 +57,7 @@ class _PierSprites {
 
 class Ground extends Component with HasGameReference<LexawayGame> {
   final WorldMap worldMap;
-  final Camera camera;
+  final WorldCamera camera;
 
   Ground({required this.worldMap, required this.camera});
 

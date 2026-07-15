@@ -202,7 +202,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
               left: 0,
               right: 0,
               top:
-                  MediaQuery.of(context).size.height * LexawayGame.groundLevel +
+                  MediaQuery.sizeOf(context).height * LexawayGame.groundLevel +
                   64,
               bottom: -24,
               // Slide the panel off-screen during a claw encounter so the
@@ -232,7 +232,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
                 coinCost: clawMachineCoinCost,
                 currentCoins: ref.watch(coinProvider),
                 onAccept: () => _claw!.accept(
-                  safeBottomInset: MediaQuery.of(context).padding.bottom,
+                  safeBottomInset: MediaQuery.paddingOf(context).bottom,
                 ),
                 onDecline: _claw!.decline,
               ),

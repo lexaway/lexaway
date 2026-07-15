@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -56,7 +57,7 @@ class _TiledBackgroundState extends State<TiledBackground>
   ImageStreamListener? _listener;
   ImageStream? _stream;
   late final Ticker _ticker;
-  Offset _offset = Offset.zero;
+  final ValueNotifier<Offset> _offset = ValueNotifier(Offset.zero);
   Duration _lastTick = Duration.zero;
 
   bool _reduceMotion = false;
@@ -77,7 +78,7 @@ class _TiledBackgroundState extends State<TiledBackground>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _reduceMotion = MediaQuery.of(context).disableAnimations;
+    _reduceMotion = MediaQuery.disableAnimationsOf(context);
     _syncTicker();
   }
 
@@ -97,7 +98,7 @@ class _TiledBackgroundState extends State<TiledBackground>
       _ticker.start();
     } else if (!_shouldAnimate && _ticker.isActive) {
       _ticker.stop();
-      setState(() => _offset = Offset.zero);
+      _offset.value = Offset.zero;
     }
   }
 
@@ -124,22 +125,23 @@ class _TiledBackgroundState extends State<TiledBackground>
     _lastTick = elapsed;
 
     final dir = widget.scrollDirection / widget.scrollDirection.distance;
-    _offset += dir * widget.scrollSpeed * dt;
+    var next = _offset.value + dir * widget.scrollSpeed * dt;
 
-    // Wrap to tile size so _offset never drifts to precision-loss territory.
+    // Wrap to tile size so the offset never drifts to precision-loss territory.
     if (_image != null) {
       final tileW = _image!.width * widget.scale;
       final tileH = _image!.height * widget.scale;
-      _offset = Offset(_offset.dx % tileW, _offset.dy % tileH);
+      next = Offset(next.dx % tileW, next.dy % tileH);
     }
 
-    setState(() {});
+    _offset.value = next;
   }
 
   @override
   void dispose() {
     _ticker.dispose();
     _disposeImage();
+    _offset.dispose();
     super.dispose();
   }
 
@@ -165,12 +167,12 @@ class _TiledPainter extends CustomPainter {
     required this.color,
     required this.scale,
     required this.offset,
-  });
+  }) : super(repaint: offset);
 
   final ui.Image image;
   final Color color;
   final double scale;
-  final Offset offset;
+  final ValueListenable<Offset> offset;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -183,8 +185,8 @@ class _TiledPainter extends CustomPainter {
     final src =
         Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
 
-    final ox = offset.dx % tileW;
-    final oy = offset.dy % tileH;
+    final ox = offset.value.dx % tileW;
+    final oy = offset.value.dy % tileH;
 
     for (var y = -tileH + oy; y < size.height + tileH; y += tileH) {
       for (var x = -tileW + ox; x < size.width + tileW; x += tileW) {

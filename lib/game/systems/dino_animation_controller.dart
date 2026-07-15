@@ -9,7 +9,7 @@ import '../events.dart';
 
 /// Routes walk/run/idle animations, schedules random fidget jumps while
 /// standing still, and fires idle chatter after a minute of silence.
-class AnimationController extends Component {
+class DinoAnimationController extends Component {
   static const double _idleTimeout = 60.0;
   static const double _fidgetMin = 8.0;
   static const double _fidgetMax = 20.0;
@@ -27,7 +27,7 @@ class AnimationController extends Component {
   double _fidgetTimer = 0;
   double _nextFidgetAt = _rollFidgetDelay();
 
-  AnimationController({required Player player, required GameEvents events})
+  DinoAnimationController({required Player player, required GameEvents events})
       : _player = player,
         _events = events;
 

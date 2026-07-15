@@ -59,5 +59,6 @@
   "clawLost": "Knapp daneben!",
   "clawLostDetail": "Versuch die nächste.",
   "clawTryAgain": "Nochmal ({cost}c)",
+  "collection": "Sammlung",
   "couldNotOpenUrl": "Konnte {url} nicht öffnen"
 }

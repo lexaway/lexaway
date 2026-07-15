@@ -25,8 +25,8 @@ final ambientServiceProvider = Provider<BgmService>((ref) {
       taperedVolume(ref.read(sfxVolumeProvider)) *
       _ambientGain;
   service.setVolume(effective());
-  ref.listen<double>(sfxVolumeProvider, (_, __) => service.setVolume(effective()));
-  ref.listen<double>(masterVolumeProvider, (_, __) => service.setVolume(effective()));
+  ref.listen<double>(sfxVolumeProvider, (_, _) => service.setVolume(effective()));
+  ref.listen<double>(masterVolumeProvider, (_, _) => service.setVolume(effective()));
   ref.onDispose(service.dispose);
   return service;
 });

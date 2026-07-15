@@ -181,6 +181,9 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get collection => 'Sammlung';
+
+  @override
   String couldNotOpenUrl(String url) {
     return 'Konnte $url nicht öffnen';
   }

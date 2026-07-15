@@ -56,7 +56,7 @@ class AttributionsScreen extends StatelessWidget {
           Column(
             children: [
               SizedBox(
-                height: MediaQuery.of(context).padding.top + kToolbarHeight,
+                height: MediaQuery.paddingOf(context).top + kToolbarHeight,
               ),
               Expanded(
                 child: Container(
@@ -77,7 +77,7 @@ class AttributionsScreen extends StatelessWidget {
                   child: ListView.separated(
                     padding: EdgeInsets.zero,
                     itemCount: _attributions.length,
-                    separatorBuilder: (_, __) => Divider(
+                    separatorBuilder: (_, _) => Divider(
                       color: AppColors.textSecondary.withValues(alpha: 0.2),
                       height: AppSpacing.md,
                     ),

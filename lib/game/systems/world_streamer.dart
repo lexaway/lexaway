@@ -1,6 +1,6 @@
 import 'package:flame/components.dart';
 
-import '../components/camera.dart';
+import '../components/world_camera.dart';
 import '../events.dart';
 import '../lexaway_game.dart';
 import '../world/entity_footprints.dart';
@@ -20,14 +20,14 @@ class WorldStreamer extends Component {
 
   final WorldMap worldMap;
   final EntityFootprints _entityFootprints;
-  final Camera _camera;
+  final WorldCamera _camera;
   final GameEvents _events;
 
   int _extensions = 0;
 
   WorldStreamer({
     required this.worldMap,
-    required Camera camera,
+    required WorldCamera camera,
     required GameEvents events,
     EntityFootprints entityFootprints = const {},
   })  : _camera = camera,

@@ -59,5 +59,6 @@
   "clawLost": "¡Por poco!",
   "clawLostDetail": "Prueba con la siguiente.",
   "clawTryAgain": "Reintentar ({cost}c)",
+  "collection": "Colección",
   "couldNotOpenUrl": "No se pudo abrir {url}"
 }

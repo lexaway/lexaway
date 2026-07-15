@@ -14,7 +14,7 @@ class HudBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final topPadding = MediaQuery.of(context).padding.top;
+    final topPadding = MediaQuery.paddingOf(context).top;
     final coins = ref.watch(coinProvider);
 
     return Padding(

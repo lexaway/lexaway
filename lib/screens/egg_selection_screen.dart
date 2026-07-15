@@ -31,11 +31,11 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
   bool _hatching = false;
   final _rng = Random();
 
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
+  late final AnimationController _fadeController;
+  late final Animation<double> _fadeAnimation;
 
-  late List<AnimationController> _shakeControllers;
-  late List<Animation<double>> _shakeAnimations;
+  late final List<AnimationController> _shakeControllers;
+  late final List<Animation<double>> _shakeAnimations;
 
   // The wobble tween idles flat for the leading "quiet" weight of each cycle,
   // then tilts. The rustle SFX fires at that flat→tilt onset. Onset lives in
@@ -100,7 +100,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
         CharacterRegistry.allNames
             .where((n) => !CharacterRegistry.incompleteMale.contains(n))
             .toList()
-          ..shuffle();
+          ..shuffle(_rng);
     _eggNames = pool.take(3).toList();
     _rebuildGames();
   }

@@ -33,7 +33,7 @@ final localPacksProvider =
 class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
   @override
   Future<Map<String, LocalPack>> build() async {
-    return ref.read(packManagerProvider).getLocalPacks();
+    return ref.watch(packManagerProvider).getLocalPacks();
   }
 
   Future<void> download(
@@ -125,7 +125,7 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
 
 /// Remote manifest (cached offline).
 final manifestProvider = FutureProvider<Manifest>((ref) {
-  return ref.read(packManagerProvider).fetchManifest();
+  return ref.watch(packManagerProvider).fetchManifest();
 });
 
 /// Live TTS voice catalog: bundled baseline overlaid with `Manifest.voices`.

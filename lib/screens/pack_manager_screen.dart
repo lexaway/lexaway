@@ -193,6 +193,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final manifest = ref.watch(manifestProvider);
     final localPacks = ref.watch(localPacksProvider);
     final local = localPacks.valueOrNull ?? {};
@@ -200,7 +201,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
 
     final hasActiveQuestions =
         ref.watch(activePackProvider).valueOrNull?.hasQuestions ?? false;
-    final activePackId = ref.read(activePackProvider.notifier).activePackId;
+    final activePackId = ref.watch(activePackProvider.notifier).activePackId;
     final canGoBack =
         hasActiveQuestions &&
         activePackId != null &&
@@ -213,11 +214,11 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.textSecondary,
         automaticallyImplyLeading: canGoBack,
-        title: Text(AppLocalizations.of(context)!.packManagerTitle),
+        title: Text(l10n.packManagerTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.language),
-            tooltip: AppLocalizations.of(context)!.appLanguage,
+            tooltip: l10n.appLanguage,
             onPressed: () => _showLocalePicker(context),
           ),
         ],
@@ -237,12 +238,12 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                height: MediaQuery.of(context).padding.top + kToolbarHeight,
+                height: MediaQuery.paddingOf(context).top + kToolbarHeight,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Text(
-                  AppLocalizations.of(context)!.packManagerSubtitle,
+                  l10n.packManagerSubtitle,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
@@ -259,11 +260,11 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                       color: AppColors.textTertiary,
                     ),
                   ),
-                  error: (err, __) => _ManifestErrorView(
+                  error: (err, _) => _ManifestErrorView(
                     message: err is ManifestUnavailableException
-                        ? AppLocalizations.of(context)!.manifestUnavailable
+                        ? l10n.manifestUnavailable
                         : '$err',
-                    retryLabel: AppLocalizations.of(context)!.retry,
+                    retryLabel: l10n.retry,
                     onRetry: () => ref.invalidate(manifestProvider),
                   ),
                   data: (m) {
@@ -311,7 +312,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                                 ),
                               ),
                               child: Text(
-                                AppLocalizations.of(context)!.communityContent,
+                                l10n.communityContent,
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   color: AppColors.textTertiary,
@@ -326,32 +327,42 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                           pack,
                           local[pack.packId],
                         );
-                        final ttsManager = ref.watch(ttsManagerProvider);
-                        final voiceCatalog = ref.watch(voiceCatalogProvider);
-                        return PackTile(
-                          pack: pack,
-                          local: local[pack.packId],
-                          packStatus: status,
-                          packProgress: ref.watch(
-                            downloadProgressProvider(pack.packId),
-                          ),
-                          voiceProgress: ref.watch(
-                            voiceDownloadProgressProvider(pack.lang),
-                          ),
-                          voiceModels: voiceCatalog[pack.lang] ?? const [],
-                          downloadedModelId: ttsManager.downloadedModelId(
-                            pack.lang,
-                          ),
-                          hasCharacter:
-                              ref.watch(characterProvider(pack.lang)) != null,
-                          langSteps: ref.watch(langStepsProvider(pack.lang)),
-                          onDownload: () => _download(pack),
-                          onUpdate: () => _download(pack),
-                          onDownloadVoice: (modelId) =>
-                              _downloadVoice(pack.lang, modelId),
-                          onDelete: () => _delete(pack.packId),
-                          onDeleteVoice: () => _deleteVoice(pack.lang),
-                          onSelect: () => _select(pack.packId),
+                        // Consumer so a progress tick rebuilds one tile, not
+                        // the whole screen — and because itemBuilder runs
+                        // during layout, where ConsumerState.ref can't watch.
+                        return Consumer(
+                          builder: (context, ref, _) {
+                            final ttsManager = ref.watch(ttsManagerProvider);
+                            final voiceCatalog =
+                                ref.watch(voiceCatalogProvider);
+                            return PackTile(
+                              pack: pack,
+                              local: local[pack.packId],
+                              packStatus: status,
+                              packProgress: ref.watch(
+                                downloadProgressProvider(pack.packId),
+                              ),
+                              voiceProgress: ref.watch(
+                                voiceDownloadProgressProvider(pack.lang),
+                              ),
+                              voiceModels: voiceCatalog[pack.lang] ?? const [],
+                              downloadedModelId: ttsManager.downloadedModelId(
+                                pack.lang,
+                              ),
+                              hasCharacter:
+                                  ref.watch(characterProvider(pack.lang)) !=
+                                      null,
+                              langSteps:
+                                  ref.watch(langStepsProvider(pack.lang)),
+                              onDownload: () => _download(pack),
+                              onUpdate: () => _download(pack),
+                              onDownloadVoice: (modelId) =>
+                                  _downloadVoice(pack.lang, modelId),
+                              onDelete: () => _delete(pack.packId),
+                              onDeleteVoice: () => _deleteVoice(pack.lang),
+                              onSelect: () => _select(pack.packId),
+                            );
+                          },
                         );
                       },
                     );

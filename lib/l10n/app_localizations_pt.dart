@@ -182,6 +182,9 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get collection => 'Coleção';
+
+  @override
   String couldNotOpenUrl(String url) {
     return 'Não foi possível abrir $url';
   }

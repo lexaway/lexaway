@@ -74,6 +74,7 @@
       "cost": { "type": "int" }
     }
   },
+  "collection": "Collection",
   "couldNotOpenUrl": "Could not open {url}",
   "@couldNotOpenUrl": {
     "placeholders": {

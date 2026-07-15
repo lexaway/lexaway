@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 
 import 'audio_manager.dart' show Terrain;
-import 'components/camera.dart';
+import 'components/world_camera.dart';
 import 'events.dart';
 import 'lexaway_game.dart';
 import 'walk_state.dart';
@@ -18,7 +18,7 @@ import 'world/world_map.dart';
 class MovementController extends Component {
   final WalkState _state = WalkState();
 
-  final Camera _camera;
+  final WorldCamera _camera;
   final WorldMap _worldMap;
   final GameEvents _events;
 
@@ -40,7 +40,7 @@ class MovementController extends Component {
   bool get isWalking => _state.walking;
 
   MovementController({
-    required Camera camera,
+    required WorldCamera camera,
     required WorldMap worldMap,
     required GameEvents events,
   })  : _camera = camera,

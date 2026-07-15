@@ -7,11 +7,11 @@ import 'package:flutter/foundation.dart';
 /// Single source of truth for world position. Owns scroll offset, scroll
 /// speed, and zoom (used by in-world encounters like the claw machine to
 /// focus on an entity without dimming the scene).
-class Camera extends Component {
+class WorldCamera extends Component {
   final ValueNotifier<double> scrollNotifier;
   final ValueNotifier<double> zoomNotifier;
 
-  Camera({double initialOffset = 0})
+  WorldCamera({double initialOffset = 0})
       : scrollNotifier = ValueNotifier(initialOffset),
         zoomNotifier = ValueNotifier(1.0);
 

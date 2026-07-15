@@ -13,7 +13,6 @@ import 'audio_manager.dart';
 import 'claw_machine/cabinet.dart';
 import 'claw_machine/claw_session.dart';
 import 'components/biome_parallax.dart';
-import 'components/camera.dart';
 import 'components/claw_machine.dart';
 import 'components/claw_machine_manager.dart';
 import 'components/coin_manager.dart';
@@ -23,14 +22,15 @@ import 'components/speech_bubble.dart';
 import 'components/speech_messages.dart';
 import 'components/weather_overlay.dart';
 import 'components/wind_lines.dart';
+import 'components/world_camera.dart';
 import 'events.dart';
 import 'movement_controller.dart';
-import 'systems/animation_controller.dart';
 import 'systems/audio_cue_controller.dart';
 import 'systems/dialogue_controller.dart';
-import 'systems/scroll_controller.dart';
+import 'systems/dino_animation_controller.dart';
 import 'systems/streak_vfx_controller.dart';
 import 'systems/wind_controller.dart';
+import 'systems/world_scroll_controller.dart';
 import 'systems/world_state_persister.dart';
 import 'systems/world_streamer.dart';
 import 'world/creature_layer.dart';
@@ -97,7 +97,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   final GameEvents events = GameEvents();
 
   late final WorldMap _worldMap;
-  late final Camera _camera;
+  late final WorldCamera _camera;
   late final WorldStreamer _worldStreamer;
   late final WorldStatePersister _worldStatePersister;
   late final BiomeParallax _biomeParallax;
@@ -123,14 +123,14 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   WorldMap get worldMap => _worldMap;
 
   /// The biome currently under the screen centre — the same probe
-  /// [ScrollController] uses to detect crossings. Exposed so the screen can
+  /// [WorldScrollController] uses to detect crossings. Exposed so the screen can
   /// start the right ambient bed on load, before any [BiomeChanged] fires.
   BiomeType get currentBiome =>
       _worldMap.biomeAt(_camera.scrollOffset + size.x / 2);
 
   /// Live scroll offset. Exposed for UI bindings (minimap) and for
   /// downstream creature behaviors that don't fit the constructor-injection
-  /// pattern. Sibling systems should take a [Camera] in their constructor.
+  /// pattern. Sibling systems should take a [WorldCamera] in their constructor.
   double get scrollOffset => _camera.scrollOffset;
   ValueNotifier<double> get scrollNotifier => _camera.scrollNotifier;
   double get zoomBlend => _camera.zoomBlend;
@@ -148,7 +148,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     _worldMap = WorldGenerator(entityFootprints: entityFootprints)
         .generate(seed);
 
-    _camera = Camera(initialOffset: initialOffset);
+    _camera = WorldCamera(initialOffset: initialOffset);
     add(_camera);
 
     _worldRoot = PositionComponent();
@@ -245,14 +245,14 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
     add(AudioCueController(events: events));
     add(StreakVfxController(events: events, player: _player));
-    add(ScrollController(
+    add(WorldScrollController(
       camera: _camera,
       biomeParallax: _biomeParallax,
       worldMap: _worldMap,
       events: events,
     ));
     add(WindController(windLines: _windLines, events: events));
-    add(AnimationController(player: _player, events: events));
+    add(DinoAnimationController(player: _player, events: events));
     add(DialogueController(
       bubble: _speechBubble,
       events: events,
@@ -279,7 +279,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   @override
   void update(double dt) {
     super.update(dt);
-    // Camera zoom as a scale-about-focus transform. At zoom == 1 it's
+    // WorldCamera zoom as a scale-about-focus transform. At zoom == 1 it's
     // identity.
     final z = _camera.zoom;
     if (z == 1.0) {

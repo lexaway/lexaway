@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/collectibles/collectible.dart';
 import '../data/collectibles/registry.dart';
+import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -33,7 +34,7 @@ class CollectionScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
-        title: const Text('Collection'),
+        title: Text(AppLocalizations.of(context)!.collection),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.md),
@@ -63,7 +64,7 @@ class CollectionScreen extends ConsumerWidget {
           GridView.builder(
             padding: EdgeInsets.fromLTRB(
               AppSpacing.md,
-              MediaQuery.of(context).padding.top + kToolbarHeight + AppSpacing.md,
+              MediaQuery.paddingOf(context).top + kToolbarHeight + AppSpacing.md,
               AppSpacing.md,
               AppSpacing.md,
             ),

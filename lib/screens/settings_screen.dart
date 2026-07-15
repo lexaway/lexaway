@@ -173,7 +173,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ),
                 _LinkRow(
-                  label: 'Collection',
+                  label: l10n.collection,
                   onTap: () => context.push('/collection'),
                 ),
                 _LinkRow(
@@ -198,7 +198,7 @@ class SettingsScreen extends ConsumerWidget {
                       }
                     } catch (_) {
                       messenger.showSnackBar(
-                        SnackBar(content: Text('Could not open $uri')),
+                        SnackBar(content: Text(l10n.couldNotOpenUrl('$uri'))),
                       );
                     }
                   },

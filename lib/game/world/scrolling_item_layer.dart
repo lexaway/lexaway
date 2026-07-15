@@ -1,6 +1,6 @@
 import 'package:flame/components.dart';
 
-import '../components/camera.dart';
+import '../components/world_camera.dart';
 import '../lexaway_game.dart';
 import 'world_map.dart';
 
@@ -23,7 +23,7 @@ mixin ScrollingWorldItem on PositionComponent {
 abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
     extends Component with HasGameReference<LexawayGame> {
   final WorldMap worldMap;
-  final Camera camera;
+  final WorldCamera camera;
   final ItemCategory category;
 
   /// Horizontal padding (px) added before/after the visible area — items

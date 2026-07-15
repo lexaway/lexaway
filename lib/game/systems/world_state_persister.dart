@@ -4,7 +4,7 @@ import 'package:flame/components.dart';
 
 import '../../data/world_state.dart';
 import '../../data/world_state_repository.dart';
-import '../components/camera.dart';
+import '../components/world_camera.dart';
 import '../events.dart';
 import '../world/world_map.dart';
 import 'world_streamer.dart';
@@ -23,7 +23,7 @@ class WorldStatePersister extends Component {
   /// same shape as [collectedCoins].
   final Set<int> usedClawMachines;
 
-  final Camera _camera;
+  final WorldCamera _camera;
   final WorldMap _worldMap;
   final WorldStreamer _worldStreamer;
   final GameEvents _events;
@@ -34,7 +34,7 @@ class WorldStatePersister extends Component {
 
   WorldStatePersister({
     required this.repository,
-    required Camera camera,
+    required WorldCamera camera,
     required WorldMap worldMap,
     required WorldStreamer worldStreamer,
     required GameEvents events,

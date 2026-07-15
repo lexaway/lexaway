@@ -15,7 +15,7 @@ import 'widgets/lexaway_bottom_sheet.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _RefreshNotifier();
   // Always notify — the redirect is idempotent and handles all states.
-  ref.listen(activePackProvider, (_, __) => refreshNotifier.notify());
+  ref.listen(activePackProvider, (_, _) => refreshNotifier.notify());
   ref.onDispose(refreshNotifier.dispose);
 
   // Watch route changes — including imperative `context.push(...)` calls,
